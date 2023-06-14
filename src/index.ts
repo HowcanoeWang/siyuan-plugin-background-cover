@@ -67,7 +67,7 @@ export default class PluginSample extends Plugin {
 
         // 绑定快捷键
         this.addCommand({
-            langKey: `${this.i18n.selectPictureRandomLabel}`,
+            langKey: "selectPictureRandomLabel",
             hotkey: "⇧⌘F7",
             callback: () => {
                 this.selectPictureRandom();
