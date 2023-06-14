@@ -1,29 +1,29 @@
 {
-  "name": "plugin-sample",
-  "author": "Vanessa",
-  "url": "https://github.com/siyuan-note/plugin-sample",
-  "version": "0.1.5",
+  "name": "siyuan-plugin-background-cover",
+  "author": "HowcanoeWang",
+  "url": "https://github.com/HowcanoeWang/siyuan-plugin-background-cover",
+  "version": "v230614",
   "minAppVersion": "2.9.0",
   "backends": ["windows", "linux", "darwin"],
-  "frontends": ["desktop"],
+  "frontends": ["desktop", "browser-desktop"],
   "displayName": {
-    "default": "Plugin Sample",
-    "zh_CN": "插件示例"
+    "default": "Background Cover",
+    "zh_CN": "替换背景图片"
   },
   "description": {
-    "default": "This is a plugin sample",
-    "zh_CN": "这是一个插件示例"
+    "default": "Add a picture you like to cover the entire Siyuan Note",
+    "zh_CN": "添加一张你喜欢的图片铺满整个思源笔记"
   },
   "readme": {
     "default": "README.md",
-    "zh_CN": "README_zh_CN.md"
+    "zh_CN": "README.md"
   },
   "funding": {
     "openCollective": "",
     "patreon": "",
     "github": "",
     "custom": [
-      "https://ld246.com/sponsor"
+      "https://afdian.net/a/HowcanoeWang"
     ]
   }
 }
