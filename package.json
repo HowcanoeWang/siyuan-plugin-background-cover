@@ -1,7 +1,7 @@
 {
-  "name": "plugin-sample",
+  "name": "plugin-background-cover",
   "version": "0.1.5",
-  "description": "This is a sample plugin for Siyuan (https://b3log.org/siyuan)",
+  "description": "Add a picture you like to cover the entire Siyuan Note",
   "main": ".src/index.js",
   "scripts": {
     "lint": "eslint . --fix --cache",

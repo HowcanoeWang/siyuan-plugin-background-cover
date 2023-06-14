@@ -20,9 +20,10 @@ TODO - Preview GIF
 
 ## 特性 | Features
 
-- 平铺一张图片作为思源笔记背景 / Tiling a picture as a background for SiYuan Notes
-- 手动设置图库的文件夹 / Manually specify the folder as image library
-- 每次启动时随机选择图片 / Launching by choosing a random image
+- [x]考虑到性能与美观，目前仅支持**桌面端**以及**浏览器端** / Considering the performance, only the 'desktop' and 'browser-desktop' are supported.
+- [ ]平铺一张图片作为思源笔记背景 / Tiling a picture as a background for SiYuan Notes
+- [ ]手动设置图库的文件夹 / Manually specify the folder as image library
+- [ ]每次启动时随机选择图片 / Launching by choosing a random image
 
 ## 更新日志 | ChangeLogs
 

@@ -13,9 +13,7 @@ import {
 } from "siyuan";
 import "./index.scss";
 
-const STORAGE_NAME = "menu-config";
-const TAB_TYPE = "custom_tab";
-const DOCK_TYPE = "dock_tab";
+const STORAGE_NAME = "imgbgcover-config";
 
 export default class PluginSample extends Plugin {
 
@@ -23,25 +21,36 @@ export default class PluginSample extends Plugin {
     private isMobile: boolean;
 
     onload() {
-        this.data[STORAGE_NAME] = {readonlyText: "Readonly"};
+        this.data[STORAGE_NAME] = {
+            autoRefresh: true,
+        	// 当前配置的背景图路径
+            imgPath: 'd:/onedrive/test.png',
+            // 当前配置的背景图透明度
+            opacity: 0.7,
+            // 图片类型 1:本地文件，2：https
+            imageFileType: 1,
+            imgDir: `${this.i18n.emptyImgPath}`,
+            activate: false
+        };
 
         const frontEnd = getFrontend();
         this.isMobile = frontEnd === "mobile" || frontEnd === "browser-mobile";
+
         // 图标的制作参见帮助文档
-        this.addIcons(`<symbol id="iconFace" viewBox="0 0 32 32">
-<path d="M13.667 17.333c0 0.92-0.747 1.667-1.667 1.667s-1.667-0.747-1.667-1.667 0.747-1.667 1.667-1.667 1.667 0.747 1.667 1.667zM20 15.667c-0.92 0-1.667 0.747-1.667 1.667s0.747 1.667 1.667 1.667 1.667-0.747 1.667-1.667-0.747-1.667-1.667-1.667zM29.333 16c0 7.36-5.973 13.333-13.333 13.333s-13.333-5.973-13.333-13.333 5.973-13.333 13.333-13.333 13.333 5.973 13.333 13.333zM14.213 5.493c1.867 3.093 5.253 5.173 9.12 5.173 0.613 0 1.213-0.067 1.787-0.16-1.867-3.093-5.253-5.173-9.12-5.173-0.613 0-1.213 0.067-1.787 0.16zM5.893 12.627c2.28-1.293 4.040-3.4 4.88-5.92-2.28 1.293-4.040 3.4-4.88 5.92zM26.667 16c0-1.040-0.16-2.040-0.44-2.987-0.933 0.2-1.893 0.32-2.893 0.32-4.173 0-7.893-1.92-10.347-4.92-1.4 3.413-4.187 6.093-7.653 7.4 0.013 0.053 0 0.12 0 0.187 0 5.88 4.787 10.667 10.667 10.667s10.667-4.787 10.667-10.667z"></path>
-</symbol>
-<symbol id="iconSaving" viewBox="0 0 32 32">
-<path d="M20 13.333c0-0.733 0.6-1.333 1.333-1.333s1.333 0.6 1.333 1.333c0 0.733-0.6 1.333-1.333 1.333s-1.333-0.6-1.333-1.333zM10.667 12h6.667v-2.667h-6.667v2.667zM29.333 10v9.293l-3.76 1.253-2.24 7.453h-7.333v-2.667h-2.667v2.667h-7.333c0 0-3.333-11.28-3.333-15.333s3.28-7.333 7.333-7.333h6.667c1.213-1.613 3.147-2.667 5.333-2.667 1.107 0 2 0.893 2 2 0 0.28-0.053 0.533-0.16 0.773-0.187 0.453-0.347 0.973-0.427 1.533l3.027 3.027h2.893zM26.667 12.667h-1.333l-4.667-4.667c0-0.867 0.12-1.72 0.347-2.547-1.293 0.333-2.347 1.293-2.787 2.547h-8.227c-2.573 0-4.667 2.093-4.667 4.667 0 2.507 1.627 8.867 2.68 12.667h2.653v-2.667h8v2.667h2.68l2.067-6.867 3.253-1.093v-4.707z"></path>
-</symbol>`);
+        this.addIcons(`<symbol id="iconLogo" viewBox="0 0 32 32">
+        <path d="M26 28h-20v-4l6-10 8.219 10 5.781-4v8z"></path>
+        <path d="M26 15c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3c1.657 0 3 1.343 3 3z"></path>
+        <path d="M28.681 7.159c-0.694-0.947-1.662-2.053-2.724-3.116s-2.169-2.030-3.116-2.724c-1.612-1.182-2.393-1.319-2.841-1.319h-15.5c-1.378 0-2.5 1.121-2.5 2.5v27c0 1.378 1.122 2.5 2.5 2.5h23c1.378 0 2.5-1.122 2.5-2.5v-19.5c0-0.448-0.137-1.23-1.319-2.841zM24.543 5.457c0.959 0.959 1.712 1.825 2.268 2.543h-4.811v-4.811c0.718 0.556 1.584 1.309 2.543 2.268zM28 29.5c0 0.271-0.229 0.5-0.5 0.5h-23c-0.271 0-0.5-0.229-0.5-0.5v-27c0-0.271 0.229-0.5 0.5-0.5 0 0 15.499-0 15.5 0v7c0 0.552 0.448 1 1 1h7v19.5z"></path>
+        </symbol>`);
 
         const topBarElement = this.addTopBar({
-            icon: "iconFace",
+            icon: "iconLogo",
             title: this.i18n.addTopBarIcon,
             position: "right",
             callback: () => {
                 if (this.isMobile) {
-                    this.addMenu();
+                    this.showMobileTodo();
+                    // this.addMenu();
                 } else {
                     let rect = topBarElement.getBoundingClientRect();
                     // 如果被隐藏，则使用更多按钮
@@ -56,107 +65,20 @@ export default class PluginSample extends Plugin {
             }
         });
 
-        const statusIconTemp = document.createElement("template");
-        statusIconTemp.innerHTML = `<div class="toolbar__item b3-tooltips b3-tooltips__w" aria-label="Remove plugin-sample Data">
-    <svg>
-        <use xlink:href="#iconTrashcan"></use>
-    </svg>
-</div>`;
-        statusIconTemp.content.firstElementChild.addEventListener("click", () => {
-            confirm("⚠️", this.i18n.confirmRemove.replace("${name}", this.name), () => {
-                this.removeData(STORAGE_NAME).then(() => {
-                    this.data[STORAGE_NAME] = {readonlyText: "Readonly"};
-                    showMessage(`[${this.name}]: ${this.i18n.removedData}`);
-                });
-            });
-        });
-
-        this.addStatusBar({
-            element: statusIconTemp.content.firstElementChild as HTMLElement,
-        });
-
-        this.customTab = this.addTab({
-            type: TAB_TYPE,
-            init() {
-                this.element.innerHTML = `<div class="plugin-sample__custom-tab">${this.data.text}</div>`;
-            },
-            beforeDestroy() {
-                console.log("before destroy tab:", TAB_TYPE);
-            },
-            destroy() {
-                console.log("destroy tab:", TAB_TYPE);
-            }
-        });
-
+        // 绑定快捷键
         this.addCommand({
-            langKey: "showDialog",
-            hotkey: "⇧⌘M",
+            langKey: `${this.i18n.selectPictureRandomLabel}`,
+            hotkey: "⇧⌘F7",
             callback: () => {
-                this.showDialog();
+                this.selectPictureRandom();
             }
-        });
-
-        this.addDock({
-            config: {
-                position: "LeftBottom",
-                size: {width: 200, height: 0},
-                icon: "iconSaving",
-                title: "Custom Dock",
-            },
-            data: {
-                text: "This is my custom dock"
-            },
-            type: DOCK_TYPE,
-            init() {
-                this.element.innerHTML = `<div class="fn__flex-1 fn__flex-column">
-    <div class="block__icons">
-        <div class="block__logo">
-            <svg><use xlink:href="#iconEmoji"></use></svg>
-            Custom Dock
-        </div>
-        <span class="fn__flex-1 fn__space"></span>
-        <span data-type="min" class="block__icon b3-tooltips b3-tooltips__sw" aria-label="Min ${adaptHotkey("⌘W")}"><svg><use xlink:href="#iconMin"></use></svg></span>
-    </div>
-    <div class="fn__flex-1 plugin-sample__custom-dock">
-        ${this.data.text}
-    </div>
-</div>`;
-            },
-            destroy() {
-                console.log("destroy dock:", DOCK_TYPE);
-            }
-        });
-
-        const textareaElement = document.createElement("textarea");
-        this.setting = new Setting({
-            confirmCallback: () => {
-                this.saveData(STORAGE_NAME, {readonlyText: textareaElement.value});
-            }
-        });
-        this.setting.addItem({
-            title: "Readonly text",
-            createActionElement: () => {
-                textareaElement.className = "b3-text-field fn__block";
-                textareaElement.placeholder = "Readonly text in the menu";
-                textareaElement.value = this.data[STORAGE_NAME].readonlyText;
-                return textareaElement;
-            },
-        });
-        const btnaElement = document.createElement("button");
-        btnaElement.className = "b3-button b3-button--outline fn__flex-center fn__size200";
-        btnaElement.textContent = "Open";
-        btnaElement.addEventListener("click", () => {
-            window.open("https://github.com/siyuan-note/plugin-sample");
-        });
-        this.setting.addItem({
-            title: "Open plugin url",
-            description: "Open plugin url in browser",
-            actionElement: btnaElement,
         });
 
         console.log(this.i18n.helloPlugin);
     }
 
+    ///////////////////////////////
+    // siyuan template functions //
     onLayoutReady() {
         this.loadData(STORAGE_NAME);
         console.log(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
@@ -166,254 +88,194 @@ export default class PluginSample extends Plugin {
         console.log(this.i18n.byePlugin);
     }
 
-    /* 自定义设置
-    openSetting() {
-        const dialog = new Dialog({
-            title: this.name,
-            content: `<div class="b3-dialog__content"><textarea class="b3-text-field fn__block" placeholder="readonly text in the menu"></textarea></div>
-<div class="b3-dialog__action">
-    <button class="b3-button b3-button--cancel">${this.i18n.cancel}</button><div class="fn__space"></div>
-    <button class="b3-button b3-button--text">${this.i18n.save}</button>
-</div>`,
-            width: this.isMobile ? "92vw" : "520px",
-        });
-        const inputElement = dialog.element.querySelector("textarea");
-        inputElement.value = this.data[STORAGE_NAME].readonlyText;
-        const btnsElement = dialog.element.querySelectorAll(".b3-button");
-        dialog.bindInput(inputElement, () => {
-            (btnsElement[1] as HTMLButtonElement).click();
-        });
-        inputElement.focus();
-        btnsElement[0].addEventListener("click", () => {
-            dialog.destroy();
-        });
-        btnsElement[1].addEventListener("click", () => {
-            this.saveData(STORAGE_NAME, {readonlyText: inputElement.value});
-            dialog.destroy();
-        });
-    }
-    */
-
     private eventBusLog({detail}: any) {
         console.log(detail);
     }
+    ///////////////////////////////
 
-    private blockIconEvent({detail}: any) {
-        const ids: string[] = [];
-        detail.blockElements.forEach((item: HTMLElement) => {
-            ids.push(item.getAttribute("data-node-id"));
-        });
-        detail.menu.addItem({
-            iconHTML: "",
-            type: "readonly",
-            label: "IDs<br>" + ids.join("<br>"),
-        });
+    //////////////////////
+    // Plugin functions //
+    private showMobileTodo() {
+        showMessage(`${this.i18n.mobileNotSupported}`, 1000, "info")
     }
 
-    private showDialog() {
+    private showIndev() {
         const dialog = new Dialog({
-            title: "Info",
-            content: '<div class="b3-dialog__content">System current time: <span id="time"></span></div>',
+            title: `${this.i18n.inDevTitle}`,
+            content: `<div class="b3-dialog__content">${this.i18n.inDev}</div>`,
             width: this.isMobile ? "92vw" : "520px",
         });
-        fetchPost("/api/system/currentTime", {}, (response) => {
-            dialog.element.querySelector("#time").innerHTML = new Date(response.data).toString()
-
-        })
     }
 
+    private selectPictureRandom() {
+        this.showIndev();
+    }
+
+    private addSingleImage() {
+        this.showIndev();
+    }
+
+    private addDirectory() {
+        this.showIndev();
+    }
+
+    private openURL(url: string) {
+        window.open(url, "_blank");
+    }
+
+    private changeOpacity(alpha: number){
+        this.showIndev();
+    }
+
+    private changeOpacityMenu() {
+        this.changeOpacity(0.5);
+    }
+
+    private closeBackground() {
+        this.showIndev();
+    }
+
+    private openSetting() {
+        const dialog = new Dialog({
+            title: `${this.i18n.addTopBarIcon} ${this.i18n.settingLabel}`,
+            content: `
+            <label class="fn__flex b3-label">
+                <div class="fn__flex-1">
+                    ${this.i18n.autoRefreshLabel}
+                    <div class="b3-label__text">${this.i18n.autoRefreshDes}</div>
+                </div>
+                <span class="fn__flex-center" />
+                <input
+                    class="b3-switch fn__flex-center"
+                    type="checkbox"
+                    value="${this.data[STORAGE_NAME].autoRefresh}"
+                />
+            </label>
+            <label class="fn__flex b3-label">
+                <div class="fn__flex-1">
+                    ${this.i18n.imgPathLabel}
+                    <div class="fn__hr"></div>
+                    <input class="b3-text-field fn__block" id="apiKey" value="${this.data[STORAGE_NAME].imgPath}">
+                </div>
+            </label>
+            <label class="fn__flex b3-label config__item">
+                <div class="fn__flex-1">
+                    ${this.i18n.opacityLabel}
+                    <div class="b3-label__text">${this.i18n.opacityDes}</div>
+                </div>
+                <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${this.data[STORAGE_NAME].opacity}">   
+                    <input class="b3-slider fn__size200" id="fontSize" max="1" min="0" step="0.05" type="range" value="${this.data[STORAGE_NAME].opacity}">
+                </div>
+            </label>
+            <label class="fn__flex b3-label">
+                <div class="fn__flex-1">
+                    ${this.i18n.randomDirectoryLabel}
+                    <div class="b3-label__text">${this.i18n.randomDirectoryDes}</div>
+                    <div class="fn__hr"></div>
+                    <input class="b3-text-field fn__block" id="apiKey" value="${this.data[STORAGE_NAME].imgDir}">
+                </div>
+            </label>
+            `,
+            width: this.isMobile ? "92vw" : "520px",
+        });
+
+        // the first Auto refresh settings
+        const autoRefreshElement = dialog.element.querySelectorAll("input")
+        autoRefreshElement[0].checked = this.data[STORAGE_NAME].autoRefresh;
+
+        // const inputElement = dialog.element.querySelector("textarea");
+        // inputElement.value = this.data[STORAGE_NAME].imgPath;
+
+        // const btnsElement = dialog.element.querySelectorAll(".b3-button");
+        // dialog.bindInput(inputElement, () => {
+        //     (btnsElement[1] as HTMLButtonElement).click();
+        // });
+
+        // inputElement.focus();
+
+        // btnsElement[0].addEventListener("click", () => {
+        //     dialog.destroy();
+        // });
+        // btnsElement[1].addEventListener("click", () => {
+        //     this.saveData(STORAGE_NAME, {readonlyText: inputElement.value});
+        //     dialog.destroy();
+        // });
+    }
+
+    ////////////////////
+    // Plugin UI init //
     private addMenu(rect?: DOMRect) {
         const menu = new Menu("topBarSample", () => {
             console.log(this.i18n.byeMenu);
         });
         menu.addItem({
-            icon: "iconInfo",
-            label: "Dialog",
-            accelerator: this.commands[0].customHotkey,
+            icon:"iconImage",
+            label: `${this.i18n.selectPictureLabel}`,
+            type: "submenu",
+            submenu: [
+                {
+                    icon: "iconHand",
+                    label: `${this.i18n.selectPictureManualLabel}`,
+                    click: () => {
+                        this.showIndev();
+                    }
+                }, 
+                {
+                    icon: "iconMark",
+                    label: `${this.i18n.selectPictureRandomLabel}`,
+                    accelerator: this.commands[0].customHotkey,
+                    click: () => {
+                        this.selectPictureRandom();
+                    }
+                }, 
+            ]
+        });
+        menu.addItem({
+            icon:"iconAdd",
+            label: `${this.i18n.addImageLabel}`,
+            type: "submenu",
+            submenu: [
+                {
+                    icon: "iconImage",
+                    label: `${this.i18n.addSingleImageLabel}`,
+                    click: () => {
+                        this.addSingleImage();
+                    }
+                }, 
+                {
+                    icon:"iconFolder",
+                    label: `${this.i18n.addDirectoryLabel}`,
+                    click: () => {
+                        this.addDirectory();
+                    }
+                }, 
+            ]
+        });
+        menu.addItem({
+            icon:"iconClose",
+            label: `${this.data[STORAGE_NAME].activate ? this.i18n.closeBackgroundLabel : this.i18n.openBackgroundLabel}`,
             click: () => {
-                this.showDialog()
+                this.closeBackground();
             }
         });
-        if (!this.isMobile) {
-            menu.addItem({
-                icon: "iconLayoutBottom",
-                label: "Open Custom Tab",
-                click: () => {
-                    const tab = openTab({
-                        app: this.app,
-                        custom: {
-                            icon: "iconFace",
-                            title: "Custom Tab",
-                            data: {
-                                text: "This is my custom tab",
-                            },
-                            fn: this.customTab
-                        },
-                    });
-                    console.log(tab);
-                }
-            });
-            menu.addItem({
-                icon: "iconLayoutBottom",
-                label: "Open Asset Tab(open help first)",
-                click: () => {
-                    const tab = openTab({
-                        app: this.app,
-                        asset: {
-                            path: "assets/paragraph-20210512165953-ag1nib4.svg"
-                        }
-                    });
-                    console.log(tab);
-                }
-            });
-            menu.addItem({
-                icon: "iconLayoutBottom",
-                label: "Open Doc Tab(open help first)",
-                click: async () => {
-                    const tab = await openTab({
-                        app: this.app,
-                        doc: {
-                            id: "20200812220555-lj3enxa",
-                        }
-                    });
-                    console.log(tab);
-                }
-            });
-            menu.addItem({
-                icon: "iconLayoutBottom",
-                label: "Open Search Tab",
-                click: () => {
-                    const tab = openTab({
-                        app: this.app,
-                        search: {
-                            k: "SiYuan"
-                        }
-                    });
-                    console.log(tab);
-                }
-            });
-            menu.addItem({
-                icon: "iconLayoutBottom",
-                label: "Open Card Tab",
-                click: () => {
-                    const tab = openTab({
-                        app: this.app,
-                        card: {
-                            type: "all"
-                        }
-                    });
-                    console.log(tab);
-                }
-            });
-            menu.addItem({
-                icon: "iconLayout",
-                label: "Open Float Layer(open help first)",
-                click: () => {
-                    this.addFloatLayer({
-                        ids: ["20210428212840-8rqwn5o", "20201225220955-l154bn4"],
-                        defIds: ["20230415111858-vgohvf3", "20200813131152-0wk5akh"],
-                        x: window.innerWidth - 768 - 120,
-                        y: 32
-                    });
-                }
-            });
-        }
-        menu.addItem({
-            icon: "iconScrollHoriz",
-            label: "Event Bus",
-            type: "submenu",
-            submenu: [{
-                icon: "iconSelect",
-                label: "On ws-main",
-                click: () => {
-                    this.eventBus.on("ws-main", this.eventBusLog);
-                }
-            }, {
-                icon: "iconClose",
-                label: "Off ws-main",
-                click: () => {
-                    this.eventBus.off("ws-main", this.eventBusLog);
-                }
-            }, {
-                icon: "iconSelect",
-                label: "On click-blockicon",
-                click: () => {
-                    this.eventBus.on("click-blockicon", this.blockIconEvent);
-                }
-            }, {
-                icon: "iconClose",
-                label: "Off click-blockicon",
-                click: () => {
-                    this.eventBus.off("click-blockicon", this.blockIconEvent);
-                }
-            }, {
-                icon: "iconSelect",
-                label: "On click-pdf",
-                click: () => {
-                    this.eventBus.on("click-pdf", this.eventBusLog);
-                }
-            }, {
-                icon: "iconClose",
-                label: "Off click-pdf",
-                click: () => {
-                    this.eventBus.off("click-pdf", this.eventBusLog);
-                }
-            }, {
-                icon: "iconSelect",
-                label: "On click-editorcontent",
-                click: () => {
-                    this.eventBus.on("click-editorcontent", this.eventBusLog);
-                }
-            }, {
-                icon: "iconClose",
-                label: "Off click-editorcontent",
-                click: () => {
-                    this.eventBus.off("click-editorcontent", this.eventBusLog);
-                }
-            }, {
-                icon: "iconSelect",
-                label: "On click-editortitleicon",
-                click: () => {
-                    this.eventBus.on("click-editortitleicon", this.eventBusLog);
-                }
-            }, {
-                icon: "iconClose",
-                label: "Off click-editortitleicon",
-                click: () => {
-                    this.eventBus.off("click-editortitleicon", this.eventBusLog);
-                }
-            }, {
-                icon: "iconSelect",
-                label: "On open-noneditableblock",
-                click: () => {
-                    this.eventBus.on("open-noneditableblock", this.eventBusLog);
-                }
-            }, {
-                icon: "iconClose",
-                label: "Off open-noneditableblock",
-                click: () => {
-                    this.eventBus.off("open-noneditableblock", this.eventBusLog);
-                }
-            }, {
-                icon: "iconSelect",
-                label: "On loaded-protyle",
-                click: () => {
-                    this.eventBus.on("loaded-protyle", this.eventBusLog);
-                }
-            }, {
-                icon: "iconClose",
-                label: "Off loaded-protyle",
-                click: () => {
-                    this.eventBus.off("loaded-protyle", this.eventBusLog);
-                }
-            }]
-        });
+
         menu.addSeparator();
+
         menu.addItem({
-            icon: "iconSparkles",
-            label: this.data[STORAGE_NAME].readonlyText || "Readonly",
-            type: "readonly",
+            icon: "iconGithub",
+            label: `${this.i18n.bugReportLabel}`,
+            click: () => {
+                this.openURL("https://github.com/HowcanoeWang/siyuan-plugin-background-cover/issues");
+            }
         });
+        menu.addItem({
+            icon: "iconSettings",
+            label: `${this.i18n.settingLabel}`,
+            click: () => {
+                this.openSetting();
+            }
+        });
+
         if (this.isMobile) {
             menu.fullscreen();
         } else {
