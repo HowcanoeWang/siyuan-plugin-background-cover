@@ -1,5 +1,5 @@
 {
-  "addTopBarIcon": "Switch BG Image",
+  "addTopBarIcon": "SwitchBgCover",
   "helloPlugin": "[SwtichBgCover Plugin][info] Plugin loaded successfully",
   "byePlugin":"[SwtichBgCover Plugin][info] Plugin closed",
   "mobileNotSupported": "[SwtichBgCover Plugin][info] This plugin is not supported for mobile",

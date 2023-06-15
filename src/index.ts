@@ -14,19 +14,44 @@ import {
 import "./index.scss";
 
 const STORAGE_NAME = "imgbgcover-config";
+enum imgMode {
+    image = 0,
+    live2d = 1,
+}
 
-export default class PluginSample extends Plugin {
+export default class SwitchBgCover extends Plugin {
 
     private customTab: () => IModel;
     private isMobile: boolean;
+    private toTransElements = {
+        body: document.body,
+        toolbar: document.getElementById("toolbar"),
+        dockLeft: document.getElementById("dockLeft"),
+        layouts: document.getElementById("layouts"),
+        dockRight: document.getElementById("dockRight"),
+        dockBottom: document.getElementById("dockBottom"),
+        status: document.getElementById("status")
+    };
+    // private toTransClassElements = {
+    //     class_layoutTabBar: document.getElementsByClassName("layout-tab-bar"),
+    //     class_layoutTabContainer: document.getElementsByClassName("layout-tab-container"),
+    //     class_protyle: document.getElementsByClassName("protyle"),
+    //     class_protyleBreadcrumb: document.getElementsByClassName("protyle-breadcrumb")
+    // }
+    private toTransCssVars = [
+        "--b3-theme-background",
+        "--b3-theme-surface",
+    ]
+    private cssvars = document.querySelector(':root');
 
     onload() {
         this.data[STORAGE_NAME] = {
             autoRefresh: true,
         	// 当前配置的背景图路径
-            imgPath: 'd:/onedrive/test.png',
+            // imgPath: 'd:/onedrive/test.png',
+            imgPath: 'https://pbs.twimg.com/media/FyBE0bUakAELfeF?format=jpg&name=4096x4096',
             // 当前配置的背景图透明度
-            opacity: 0.7,
+            opacity: 0.5,
             // 图片类型 1:本地文件，2：https
             imageFileType: 1,
             imgDir: `${this.i18n.emptyImgPath}`,
@@ -79,22 +104,23 @@ export default class PluginSample extends Plugin {
 
     ///////////////////////////////
     // siyuan template functions //
+    ///////////////////////////////
     onLayoutReady() {
         this.loadData(STORAGE_NAME);
         console.log(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
     }
 
-    onunload() {
-        console.log(this.i18n.byePlugin);
-    }
+    // onunload() {
+    //     console.log(this.i18n.byePlugin);
+    // }
 
     private eventBusLog({detail}: any) {
         console.log(detail);
     }
-    ///////////////////////////////
 
     //////////////////////
     // Plugin functions //
+    //////////////////////
     private showMobileTodo() {
         showMessage(`${this.i18n.mobileNotSupported}`, 1000, "info")
     }
@@ -123,8 +149,92 @@ export default class PluginSample extends Plugin {
         window.open(url, "_blank");
     }
 
+    private addAlpha(rgb:string, alpha:number) {
+        return rgb.replace(')', `, ${alpha})`).replace('rgb', 'rgba');
+    }
+
+    private removeAlpha(rgba:string) {
+        let split = rgba.split(',');
+        console.log(split);
+        return split[0].replace('rgba', 'rgb') + split[1] + split[2] + ')';
+    }
+
+    private editAlpha(rgba:string, alpha:number){
+        // https://stackoverflow.com/questions/16065998/replacing-changing-alpha-in-rgba-javascript
+        return rgba.replace(/[\d\.]+\)$/g, `${alpha})`)
+    }
+
+    private getAlpha(rgba:string) {
+        if (rgba.slice(0,4) !== 'rgba') {
+            return null;
+        }else{
+            return parseFloat(rgba.split(',')[3]);
+        }
+    }
+
+    private hex2rgba(hex:string, alpha:number) {
+        // https://stackoverflow.com/a/44870045/7766665
+        hex   = hex.replace('#', '');
+        var r = parseInt(hex.length == 3 ? hex.slice(0, 1).repeat(2) : hex.slice(0, 2), 16);
+        var g = parseInt(hex.length == 3 ? hex.slice(1, 2).repeat(2) : hex.slice(2, 4), 16);
+        var b = parseInt(hex.length == 3 ? hex.slice(2, 3).repeat(2) : hex.slice(4, 6), 16);
+        if ( alpha ) {
+           return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')';
+        }
+        else {
+           return 'rgb(' + r + ', ' + g + ', ' + b + ')';
+        }
+     }
+
+    private changeElementOpacity(element:any, alpha:number) {
+        // 获取当前元素的颜色并添加alpha值
+        const originalColor = window.getComputedStyle( element ,null).getPropertyValue('background-color');
+        let rgbadded = '';
+        // --> 如果当前元素为正常的rgb开头
+        if (this.getAlpha(originalColor) === null) {
+            rgbadded = this.addAlpha(originalColor, alpha);
+            
+        // --> 如果当前元素为rgba开头，且透明度不为0，则修改透明度
+        }else if (this.getAlpha(originalColor) !== 0) {
+            rgbadded = this.editAlpha(originalColor, alpha);
+        }
+
+        element.style.setProperty('background-color', rgbadded);
+        element.style.setProperty('background-blend-mode', `lighten`);
+    }
+
+    private changeCssVarOpacity(cssvar:string, alpha:number) {
+        let originalColor = getComputedStyle(this.cssvars).getPropertyValue(cssvar);
+        let rgbadded = '';
+
+        if (originalColor.slice(0,1) === '#') {
+            rgbadded = this.hex2rgba(originalColor, alpha);
+        }
+
+        this.cssvars.style.setProperty(cssvar, rgbadded);
+        console.log(cssvar, originalColor + '-->' + rgbadded);
+    }
+
     private changeOpacity(alpha: number){
-        this.showIndev();
+        let keyE: keyof typeof this.toTransElements; 
+        for (keyE in this.toTransElements) {
+            // 来自getElementByID，仅有一个值
+            let element = this.toTransElements[keyE];
+            this.changeElementOpacity(element, alpha)
+        }
+
+        
+        for ( var i = 0; i < this.toTransCssVars.length; i++){
+            this.changeCssVarOpacity(this.toTransCssVars[i], alpha);
+        }
+        // let keyCE: keyof typeof this.toTransClassElements; 
+        // for (keyCE in this.toTransClassElements) {
+        //     let class_element = this.toTransClassElements[keyCE];
+        //     // --> 来自getElementByClassName，有多个值
+        //     for (var i = 0; i < class_element.length; i++) {
+        //         this.changeElementOpacity(class_element[i], alpha);
+        //     }
+        // }
     }
 
     private changeOpacityMenu() {
@@ -135,7 +245,24 @@ export default class PluginSample extends Plugin {
         this.showIndev();
     }
 
-    private openSetting() {
+    private changeBackground(background:string, mode:imgMode) {
+        // code inspired from: 
+        // https://github.com/Zuoqiu-Yingyi/siyuan-theme-dark-plus/blob/main/script/module/background.js
+        if (mode === imgMode.image) {
+            this.toTransElements['body'].style.setProperty('background-image', `url("${background}")`)
+        }else if (mode == imgMode.live2d){
+            this.showIndev();
+        }else{
+            showMessage(`[${this.i18n.addTopBarIcon} Plugin][Error] Background type [${mode}] is not supported, `, 7000, "error")
+        }
+    }
+
+    private removeBackground() {
+        // let element = document.querySelector('.fn__flex-1.protyle.fullscreen') || document.body;
+        //document.documentElement.style.removeProperty(config.theme.background.color.propertyName);
+    }
+
+    openSetting() {
         const dialog = new Dialog({
             title: `${this.i18n.addTopBarIcon} ${this.i18n.settingLabel}`,
             content: `
@@ -204,12 +331,13 @@ export default class PluginSample extends Plugin {
 
     ////////////////////
     // Plugin UI init //
+    ////////////////////
     private addMenu(rect?: DOMRect) {
         const menu = new Menu("topBarSample", () => {
             console.log(this.i18n.byeMenu);
         });
         menu.addItem({
-            icon:"iconImage",
+            icon:"iconIndent",
             label: `${this.i18n.selectPictureLabel}`,
             type: "submenu",
             submenu: [
@@ -217,7 +345,8 @@ export default class PluginSample extends Plugin {
                     icon: "iconHand",
                     label: `${this.i18n.selectPictureManualLabel}`,
                     click: () => {
-                        this.showIndev();
+                        this.changeBackground(this.data[STORAGE_NAME].imgPath, imgMode.image);
+                        this.changeOpacity(this.data[STORAGE_NAME].opacity);
                     }
                 }, 
                 {
@@ -252,7 +381,7 @@ export default class PluginSample extends Plugin {
             ]
         });
         menu.addItem({
-            icon:"iconClose",
+            icon: `${this.data[STORAGE_NAME].activate ? 'iconClose' : 'iconSelect'}`,
             label: `${this.data[STORAGE_NAME].activate ? this.i18n.closeBackgroundLabel : this.i18n.openBackgroundLabel}`,
             click: () => {
                 this.closeBackground();
