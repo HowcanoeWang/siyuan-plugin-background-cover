@@ -32,17 +32,12 @@ export default class SwitchBgCover extends Plugin {
         dockBottom: document.getElementById("dockBottom"),
         status: document.getElementById("status")
     };
-    // private toTransClassElements = {
-    //     class_layoutTabBar: document.getElementsByClassName("layout-tab-bar"),
-    //     class_layoutTabContainer: document.getElementsByClassName("layout-tab-container"),
-    //     class_protyle: document.getElementsByClassName("protyle"),
-    //     class_protyleBreadcrumb: document.getElementsByClassName("protyle-breadcrumb")
-    // }
-    private toTransCssVars = [
-        "--b3-theme-background",
-        "--b3-theme-surface",
+    private cssTransName = [
+        ".layout-tab-bar",
+        ".layout-tab-container",
+        ".protyle",
+        ".protyle-breadcrumb"
     ]
-    private cssvars = document.querySelector(':root');
 
     onload() {
         this.data[STORAGE_NAME] = {
@@ -107,6 +102,7 @@ export default class SwitchBgCover extends Plugin {
     ///////////////////////////////
     onLayoutReady() {
         this.loadData(STORAGE_NAME);
+
         console.log(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
     }
 
@@ -184,57 +180,66 @@ export default class SwitchBgCover extends Plugin {
         else {
            return 'rgb(' + r + ', ' + g + ', ' + b + ')';
         }
-     }
+    }
 
-    private changeElementOpacity(element:any, alpha:number) {
-        // 获取当前元素的颜色并添加alpha值
-        const originalColor = window.getComputedStyle( element ,null).getPropertyValue('background-color');
-        let rgbadded = '';
+    private changeColorOpacity(originalColor:string, alpha:number) {
+        let rgbAlphaAdd = '';
         // --> 如果当前元素为正常的rgb开头
         if (this.getAlpha(originalColor) === null) {
-            rgbadded = this.addAlpha(originalColor, alpha);
+            rgbAlphaAdd = this.addAlpha(originalColor, alpha);
             
         // --> 如果当前元素为rgba开头，且透明度不为0，则修改透明度
         }else if (this.getAlpha(originalColor) !== 0) {
-            rgbadded = this.editAlpha(originalColor, alpha);
+            rgbAlphaAdd = this.editAlpha(originalColor, alpha);
         }
 
-        element.style.setProperty('background-color', rgbadded);
-        element.style.setProperty('background-blend-mode', `lighten`);
+        return rgbAlphaAdd;
     }
 
-    private changeCssVarOpacity(cssvar:string, alpha:number) {
-        let originalColor = getComputedStyle(this.cssvars).getPropertyValue(cssvar);
-        let rgbadded = '';
-
-        if (originalColor.slice(0,1) === '#') {
-            rgbadded = this.hex2rgba(originalColor, alpha);
-        }
-
-        this.cssvars.style.setProperty(cssvar, rgbadded);
-        console.log(cssvar, originalColor + '-->' + rgbadded);
-    }
-
-    private changeOpacity(alpha: number){
+    private changeElementOpacity(alpha:number) {
         let keyE: keyof typeof this.toTransElements; 
         for (keyE in this.toTransElements) {
             // 来自getElementByID，仅有一个值
             let element = this.toTransElements[keyE];
-            this.changeElementOpacity(element, alpha)
-        }
 
-        
-        for ( var i = 0; i < this.toTransCssVars.length; i++){
-            this.changeCssVarOpacity(this.toTransCssVars[i], alpha);
+            // 获取当前元素的颜色并添加alpha值
+            const originalColor = getComputedStyle( element ,null).getPropertyValue('background-color');
+
+            let transparentColor = this.changeColorOpacity(originalColor, alpha);
+            
+            element.style.setProperty('background-color', transparentColor);
+            element.style.setProperty('background-blend-mode', `lighten`);
         }
-        // let keyCE: keyof typeof this.toTransClassElements; 
-        // for (keyCE in this.toTransClassElements) {
-        //     let class_element = this.toTransClassElements[keyCE];
-        //     // --> 来自getElementByClassName，有多个值
-        //     for (var i = 0; i < class_element.length; i++) {
-        //         this.changeElementOpacity(class_element[i], alpha);
-        //     }
-        // }
+    }
+
+    private changeCSSRulesOpacity(alpha:number) {
+        let cssContainer = {};
+        var sheets = document.styleSheets;
+        console.log(sheets);
+        for (var i in sheets) {
+            var rules = sheets[i].cssRules;
+            for (var r in rules) {
+                let rule = rules[r];  //cssStyleRule
+                let csstext = rule.selectorText;
+
+                if (this.cssTransName.includes(csstext)) {
+                    const cssColor = rule.style.getPropertyValue('background-color');
+                    let styleInElement = document.getElementsByClassName(csstext.slice(1))[0];
+                    const originalColor = getComputedStyle(styleInElement).getPropertyValue('background-color');
+                    let transparentColor = this.changeColorOpacity(originalColor, alpha)
+                    // rules[r].style.setProperty('background', 'blue');
+                    console.log(csstext, typeof rule, rule, cssColor, originalColor, transparentColor);
+
+                    rule.style.setProperty('background-color', transparentColor);
+                }
+            }
+        }
+    };
+
+
+    private changeOpacity(alpha: number){
+        this.changeElementOpacity(alpha);
+        this.changeCSSRulesOpacity(alpha);
     }
 
     private changeOpacityMenu() {
@@ -250,6 +255,10 @@ export default class SwitchBgCover extends Plugin {
         // https://github.com/Zuoqiu-Yingyi/siyuan-theme-dark-plus/blob/main/script/module/background.js
         if (mode === imgMode.image) {
             this.toTransElements['body'].style.setProperty('background-image', `url("${background}")`)
+            this.toTransElements['body'].style.setProperty('background-repeat', 'no-repeat');
+            this.toTransElements['body'].style.setProperty('background-attachment', 'fixed');
+            this.toTransElements['body'].style.setProperty('background-size', 'cover');
+            this.toTransElements['body'].style.setProperty('background-position', 'center');
         }else if (mode == imgMode.live2d){
             this.showIndev();
         }else{
