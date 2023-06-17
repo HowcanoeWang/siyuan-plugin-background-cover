@@ -37,6 +37,7 @@ export default class SwitchBgCover extends Plugin {
         ".protyle",
         ".protyle-breadcrumb"
     ]
+    private cssVarColors = getComputedStyle(document.querySelector(':root'));
 
     onload() {
         this.data[SETTING] = {
@@ -190,25 +191,29 @@ export default class SwitchBgCover extends Plugin {
         }
     }
 
-    private changeColorOpacity(originalColor:string, alpha:number) {
-        let rgbAlphaAdd = '';
+    private changeColorOpacity(colorString:string, alpha:number) {
+        let changedColor = '';
         
         // --> 如果当前元素为#开头，则hex转rgb后，再修改透明度
-        if (originalColor.slice(0,1) === '#') {
-            rgbAlphaAdd = this.hex2rgba(originalColor, alpha);
+        if (colorString.slice(0,1) === '#') {
+            changedColor = this.hex2rgba(colorString, alpha);
+        // --> 如果当前元素为var开头，则先转换为RGB，再修改透明度
+        //     var(--b3-theme-background)
+        }else if (colorString.slice(0,4) === 'var(') {  // e.g.  var(--b3-theme-background)
+            let cssvar_name = colorString.slice(4,-1);
+            let originalColor = this.cssVarColors.getPropertyValue(cssvar_name);
+            changedColor = this.changeColorOpacity(originalColor, alpha)
         // --> 如果当前元素为正常的rgb开头
-        }else if (originalColor.slice(0,4) === 'rgb(') {
-            rgbAlphaAdd = this.addAlpha(originalColor, alpha);
+        }else if (colorString.slice(0,4) === 'rgb(') {
+            changedColor = this.addAlpha(colorString, alpha);
         // --> 如果当前元素为rgba开头
-        }else if (originalColor.slice(0,4) === 'rgba') {
+        }else if (colorString.slice(0,4) === 'rgba') {
             // 若透明度不为0，则修改透明度
-            if (this.getAlpha(originalColor) !== 0) {
-                rgbAlphaAdd = this.editAlpha(originalColor, alpha); 
-            }
+            changedColor = this.editAlpha(colorString, alpha); 
         }else{
-            console.log(`Unable to parse the color string [${originalColor}}]`);
+            console.log(`Unable to parse the color string [${colorString}}], not 'var(--xxx)', 'rgb(xxx)', 'rgba(xxx)', '#hex'`)
         }
-        return rgbAlphaAdd;
+        return changedColor;
     }
 
     private changeElementOpacity(alpha:number) {
@@ -230,9 +235,9 @@ export default class SwitchBgCover extends Plugin {
     private changeCSSRulesOpacity(alpha:number) {
         let cssContainer = {};
         var sheets = document.styleSheets;
-        let cssVarColors = getComputedStyle(document.querySelector(':root'));
+        // this.cssVarColors = getComputedStyle(document.querySelector(':root'));
 
-        console.log(sheets);
+        // console.log(sheets);
         for (var i in sheets) {
             var rules = sheets[i].cssRules;
             for (var r in rules) {
@@ -241,24 +246,7 @@ export default class SwitchBgCover extends Plugin {
 
                 if (this.cssTransName.includes(csstext)) {
                     let cssColor = rule.style.getPropertyValue('background-color');
-                    let transparentColor = '';
-                    // let styleInElement = document.getElementsByClassName(csstext.slice(1))[0];
-                    // const originalColor = getComputedStyle(styleInElement).getPropertyValue('background-color');
-                    if (cssColor.slice(0,4) === 'var(') {  // e.g.  var(--b3-theme-background)
-                        let cssvar_name = cssColor.slice(4,-1);
-                        let originalColor = cssVarColors.getPropertyValue(cssvar_name);
-                        transparentColor = this.changeColorOpacity(originalColor, alpha)
-                        console.log("var mode: ", originalColor, transparentColor)
-                    }else if (cssColor.slice(0,3) === 'rgb') {  // e.g. rgb or rgba color
-                        transparentColor = this.addAlpha(cssColor, alpha);
-                        console.log("rgb mode:", cssColor, transparentColor);
-                    }else if (cssColor.slice(0,1) === '#') {
-                        transparentColor = this.hex2rgba(cssColor, alpha);
-                        console.log("hex mode:", cssColor, transparentColor);
-                    }else{
-                        console.log(`Unable to parse the color string [${cssColor}}] of [${csstext}], not following var(--xxx), rgb(xxx), rgba(xxx), #hex`)
-                    }
-                    
+                    let transparentColor = this.changeColorOpacity(cssColor, alpha);
                     // console.log(csstext, typeof rule, rule, cssColor, transparentColor);
                     rule.style.setProperty('background-color', transparentColor, 'important');
                 }
