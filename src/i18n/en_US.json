@@ -20,7 +20,7 @@
   "autoRefreshDes": "The background image will randomly changes after lanuching if checked",
   "imgPathLabel":"Current Background Image",
   "opacityLabel": "Opacity",
-  "opacityDes": "Ranges in (0-1)",
+  "opacityDes": "Ranges in (0-1), update when finishing drag",
   "randomDirectoryLabel": "Random Image Folder",
   "randomDirectoryDes": "Random select images from this folder"
 }

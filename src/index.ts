@@ -12,7 +12,7 @@ import {
     Setting, fetchPost
 } from "siyuan";
 
-const STORAGE_NAME = "imgbgcover-config";
+const SETTING = "imgbg-setting";
 enum imgMode {
     image = 0,
     live2d = 1,
@@ -39,7 +39,7 @@ export default class SwitchBgCover extends Plugin {
     ]
 
     onload() {
-        this.data[STORAGE_NAME] = {
+        this.data[SETTING] = {
             autoRefresh: true,
         	// 当前配置的背景图路径
             // imgPath: 'd:/onedrive/test.png',
@@ -93,17 +93,20 @@ export default class SwitchBgCover extends Plugin {
             }
         });
 
-        console.log(this.i18n.helloPlugin);
+        console.log(this.i18n.helloPlugin, this.data[SETTING]);
     }
 
     ///////////////////////////////
     // siyuan template functions //
     ///////////////////////////////
     onLayoutReady() {
-        this.loadData(STORAGE_NAME);
 
-        this.init_plugin();
+        // this.loadData(STORAGE_NAME);
 
+        if (this.data[SETTING].activate) {
+            this.init_plugin();
+        }
+        
         console.log(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
     }
 
@@ -128,6 +131,10 @@ export default class SwitchBgCover extends Plugin {
             content: `<div class="b3-dialog__content">${this.i18n.inDev}</div>`,
             width: this.isMobile ? "92vw" : "520px",
         });
+    }
+
+    private selectPictureByHand() {
+        this.showIndev();
     }
 
     private selectPictureRandom() {
@@ -252,7 +259,7 @@ export default class SwitchBgCover extends Plugin {
                         console.log(`Unable to parse the color string [${cssColor}}] of [${csstext}], not following var(--xxx), rgb(xxx), rgba(xxx), #hex`)
                     }
                     
-                    console.log(csstext, typeof rule, rule, cssColor, transparentColor);
+                    // console.log(csstext, typeof rule, rule, cssColor, transparentColor);
                     rule.style.setProperty('background-color', transparentColor, 'important');
                 }
             }
@@ -269,8 +276,18 @@ export default class SwitchBgCover extends Plugin {
         this.changeOpacity(0.5);
     }
 
-    private closeBackground() {
-        this.showIndev();
+    private pluginOnOff() {
+        let onoffElement = document.querySelectorAll("[data-id='pluginOnOffMenu']")[0];
+        
+        if (this.data[SETTING].activate) {
+            // turn off the background
+            this.data[SETTING].activate = false;
+            this.showIndev();
+        }else{
+            // turn on the background
+            this.data[SETTING].activate = true;
+            this.init_plugin();
+        }
     }
 
     private changeBackground(background:string, mode:imgMode) {
@@ -307,14 +324,14 @@ export default class SwitchBgCover extends Plugin {
                 <input
                     class="b3-switch fn__flex-center"
                     type="checkbox"
-                    value="${this.data[STORAGE_NAME].autoRefresh}"
+                    value="${this.data[SETTING].autoRefresh}"
                 />
             </label>
             <label class="fn__flex b3-label">
                 <div class="fn__flex-1">
                     ${this.i18n.imgPathLabel}
                     <div class="fn__hr"></div>
-                    <input class="b3-text-field fn__block" id="apiKey" value="${this.data[STORAGE_NAME].imgPath}">
+                    <input class="b3-text-field fn__block" id="apiKey" value="${this.data[SETTING].imgPath}">
                 </div>
             </label>
             <label class="fn__flex b3-label config__item">
@@ -322,8 +339,8 @@ export default class SwitchBgCover extends Plugin {
                     ${this.i18n.opacityLabel}
                     <div class="b3-label__text">${this.i18n.opacityDes}</div>
                 </div>
-                <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${this.data[STORAGE_NAME].opacity}">   
-                    <input class="b3-slider fn__size200" id="fontSize" max="1" min="0" step="0.05" type="range" value="${this.data[STORAGE_NAME].opacity}">
+                <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${this.data[SETTING].opacity}">   
+                    <input class="b3-slider fn__size200" id="fontSize" max="1" min="0" step="0.05" type="range" value="${this.data[SETTING].opacity}">
                 </div>
             </label>
             <label class="fn__flex b3-label">
@@ -331,7 +348,7 @@ export default class SwitchBgCover extends Plugin {
                     ${this.i18n.randomDirectoryLabel}
                     <div class="b3-label__text">${this.i18n.randomDirectoryDes}</div>
                     <div class="fn__hr"></div>
-                    <input class="b3-text-field fn__block" id="apiKey" value="${this.data[STORAGE_NAME].imgDir}">
+                    <input class="b3-text-field fn__block" id="apiKey" value="${this.data[SETTING].imgDir}">
                 </div>
             </label>
             `,
@@ -339,8 +356,33 @@ export default class SwitchBgCover extends Plugin {
         });
 
         // the first Auto refresh settings
-        const autoRefreshElement = dialog.element.querySelectorAll("input")
-        autoRefreshElement[0].checked = this.data[STORAGE_NAME].autoRefresh;
+        const autoRefreshElement = dialog.element.querySelectorAll("input")[0]
+        autoRefreshElement.checked = this.data[SETTING].autoRefresh;
+
+        autoRefreshElement.addEventListener("click", () => {
+            this.data[SETTING].autoRefresh = !this.data[SETTING].autoRefresh;
+            autoRefreshElement.value = `${this.data[SETTING].autoRefresh}`;
+            console.log(this.data[SETTING]);
+        })
+
+        // current image path
+        const imgPathElement = dialog.element.querySelectorAll("input")[1]
+
+        // transparency/opacity slider
+        const opacityElement = dialog.element.querySelectorAll("input")[2]
+        opacityElement.addEventListener("change", () => {
+            this.data[SETTING].opacity = parseFloat(opacityElement.value);
+            if (this.data[SETTING].activate) {
+                this.changeOpacity(this.data[SETTING].opacity);
+            }
+        })
+        opacityElement.addEventListener("input", () => {
+            // update the aira-label value
+            opacityElement.parentElement.setAttribute('aria-label', opacityElement.value);
+        })
+
+        // img dir 
+        const imgDirElement = dialog.element.querySelectorAll("input")[3]
 
         // const inputElement = dialog.element.querySelector("textarea");
         // inputElement.value = this.data[STORAGE_NAME].imgPath;
@@ -362,17 +404,15 @@ export default class SwitchBgCover extends Plugin {
     }
 
     private init_plugin() {
-        this.changeBackground(this.data[STORAGE_NAME].imgPath, imgMode.image);
-        this.changeOpacity(this.data[STORAGE_NAME].opacity);
+        this.changeBackground(this.data[SETTING].imgPath, imgMode.image);
+        this.changeOpacity(this.data[SETTING].opacity);
     }
 
     ////////////////////
     // Plugin UI init //
     ////////////////////
     private addMenu(rect?: DOMRect) {
-        const menu = new Menu("topBarSample", () => {
-            console.log(this.i18n.byeMenu);
-        });
+        const menu = new Menu("topBarSample", () => {});
         menu.addItem({
             icon:"iconIndent",
             label: `${this.i18n.selectPictureLabel}`,
@@ -382,7 +422,7 @@ export default class SwitchBgCover extends Plugin {
                     icon: "iconHand",
                     label: `${this.i18n.selectPictureManualLabel}`,
                     click: () => {
-                        this.init_plugin();
+                        this.selectPictureByHand();
                     }
                 }, 
                 {
@@ -417,10 +457,11 @@ export default class SwitchBgCover extends Plugin {
             ]
         });
         menu.addItem({
-            icon: `${this.data[STORAGE_NAME].activate ? 'iconClose' : 'iconSelect'}`,
-            label: `${this.data[STORAGE_NAME].activate ? this.i18n.closeBackgroundLabel : this.i18n.openBackgroundLabel}`,
+            id: 'pluginOnOffMenu',
+            icon: `${this.data[SETTING].activate ? 'iconClose' : 'iconSelect'}`,
+            label: `${this.data[SETTING].activate ? this.i18n.closeBackgroundLabel : this.i18n.openBackgroundLabel}`,
             click: () => {
-                this.closeBackground();
+                this.pluginOnOff();
             }
         });
 

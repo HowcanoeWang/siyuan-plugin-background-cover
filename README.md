@@ -45,6 +45,11 @@ Add a picture you like to cover the entire Siyuan Note
 <details open>
 <summary><b>June 2023</b></summary>
 
+**v23.06.17**
+
+- 支持设置中的开关和滑动条交互 / support the setting interactions of checkbox and slider
+- 支持插件打开的栏目开关(关闭逻辑还未支持) / support the plugin on button in menu (turn off not supported yet)
+
 **v23.06.16**
 
 - 思源笔记启动时加载测试 / Onload when starting SiYuan
