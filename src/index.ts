@@ -11,7 +11,6 @@ import {
     IModel,
     Setting, fetchPost
 } from "siyuan";
-import "./index.scss";
 
 const STORAGE_NAME = "imgbgcover-config";
 enum imgMode {
