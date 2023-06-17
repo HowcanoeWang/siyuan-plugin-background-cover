@@ -22,5 +22,7 @@
   "opacityLabel": "背景透明度",
   "opacityDes": "范围(0-1), 鼠标拖动后更新",
   "randomDirectoryLabel": "随机图片目录",
-  "randomDirectoryDes": "从这个目录中随机抽取图片"
+  "randomDirectoryDes": "从这个目录中随机抽取图片",
+  "confirm": "仍然汇报",
+  "bugReportConfirmText": "由于该背景插件是通过整体修改opacity实现的，如果开启插件后部分UI透明度/显示异常，请联系主题作者进行适配。"
 }

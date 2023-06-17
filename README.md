@@ -21,23 +21,15 @@ Add a picture you like to cover the entire Siyuan Note
 ## 特性 | Features
 
 - [x] 目前仅支持**桌面端**以及**浏览器端** / Only the **desktop** and **browser-desktop** are supported.
-- [ ] 平铺一张图片作为思源笔记背景 / Tiling a picture as a background for SiYuan Notes
+- [x] 平铺一张图片作为思源笔记背景 / Tiling a picture as a background for SiYuan Notes
 - [ ] 手动设置图库的文件夹 / Manually specify the folder as image library
 - [ ] 每次启动时随机选择图片 / Launching by choosing a random image
 
 ## 实现思路 | Implementation
 
-* 添加背景图片的实现
+获取`<body>`元素，在其`style`属性中添加`background-image`和`opacity`值。其中，用户可设置的`opacity`定义域为`[0.1, 1]`。但为了笔记内容的可读性，使用[vscode-background-cover](https://github.com/AShujiao/vscode-background-cover)中的加权逻辑`f(O) = 0.59 + [0.4 - (O ⨉ 0.4)]`，加权后`body`透明度值域为`[0.59, 0.99]`。
 
-  获取`<body>`标签，在其`style`属性中添加`background-image`值，但此时背景会被笔记的各个面板挡住，需要改变透明度来让图片透出来。
-
-* 改变透明度的实现
-
-  直接设置`<body>`标签的`opacity`属性并不可行，因为这样会把文字也加上透明度(整体透明)，不方便阅读，仅需要背景的透明度发生变化。
-
-  为了保证不会大幅改变当前主题的原始配色表现，此插件仅在原本RGB色值基础上，添加alpha值。当主题的元素配色存在alpha值时，修改为用户定义的透明度。
-
-  此插件按照上述原则，修改了思源笔记面板的工具条(`id='toolbar'`)，左右底侧菜单栏(`id="dockLeft"`, `id="dockRight"`, `id="dockBottom"`)， 编辑器(`id="layouts"`), 状态栏(`id="status"`)这几个主要笔记面板的`style`属性，在其中添加`background-color (!important)`(rgba)和`background-blend-mode:lighten`来实现透明化。对于弹出的菜单(如设置菜单、搜索菜单等)，为了可读性，并没有做透明化。
+Add `background-image` and `opacity` to `<body>` element's style. The user-defined domain for opacity is `[0.1, 1]`. However, for the readability of note content, use the weighted opacity `f(O) = 0.59 + [0.4 - (O ⨉ 0.4)]` from [vscode-background-cover](https://github.com/AShujiao/vscode-background-cover). After weighting, the `body` opacity range is `[0.59, 0.99]`.
 
 
 ## 更新日志 | ChangeLogs
@@ -47,8 +39,10 @@ Add a picture you like to cover the entire Siyuan Note
 
 **v23.06.17**
 
+- 通过修改`<body>`元素的`opaticy`来实现透明度，简化掉之前修改css样式中的`background-color`的alpha值的方法 / Achieve image transparency by modifying the `opacity` of `<body>` element, abandoning the modification of the alpha value of `background-color` in the CSS style.
 - 支持设置中的开关和滑动条交互 / support the setting interactions of checkbox and slider
-- 支持插件打开的栏目开关(关闭逻辑还未支持) / support the plugin on button in menu (turn off not supported yet)
+- 支持插件打开的栏目开关 / support the plugin on button in menu
+- Bug汇报弹出提示页 / Dialog for Bug report
 
 **v23.06.16**
 

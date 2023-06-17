@@ -22,5 +22,7 @@
   "opacityLabel": "Opacity",
   "opacityDes": "Ranges in (0-1), update when finishing drag",
   "randomDirectoryLabel": "Random Image Folder",
-  "randomDirectoryDes": "Random select images from this folder"
+  "randomDirectoryDes": "Random select images from this folder",
+  "confirm": "Still reporting",
+  "bugReportConfirmText": "As this background cover plugin is implemented by modifying the opacity of the entire interface, if some UI element's transparency display abnormally after enabling the plugin, please contact the theme author for compatibility adjustments."
 }

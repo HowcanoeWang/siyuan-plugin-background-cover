@@ -22,22 +22,7 @@ export default class SwitchBgCover extends Plugin {
 
     private customTab: () => IModel;
     private isMobile: boolean;
-    private toTransElements = {
-        body: document.body,
-        toolbar: document.getElementById("toolbar"),
-        dockLeft: document.getElementById("dockLeft"),
-        layouts: document.getElementById("layouts"),
-        dockRight: document.getElementById("dockRight"),
-        dockBottom: document.getElementById("dockBottom"),
-        status: document.getElementById("status")
-    };
-    private cssTransName = [
-        ".layout-tab-bar",
-        ".layout-tab-container",
-        ".protyle",
-        ".protyle-breadcrumb"
-    ]
-    private cssVarColors = getComputedStyle(document.querySelector(':root'));
+    private body = document.body;
 
     onload() {
         this.data[SETTING] = {
@@ -46,9 +31,9 @@ export default class SwitchBgCover extends Plugin {
             // imgPath: 'd:/onedrive/test.png',
             imgPath: 'https://pbs.twimg.com/media/FyBE0bUakAELfeF?format=jpg&name=4096x4096',
             // 当前配置的背景图透明度
-            opacity: 0.5,
+            opacity: 0.2,
             // 图片类型 1:本地文件，2：https
-            imageFileType: 1,
+            imageFileType: 0,
             imgDir: `${this.i18n.emptyImgPath}`,
             activate: false
         };
@@ -105,7 +90,7 @@ export default class SwitchBgCover extends Plugin {
         // this.loadData(STORAGE_NAME);
 
         if (this.data[SETTING].activate) {
-            this.init_plugin();
+            this.activatePlugin();
         }
         
         console.log(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
@@ -126,10 +111,23 @@ export default class SwitchBgCover extends Plugin {
         showMessage(`${this.i18n.mobileNotSupported}`, 1000, "info")
     }
 
-    private showIndev() {
+    private showIndev(msg:string='') {
         const dialog = new Dialog({
             title: `${this.i18n.inDevTitle}`,
-            content: `<div class="b3-dialog__content">${this.i18n.inDev}</div>`,
+            content: `<div class="b3-dialog__content">${this.i18n.inDev}<span>${msg}</span></div>`,
+            width: this.isMobile ? "92vw" : "520px",
+        });
+    }
+
+    private bugReportFunction() {
+        const dialog = new Dialog({
+            title: `${this.i18n.bugReportLabel}`,
+            content: `
+            <div class="b3-dialog__content">${this.i18n.bugReportConfirmText}</div>
+            <div class="b3-dialog__action">
+                <button class="b3-button b3-button--text" onclick="javascript:window.open('https://github.com/HowcanoeWang/siyuan-plugin-background-cover/issues', '_blank');">${this.i18n.confirm}</button>
+            </div>
+            `,
             width: this.isMobile ? "92vw" : "520px",
         });
     }
@@ -150,114 +148,9 @@ export default class SwitchBgCover extends Plugin {
         this.showIndev();
     }
 
-    private openURL(url: string) {
-        window.open(url, "_blank");
-    }
-
-    private addAlpha(rgb:string, alpha:number) {
-        return rgb.replace(')', `, ${alpha})`).replace('rgb', 'rgba');
-    }
-
-    private removeAlpha(rgba:string) {
-        let split = rgba.split(',');
-        console.log(split);
-        return split[0].replace('rgba', 'rgb') + split[1] + split[2] + ')';
-    }
-
-    private editAlpha(rgba:string, alpha:number){
-        // https://stackoverflow.com/questions/16065998/replacing-changing-alpha-in-rgba-javascript
-        return rgba.replace(/[\d\.]+\)$/g, `${alpha})`)
-    }
-
-    private getAlpha(rgba:string) {
-        if (rgba.slice(0,4) !== 'rgba') {
-            return null;
-        }else{
-            return parseFloat(rgba.split(',')[3]);
-        }
-    }
-
-    private hex2rgba(hex:string, alpha:number) {
-        // https://stackoverflow.com/a/44870045/7766665
-        hex   = hex.replace('#', '');
-        var r = parseInt(hex.length == 3 ? hex.slice(0, 1).repeat(2) : hex.slice(0, 2), 16);
-        var g = parseInt(hex.length == 3 ? hex.slice(1, 2).repeat(2) : hex.slice(2, 4), 16);
-        var b = parseInt(hex.length == 3 ? hex.slice(2, 3).repeat(2) : hex.slice(4, 6), 16);
-        if ( alpha ) {
-           return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')';
-        }
-        else {
-           return 'rgb(' + r + ', ' + g + ', ' + b + ')';
-        }
-    }
-
-    private changeColorOpacity(colorString:string, alpha:number) {
-        let changedColor = '';
-        
-        // --> 如果当前元素为#开头，则hex转rgb后，再修改透明度
-        if (colorString.slice(0,1) === '#') {
-            changedColor = this.hex2rgba(colorString, alpha);
-        // --> 如果当前元素为var开头，则先转换为RGB，再修改透明度
-        //     var(--b3-theme-background)
-        }else if (colorString.slice(0,4) === 'var(') {  // e.g.  var(--b3-theme-background)
-            let cssvar_name = colorString.slice(4,-1);
-            let originalColor = this.cssVarColors.getPropertyValue(cssvar_name);
-            changedColor = this.changeColorOpacity(originalColor, alpha)
-        // --> 如果当前元素为正常的rgb开头
-        }else if (colorString.slice(0,4) === 'rgb(') {
-            changedColor = this.addAlpha(colorString, alpha);
-        // --> 如果当前元素为rgba开头
-        }else if (colorString.slice(0,4) === 'rgba') {
-            // 若透明度不为0，则修改透明度
-            changedColor = this.editAlpha(colorString, alpha); 
-        }else{
-            console.log(`Unable to parse the color string [${colorString}}], not 'var(--xxx)', 'rgb(xxx)', 'rgba(xxx)', '#hex'`)
-        }
-        return changedColor;
-    }
-
-    private changeElementOpacity(alpha:number) {
-        let keyE: keyof typeof this.toTransElements; 
-        for (keyE in this.toTransElements) {
-            // 来自getElementByID，仅有一个值
-            let element = this.toTransElements[keyE];
-
-            // 获取当前元素的颜色并添加alpha值
-            const originalColor = getComputedStyle( element ,null).getPropertyValue('background-color');
-
-            let transparentColor = this.changeColorOpacity(originalColor, alpha);
-            
-            element.style.setProperty('background-color', transparentColor, 'important');
-            element.style.setProperty('background-blend-mode', `lighten`);
-        }
-    }
-
-    private changeCSSRulesOpacity(alpha:number) {
-        let cssContainer = {};
-        var sheets = document.styleSheets;
-        // this.cssVarColors = getComputedStyle(document.querySelector(':root'));
-
-        // console.log(sheets);
-        for (var i in sheets) {
-            var rules = sheets[i].cssRules;
-            for (var r in rules) {
-                let rule = rules[r];  //cssStyleRule
-                let csstext = rule.selectorText;
-
-                if (this.cssTransName.includes(csstext)) {
-                    let cssColor = rule.style.getPropertyValue('background-color');
-                    let transparentColor = this.changeColorOpacity(cssColor, alpha);
-                    // console.log(csstext, typeof rule, rule, cssColor, transparentColor);
-                    rule.style.setProperty('background-color', transparentColor, 'important');
-                }
-            }
-        }
-    };
-
-
-    private changeOpacity(alpha: number){
-        this.changeElementOpacity(alpha);
-        this.changeCSSRulesOpacity(alpha);
+    private changeOpacity(opacity: number){
+        let bodyOpacity = 0.59 + (0.4 - (opacity*0.4));
+        this.body.style.setProperty('opacity', bodyOpacity.toString());
     }
 
     private changeOpacityMenu() {
@@ -265,16 +158,14 @@ export default class SwitchBgCover extends Plugin {
     }
 
     private pluginOnOff() {
-        let onoffElement = document.querySelectorAll("[data-id='pluginOnOffMenu']")[0];
-        
         if (this.data[SETTING].activate) {
             // turn off the background
             this.data[SETTING].activate = false;
-            this.showIndev();
+            this.removeBackground(this.data[SETTING].imageFileType);
         }else{
             // turn on the background
             this.data[SETTING].activate = true;
-            this.init_plugin();
+            this.activatePlugin();
         }
     }
 
@@ -282,21 +173,35 @@ export default class SwitchBgCover extends Plugin {
         // code inspired from: 
         // https://github.com/Zuoqiu-Yingyi/siyuan-theme-dark-plus/blob/main/script/module/background.js
         if (mode === imgMode.image) {
-            this.toTransElements['body'].style.setProperty('background-image', `url("${background}")`)
-            this.toTransElements['body'].style.setProperty('background-repeat', 'no-repeat');
-            this.toTransElements['body'].style.setProperty('background-attachment', 'fixed');
-            this.toTransElements['body'].style.setProperty('background-size', 'cover');
-            this.toTransElements['body'].style.setProperty('background-position', 'center');
+            this.body.style.setProperty('background-image', `url("${background}")`);
+            this.body.style.setProperty('background-repeat', 'no-repeat');
+            this.body.style.setProperty('background-attachment', 'fixed');
+            this.body.style.setProperty('background-size', 'cover');
+            this.body.style.setProperty('background-position', 'center');
         }else if (mode == imgMode.live2d){
             this.showIndev();
         }else{
-            showMessage(`[${this.i18n.addTopBarIcon} Plugin][Error] Background type [${mode}] is not supported, `, 7000, "error")
+            showMessage(`[${this.i18n.addTopBarIcon} Plugin][Error] Background type [${mode}] is not supported, `, 7000, "error");
         }
     }
 
-    private removeBackground() {
-        // let element = document.querySelector('.fn__flex-1.protyle.fullscreen') || document.body;
-        //document.documentElement.style.removeProperty(config.theme.background.color.propertyName);
+    private removeBackground(mode:imgMode) {
+        // code inspired from: 
+        // https://github.com/Zuoqiu-Yingyi/siyuan-theme-dark-plus/blob/main/script/module/background.js
+        // >>> let element = document.querySelector('.fn__flex-1.protyle.fullscreen') || document.body;
+        // >>> document.documentElement.style.removeProperty(config.theme.background.color.propertyName);
+        if (mode === imgMode.image) {
+            this.body.style.removeProperty('background-image');
+            this.body.style.removeProperty('background-repeat');
+            this.body.style.removeProperty('background-attachment');
+            this.body.style.removeProperty('background-size');
+            this.body.style.removeProperty('background-position');
+            this.body.style.removeProperty('opacity');
+        }else if (mode == imgMode.live2d){
+            this.showIndev();
+        }else{
+            showMessage(`[${this.i18n.addTopBarIcon} Plugin][Error] Background type [${mode}] is not supported, `, 7000, "error");
+        }
     }
 
     openSetting() {
@@ -328,7 +233,7 @@ export default class SwitchBgCover extends Plugin {
                     <div class="b3-label__text">${this.i18n.opacityDes}</div>
                 </div>
                 <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${this.data[SETTING].opacity}">   
-                    <input class="b3-slider fn__size200" id="fontSize" max="1" min="0" step="0.05" type="range" value="${this.data[SETTING].opacity}">
+                    <input class="b3-slider fn__size200" id="fontSize" max="1" min="0.1" step="0.05" type="range" value="${this.data[SETTING].opacity}">
                 </div>
             </label>
             <label class="fn__flex b3-label">
@@ -344,7 +249,7 @@ export default class SwitchBgCover extends Plugin {
         });
 
         // the first Auto refresh settings
-        const autoRefreshElement = dialog.element.querySelectorAll("input")[0]
+        const autoRefreshElement = dialog.element.querySelectorAll("input")[0];
         autoRefreshElement.checked = this.data[SETTING].autoRefresh;
 
         autoRefreshElement.addEventListener("click", () => {
@@ -354,10 +259,10 @@ export default class SwitchBgCover extends Plugin {
         })
 
         // current image path
-        const imgPathElement = dialog.element.querySelectorAll("input")[1]
+        const imgPathElement = dialog.element.querySelectorAll("input")[1];
 
         // transparency/opacity slider
-        const opacityElement = dialog.element.querySelectorAll("input")[2]
+        const opacityElement = dialog.element.querySelectorAll("input")[2];
         opacityElement.addEventListener("change", () => {
             this.data[SETTING].opacity = parseFloat(opacityElement.value);
             if (this.data[SETTING].activate) {
@@ -370,7 +275,7 @@ export default class SwitchBgCover extends Plugin {
         })
 
         // img dir 
-        const imgDirElement = dialog.element.querySelectorAll("input")[3]
+        const imgDirElement = dialog.element.querySelectorAll("input")[3];
 
         // const inputElement = dialog.element.querySelector("textarea");
         // inputElement.value = this.data[STORAGE_NAME].imgPath;
@@ -391,7 +296,7 @@ export default class SwitchBgCover extends Plugin {
         // });
     }
 
-    private init_plugin() {
+    private activatePlugin() {
         this.changeBackground(this.data[SETTING].imgPath, imgMode.image);
         this.changeOpacity(this.data[SETTING].opacity);
     }
@@ -459,7 +364,7 @@ export default class SwitchBgCover extends Plugin {
             icon: "iconGithub",
             label: `${this.i18n.bugReportLabel}`,
             click: () => {
-                this.openURL("https://github.com/HowcanoeWang/siyuan-plugin-background-cover/issues");
+                this.bugReportFunction()
             }
         });
         menu.addItem({
