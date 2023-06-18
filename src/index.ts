@@ -97,12 +97,6 @@ export default class SwitchBgCover extends Plugin {
     //////////////////////
     // Plugin functions //
     //////////////////////
-    private compareKeys(a:object, b:object) {
-        var aKeys = Object.keys(a).sort();
-        var bKeys = Object.keys(b).sort();
-        return JSON.stringify(aKeys) === JSON.stringify(bKeys);
-    }
-
     private showMobileTodo() {
         showMessage(`${this.i18n.mobileNotSupported}`, 1000, "info")
     }
@@ -341,6 +335,7 @@ export default class SwitchBgCover extends Plugin {
         }else{
             this.removeBackground(settings.get('imageFileType'))
         }
+        // todo: update the text string in URL
     }
 
     ////////////////////
