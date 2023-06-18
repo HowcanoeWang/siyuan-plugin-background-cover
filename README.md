@@ -37,6 +37,11 @@ Add `background-image` and `opacity` to `<body>` element's style. The user-defin
 <details open>
 <summary><b>June 2023</b></summary>
 
+**v23.06.18**
+
+- 实现了用户设置的读写 / Support user config IO
+- 修改Bug反馈和设置界面的UI布局 / Modify the layouts of Bug report and setting Panel UI
+
 **v23.06.17**
 
 - 通过修改`<body>`元素的`opaticy`来实现透明度，简化掉之前修改css样式中的`background-color`的alpha值的方法 / Achieve image transparency by modifying the `opacity` of `<body>` element, abandoning the modification of the alpha value of `background-color` in the CSS style.

@@ -12,7 +12,9 @@ import {
     Setting, fetchPost
 } from "siyuan";
 
-const SETTING = "imgbg-setting";
+import { settings } from './user_config';
+import { error, info } from './utils';
+
 enum imgMode {
     image = 0,
     live2d = 1,
@@ -24,20 +26,7 @@ export default class SwitchBgCover extends Plugin {
     private isMobile: boolean;
     private body = document.body;
 
-    onload() {
-        this.data[SETTING] = {
-            autoRefresh: true,
-        	// 当前配置的背景图路径
-            // imgPath: 'd:/onedrive/test.png',
-            imgPath: 'https://pbs.twimg.com/media/FyBE0bUakAELfeF?format=jpg&name=4096x4096',
-            // 当前配置的背景图透明度
-            opacity: 0.2,
-            // 图片类型 1:本地文件，2：https
-            imageFileType: 0,
-            imgDir: `${this.i18n.emptyImgPath}`,
-            activate: false
-        };
-
+    async onload() {
         const frontEnd = getFrontend();
         this.isMobile = frontEnd === "mobile" || frontEnd === "browser-mobile";
 
@@ -47,6 +36,10 @@ export default class SwitchBgCover extends Plugin {
         <path d="M26 15c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3c1.657 0 3 1.343 3 3z"></path>
         <path d="M28.681 7.159c-0.694-0.947-1.662-2.053-2.724-3.116s-2.169-2.030-3.116-2.724c-1.612-1.182-2.393-1.319-2.841-1.319h-15.5c-1.378 0-2.5 1.121-2.5 2.5v27c0 1.378 1.122 2.5 2.5 2.5h23c1.378 0 2.5-1.122 2.5-2.5v-19.5c0-0.448-0.137-1.23-1.319-2.841zM24.543 5.457c0.959 0.959 1.712 1.825 2.268 2.543h-4.811v-4.811c0.718 0.556 1.584 1.309 2.543 2.268zM28 29.5c0 0.271-0.229 0.5-0.5 0.5h-23c-0.271 0-0.5-0.229-0.5-0.5v-27c0-0.271 0.229-0.5 0.5-0.5 0 0 15.499-0 15.5 0v7c0 0.552 0.448 1 1 1h7v19.5z"></path>
         </symbol>`);
+
+        settings.setPlugin(this);
+        //初始化数据
+        await settings.load();
 
         const topBarElement = this.addTopBar({
             icon: "iconLogo",
@@ -79,34 +72,37 @@ export default class SwitchBgCover extends Plugin {
             }
         });
 
-        console.log(this.i18n.helloPlugin, this.data[SETTING]);
+        info(this.i18n.helloPlugin);
     }
 
     ///////////////////////////////
     // siyuan template functions //
     ///////////////////////////////
     onLayoutReady() {
-
-        // this.loadData(STORAGE_NAME);
-
-        if (this.data[SETTING].activate) {
-            this.activatePlugin();
-        }
+        // load the user setting data
+        this.followPluginSettings();
         
-        console.log(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
+        info(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
     }
 
-    // onunload() {
-    //     console.log(this.i18n.byePlugin);
-    // }
+    onunload() {
+        info(`${this.i18n.byePlugin}`)
+        settings.save();
+    }
 
     private eventBusLog({detail}: any) {
-        console.log(detail);
+        info(detail);
     }
 
     //////////////////////
     // Plugin functions //
     //////////////////////
+    private compareKeys(a:object, b:object) {
+        var aKeys = Object.keys(a).sort();
+        var bKeys = Object.keys(b).sort();
+        return JSON.stringify(aKeys) === JSON.stringify(bKeys);
+    }
+
     private showMobileTodo() {
         showMessage(`${this.i18n.mobileNotSupported}`, 1000, "info")
     }
@@ -125,10 +121,25 @@ export default class SwitchBgCover extends Plugin {
             content: `
             <div class="b3-dialog__content">${this.i18n.bugReportConfirmText}</div>
             <div class="b3-dialog__action">
-                <button class="b3-button b3-button--text" onclick="javascript:window.open('https://github.com/HowcanoeWang/siyuan-plugin-background-cover/issues', '_blank');">${this.i18n.confirm}</button>
+                <button class="b3-button b3-button--cancel">${this.i18n.cancel}</button><div class="fn__space"></div>
+                <button class="b3-button b3-button--text">${this.i18n.confirm}</button>
             </div>
+            <div class="b3-dialog__action">
             `,
             width: this.isMobile ? "92vw" : "520px",
+        });
+
+        const btnsElement = dialog.element.querySelectorAll(".b3-button");
+
+        // cancel button
+        btnsElement[0].addEventListener("click", () => {
+            dialog.destroy();
+        });
+
+        // still report
+        btnsElement[1].addEventListener("click", () => {
+            window.open('https://github.com/HowcanoeWang/siyuan-plugin-background-cover/issues', '_blank');
+            dialog.destroy();
         });
     }
 
@@ -157,16 +168,17 @@ export default class SwitchBgCover extends Plugin {
         this.changeOpacity(0.5);
     }
 
-    private pluginOnOff() {
-        if (this.data[SETTING].activate) {
+    private async pluginOnOff() {
+        if (settings.get('activate')) {
             // turn off the background
-            this.data[SETTING].activate = false;
-            this.removeBackground(this.data[SETTING].imageFileType);
+            settings.set('activate', false);
+            this.removeBackground(settings.get('imageFileType'));
         }else{
             // turn on the background
-            this.data[SETTING].activate = true;
-            this.activatePlugin();
+            settings.set('activate', true);
+            this.followPluginSettings();
         }
+        settings.save();
     }
 
     private changeBackground(background:string, mode:imgMode) {
@@ -217,14 +229,14 @@ export default class SwitchBgCover extends Plugin {
                 <input
                     class="b3-switch fn__flex-center"
                     type="checkbox"
-                    value="${this.data[SETTING].autoRefresh}"
+                    value="${settings.get('autoRefresh')}"
                 />
             </label>
             <label class="fn__flex b3-label">
                 <div class="fn__flex-1">
                     ${this.i18n.imgPathLabel}
                     <div class="fn__hr"></div>
-                    <input class="b3-text-field fn__block" id="apiKey" value="${this.data[SETTING].imgPath}">
+                    <input class="b3-text-field fn__block" id="apiKey" value="${settings.get('imgPath')}">
                 </div>
             </label>
             <label class="fn__flex b3-label config__item">
@@ -232,8 +244,8 @@ export default class SwitchBgCover extends Plugin {
                     ${this.i18n.opacityLabel}
                     <div class="b3-label__text">${this.i18n.opacityDes}</div>
                 </div>
-                <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${this.data[SETTING].opacity}">   
-                    <input class="b3-slider fn__size200" id="fontSize" max="1" min="0.1" step="0.05" type="range" value="${this.data[SETTING].opacity}">
+                <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${settings.get('opacity')}">   
+                    <input class="b3-slider fn__size200" id="fontSize" max="1" min="0.1" step="0.05" type="range" value="${settings.get('opacity')}">
                 </div>
             </label>
             <label class="fn__flex b3-label">
@@ -241,8 +253,19 @@ export default class SwitchBgCover extends Plugin {
                     ${this.i18n.randomDirectoryLabel}
                     <div class="b3-label__text">${this.i18n.randomDirectoryDes}</div>
                     <div class="fn__hr"></div>
-                    <input class="b3-text-field fn__block" id="apiKey" value="${this.data[SETTING].imgDir}">
+                    <input class="b3-text-field fn__block" id="apiKey" value="${settings.get('imgDir')}">
                 </div>
+            </label>
+            <label class="b3-label config__item fn__flex">
+                <div class="fn__flex-1">
+                ${this.i18n.resetConfigLabel}
+                    <div class="b3-label__text">${this.i18n.resetConfigDes}</div>
+                </div>
+                <span class="fn__space"></span>
+                <button class="b3-button b3-button--outline fn__flex-center fn__size200" id="appearanceRefresh">
+                    <svg><use xlink:href="#iconRefresh"></use></svg>
+                    ${this.i18n.reset}
+                </button>
             </label>
             `,
             width: this.isMobile ? "92vw" : "520px",
@@ -250,24 +273,28 @@ export default class SwitchBgCover extends Plugin {
 
         // the first Auto refresh settings
         const autoRefreshElement = dialog.element.querySelectorAll("input")[0];
-        autoRefreshElement.checked = this.data[SETTING].autoRefresh;
+        autoRefreshElement.checked = settings.get('autoRefresh');
 
         autoRefreshElement.addEventListener("click", () => {
-            this.data[SETTING].autoRefresh = !this.data[SETTING].autoRefresh;
-            autoRefreshElement.value = `${this.data[SETTING].autoRefresh}`;
-            console.log(this.data[SETTING]);
+            settings.set('autoRefresh', !settings.get('autoRefresh'));
+            autoRefreshElement.value = `${settings.get('autoRefresh')}`;
+            settings.save();
         })
 
         // current image path
         const imgPathElement = dialog.element.querySelectorAll("input")[1];
+        imgPathElement.addEventListener("click", () => {
+            this.showIndev();
+        })
 
         // transparency/opacity slider
         const opacityElement = dialog.element.querySelectorAll("input")[2];
         opacityElement.addEventListener("change", () => {
-            this.data[SETTING].opacity = parseFloat(opacityElement.value);
-            if (this.data[SETTING].activate) {
-                this.changeOpacity(this.data[SETTING].opacity);
+            settings.set('opacity', parseFloat(opacityElement.value));
+            if (settings.get('activate')) {
+                this.changeOpacity(settings.get('opacity'));
             }
+            settings.save();
         })
         opacityElement.addEventListener("input", () => {
             // update the aira-label value
@@ -276,6 +303,17 @@ export default class SwitchBgCover extends Plugin {
 
         // img dir 
         const imgDirElement = dialog.element.querySelectorAll("input")[3];
+        imgDirElement.addEventListener("click", () => {
+            this.showIndev();
+        })
+
+        // reset panel
+        const resetSettingElement = dialog.element.querySelectorAll("button")[0];
+        resetSettingElement.addEventListener("click", () => {
+            settings.reset();
+            settings.save();
+            this.followPluginSettings();
+        })
 
         // const inputElement = dialog.element.querySelector("textarea");
         // inputElement.value = this.data[STORAGE_NAME].imgPath;
@@ -296,9 +334,13 @@ export default class SwitchBgCover extends Plugin {
         // });
     }
 
-    private activatePlugin() {
-        this.changeBackground(this.data[SETTING].imgPath, imgMode.image);
-        this.changeOpacity(this.data[SETTING].opacity);
+    private followPluginSettings() {
+        if (settings.get('activate')) {
+            this.changeBackground(settings.get('imgPath'), settings.get('imageFileType'));
+            this.changeOpacity(settings.get('opacity'));
+        }else{
+            this.removeBackground(settings.get('imageFileType'))
+        }
     }
 
     ////////////////////
@@ -351,8 +393,8 @@ export default class SwitchBgCover extends Plugin {
         });
         menu.addItem({
             id: 'pluginOnOffMenu',
-            icon: `${this.data[SETTING].activate ? 'iconClose' : 'iconSelect'}`,
-            label: `${this.data[SETTING].activate ? this.i18n.closeBackgroundLabel : this.i18n.openBackgroundLabel}`,
+            icon: `${settings.get('activate') ? 'iconClose' : 'iconSelect'}`,
+            label: `${settings.get('activate') ? this.i18n.closeBackgroundLabel : this.i18n.openBackgroundLabel}`,
             click: () => {
                 this.pluginOnOff();
             }

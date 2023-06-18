@@ -1,8 +1,8 @@
 {
   "addTopBarIcon": "切换背景图",
-  "helloPlugin": "[切换背景图插件][info] 插件载入成功",
-  "byePlugin":"[切换背景图插件][info] 插件关闭",
-  "mobileNotSupported": "[切换背景图插件][info] 该插件尚不支持移动端",
+  "helloPlugin": "插件载入成功",
+  "byePlugin":"插件关闭",
+  "mobileNotSupported": "该插件尚不支持移动端",
   "inDevTitle": "抱歉！",
   "inDev": "该功能尚在开发中",
   "emptyImgPath":"未选择图片目录",
@@ -24,5 +24,9 @@
   "randomDirectoryLabel": "随机图片目录",
   "randomDirectoryDes": "从这个目录中随机抽取图片",
   "confirm": "仍然汇报",
-  "bugReportConfirmText": "由于该背景插件是通过整体修改opacity实现的，如果开启插件后部分UI透明度/显示异常，请联系主题作者进行适配。"
+  "reset": "重置",
+  "cancel": "取消",
+  "bugReportConfirmText": "由于该背景插件是通过整体修改opacity实现的，如果开启插件后部分UI透明度/显示异常，请联系主题作者进行适配。",
+  "resetConfigLabel": "重置设置",
+  "resetConfigDes": "将所有设置恢复到插件初始值"
 }

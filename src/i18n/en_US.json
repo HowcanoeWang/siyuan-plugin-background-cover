@@ -1,8 +1,8 @@
 {
   "addTopBarIcon": "SwitchBgCover",
-  "helloPlugin": "[SwtichBgCover Plugin][info] Plugin loaded successfully",
-  "byePlugin":"[SwtichBgCover Plugin][info] Plugin closed",
-  "mobileNotSupported": "[SwtichBgCover Plugin][info] This plugin is not supported for mobile",
+  "helloPlugin": "Plugin loaded successfully",
+  "byePlugin":"Plugin closed",
+  "mobileNotSupported": "This plugin is not supported for mobile",
   "inDevTitle": "Apologize!",
   "inDev": "This fuction is still under development",
   "emptyImgPath":"Image Path not seleted yet",
@@ -24,5 +24,9 @@
   "randomDirectoryLabel": "Random Image Folder",
   "randomDirectoryDes": "Random select images from this folder",
   "confirm": "Still reporting",
-  "bugReportConfirmText": "As this background cover plugin is implemented by modifying the opacity of the entire interface, if some UI element's transparency display abnormally after enabling the plugin, please contact the theme author for compatibility adjustments."
+  "reset": "Reset",
+  "cancel": "Cancel",
+  "bugReportConfirmText": "As this background cover plugin is implemented by modifying the opacity of the entire interface, if some UI element's transparency display abnormally after enabling the plugin, please contact the theme author for compatibility adjustments.",
+  "resetConfigLabel": "Reset Configs",
+  "resetConfigDes": "Reset all configs to default values"
 }
