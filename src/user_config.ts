@@ -22,7 +22,7 @@ const defaultSettings = {
     // 启动时随机更改图片
     autoRefresh: true as boolean,
     // 当前配置的背景图路径
-    imgPath: 'https://pbs.twimg.com/media/FyBE0bUakAELfeF?format=jpg&name=4096x4096' as string,
+    imgPath: 'https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover/static/FyBE0bUakAELfeF.jpg' as string,
     // 当前配置的背景图透明度
     opacity: 0.2 as number,
     // 图片类型 1:本地文件，2：https

@@ -16,7 +16,7 @@ Add a picture you like to cover the entire Siyuan Note
 
 ## 预览 | Preview
 
-![](preview.png)
+![](https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover/preview.png)
 
 ## 特性 | Features
 
