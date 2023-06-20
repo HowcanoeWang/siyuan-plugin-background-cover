@@ -28,5 +28,7 @@
   "cancel": "Cancel",
   "bugReportConfirmText": "As this background cover plugin is implemented by modifying the opacity of the entire interface, if some UI element's transparency display abnormally after enabling the plugin, please contact the theme author for compatibility adjustments.",
   "resetConfigLabel": "Reset Configs",
-  "resetConfigDes": "Reset all configs to default values"
+  "resetConfigDes": "Reset all configs to default values",
+  "currentVersionLabel": "Current plugin version",
+  "viewAllVersionsText": "View all published versions"
 }
