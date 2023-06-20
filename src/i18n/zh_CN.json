@@ -28,5 +28,7 @@
   "cancel": "取消",
   "bugReportConfirmText": "由于该背景插件是通过整体修改opacity实现的，如果开启插件后部分UI透明度/显示异常，请联系主题作者进行适配。",
   "resetConfigLabel": "重置设置",
-  "resetConfigDes": "将所有设置恢复到插件初始值"
+  "resetConfigDes": "将所有设置恢复到插件初始值",
+  "currentVersionLabel": "当前插件版本",
+  "viewAllVersionsText": "浏览所有已发布的版本"
 }

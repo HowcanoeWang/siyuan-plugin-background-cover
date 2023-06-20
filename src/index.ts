@@ -14,15 +14,16 @@ import {
 
 import { KernelApi } from "./api";
 
-import { settings } from './user_config';
-import { error, info } from './utils';
+import { settings } from './configs';
+import { error, info, CloseCV } from './utils';
+import packageInfo from '../plugin.json'
 
 enum imgMode {
     image = 0,
     live2d = 1,
 }
 
-const pluginImgDataDir = '/data/storage/petal/siyuan-plugin-background-cover/base64'
+const pluginImgDataDir = `/data/storage/petal/${packageInfo.name}/base64`
 
 
 export default class SwitchBgCover extends Plugin {
@@ -31,6 +32,7 @@ export default class SwitchBgCover extends Plugin {
     private isMobile: boolean;
     private body = document.body;
     private ka = new KernelApi();
+    private cv = new CloseCV();
 
     async onload() {
         const frontEnd = getFrontend();
@@ -284,6 +286,23 @@ export default class SwitchBgCover extends Plugin {
                     <svg><use xlink:href="#iconRefresh"></use></svg>
                     ${this.i18n.reset}
                 </button>
+            </label>
+            <label class="fn__flex b3-label config__item">
+                <div class="fn__flex-1">
+                    ${this.i18n.currentVersionLabel} v${packageInfo.version}
+                    <span id="isInsider"></span>
+                    <!--div class="b3-label__text"><a href="https://github.com/siyuan-note/siyuan/releases" target="_blank">${this.i18n.viewAllVersionsText}</a></div-->
+                </div>
+                <div class="fn__space"></div>
+                <!--div class="fn__flex-center fn__size200 config__item-line">
+                    <button id="checkUpdateBtn" class="b3-button b3-button--outline fn__block">
+                        <svg><use xlink:href="#iconRefresh"></use></svg>检查更新
+                    </button>
+                    <div class="fn__hr fn__none"></div>
+                    <button id="menuSafeQuit" class="b3-button b3-button--outline fn__block fn__none">
+                        <svg><use xlink:href="#iconQuit"></use></svg>退出应用
+                    </button>
+                </div-->
             </label>
             `,
             width: this.isMobile ? "92vw" : "520px",

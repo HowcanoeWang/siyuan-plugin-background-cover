@@ -5,10 +5,12 @@
 
 import { Plugin } from 'siyuan';
 import { info, error } from './utils'
+import packageInfo from '../plugin.json'
 
 type SettingKey = (
     'autoRefresh' | 'imgPath' | 'opacity' |
-    'imageFileType' | "imgDir" | 'activate'
+    'imageFileType' | "imgDir" | 'activate' | 
+    'version'
 );
 
 // interface Item {
@@ -29,7 +31,8 @@ const defaultSettings = {
     imageFileType: 0 as number,
     // 图片路径
     imgDir: '' as string,
-    activate: false as boolean
+    activate: false as boolean,
+    version: packageInfo.version as string
 };
 
 class SettingManager {
@@ -85,13 +88,28 @@ class SettingManager {
             if (typeof loaded === 'string') {
                 loaded = JSON.parse(loaded);
             }
+            // 如果读取的配置文件版本比默认的版本低 或者 版本号不存在
+            // const cfg_version = this.get('version')
+            // let need_update = false
+            // if (cfg_version == null || cfg_version == undefined || cfg_version == '' || cfg_version < defaultSettings.version) {
+            //     need_update = true
+            // }
             try {
                 for (let key in loaded) {
-                    this.set(key, loaded[key]);
+                    if (key === 'version'){
+                        continue
+                    }
+
+                    if (key in defaultSettings && typeof defaultSettings[key] === typeof loaded[key]) {
+                        this.set(key, loaded[key]);
+                    }
                 }
             } catch (error_msg) {
                 error(`Setting load error: ${error_msg}`);
             }
+
+
+
             this.save();
         }
         // eventBus.publish(eventBus.EventSettingLoaded, {});
