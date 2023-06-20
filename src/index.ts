@@ -12,6 +12,8 @@ import {
     Setting, fetchPost
 } from "siyuan";
 
+import { KernelApi } from "./api";
+
 import { settings } from './user_config';
 import { error, info } from './utils';
 
@@ -20,11 +22,15 @@ enum imgMode {
     live2d = 1,
 }
 
+const pluginImgDataDir = '/data/storage/petal/siyuan-plugin-background-cover/base64'
+
+
 export default class SwitchBgCover extends Plugin {
 
     private customTab: () => IModel;
     private isMobile: boolean;
     private body = document.body;
+    private ka = new KernelApi();
 
     async onload() {
         const frontEnd = getFrontend();
@@ -145,8 +151,26 @@ export default class SwitchBgCover extends Plugin {
         this.showIndev();
     }
 
-    private addSingleImage() {
-        this.showIndev();
+    private async addSingleImageFile() {
+        const pickerOpts = {
+            types: [
+              {
+                description: "Images",
+                accept: {
+                  "image/*": [".png", ".jpeg", ".jpg", ".jiff"],
+                },
+              },
+            ],
+            excludeAcceptAllOption: true,
+            multiple: false,
+        };
+
+        // return an Array
+        const fileHandle = await window.showOpenFilePicker(pickerOpts);
+        let file = await fileHandle[0].getFile();
+
+        const uploadResult = await this.ka.putFile(`${pluginImgDataDir}/${file.name}`, file);
+        console.log(uploadResult)
     }
 
     private addDirectory() {
@@ -179,7 +203,7 @@ export default class SwitchBgCover extends Plugin {
         // code inspired from: 
         // https://github.com/Zuoqiu-Yingyi/siyuan-theme-dark-plus/blob/main/script/module/background.js
         if (mode === imgMode.image) {
-            this.body.style.setProperty('background-image', `url("${background}")`);
+            this.body.style.setProperty('background-image', `url('${background}')`);
             this.body.style.setProperty('background-repeat', 'no-repeat');
             this.body.style.setProperty('background-attachment', 'fixed');
             this.body.style.setProperty('background-size', 'cover');
@@ -374,7 +398,7 @@ export default class SwitchBgCover extends Plugin {
                     icon: "iconImage",
                     label: `${this.i18n.addSingleImageLabel}`,
                     click: () => {
-                        this.addSingleImage();
+                        this.addSingleImageFile();
                     }
                 }, 
                 {
