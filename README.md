@@ -41,6 +41,8 @@ Add `background-image` and `opacity` to `<body>` element's style. The user-defin
 
 - 实现图片上传的对话框 / Implement the image upload dialog
 - 通过思源API实现了选取一张图片上传并保存到缓存路径下 / Implemented the selection of an image upload and saved it to the cache path using the Source API.
+- 实现开启关闭插件后，对特定主题的颜色优化(如Savor主题的`toolbar`颜色问题) / After turning on and off the plugin, realize color optimization for specific themes (such as the `toolbar` of the Savor theme).
+- 利用DOM监听，实现主题变化的监测(配合上面的优化还没实现) / By using DOM monitoring to detect theme changes (not yet implemented in conjunction with the above optimization).
 
 **v23.06.18**
 

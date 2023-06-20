@@ -13,7 +13,6 @@ import {
 } from "siyuan";
 
 import { KernelApi } from "./api";
-
 import { settings } from './configs';
 import { error, info, CloseCV } from './utils';
 import packageInfo from '../plugin.json'
@@ -25,6 +24,13 @@ enum imgMode {
 
 const pluginImgDataDir = `/data/storage/petal/${packageInfo.name}/base64`
 
+// 需要针对下面的主题进行适配
+const toAdaptThemes = {
+    "Savor": {
+        // element id : [LightMode color, Darkmode Color]
+        "toolbar": [`var(--b3-toolbar-background)`, `var(--b3-toolbar-background)`]
+    }
+}
 
 export default class SwitchBgCover extends Plugin {
 
@@ -33,6 +39,8 @@ export default class SwitchBgCover extends Plugin {
     private body = document.body;
     private ka = new KernelApi();
     private cv = new CloseCV();
+
+    private targetNode = document.getElementsByTagName('html')[0];
 
     async onload() {
         const frontEnd = getFrontend();
@@ -81,6 +89,10 @@ export default class SwitchBgCover extends Plugin {
         });
 
         info(this.i18n.helloPlugin);
+
+        const observer = new MutationObserver(this.themeOnChange);
+        observer.observe(this.targetNode, {attributes: true});
+
     }
 
     ///////////////////////////////
@@ -179,26 +191,85 @@ export default class SwitchBgCover extends Plugin {
         this.showIndev();
     }
 
+    private getThemeInfo() {
+        // 0 -> light, 1 -> dark
+        const themeMode = (window as any).siyuan.config.appearance.mode
+        let themeName = ''
+        
+        if (themeMode === 0 ) {
+            themeName = (window as any).siyuan.config.appearance.themeLight
+        }else{
+            themeName = (window as any).siyuan.config.appearance.themeDark
+        }
+
+        return [themeMode, themeName]
+    }
+
+    private themeOnChange() {
+        console.log(`Theme changed! ${this.targetNode}`)
+    }
+
+    private async adaptThemeElementColor() {
+        let oldColor = {};
+        const [themeMode, themeName] = this.getThemeInfo();
+
+        // 当目前的主题需要特殊适配时
+        if (themeName in toAdaptThemes) {
+            let Ele = toAdaptThemes[themeName as keyof typeof toAdaptThemes]
+
+            let keyE: keyof typeof Ele; 
+            for (keyE in Ele) {
+                let element = document.getElementById(keyE);
+
+                const originalColor = getComputedStyle( element ,null).getPropertyValue('background-color');
+    
+                let targetColorStr = Ele[keyE][themeMode]
+                let targetColor = ''
+                if (targetColorStr.slice(0,4) === 'var(') {
+                    const cssvar = targetColorStr.slice(4,-1)
+                    targetColor = getComputedStyle(document.querySelector(':root')).getPropertyValue(cssvar);
+                }
+                
+                element.style.setProperty('background-color', targetColor, 'important');
+    
+                oldColor[keyE] = originalColor
+
+                // console.log(keyE, oldColor, targetColor, targetColorStr, element)
+            }
+
+            settings.set('oldColor', oldColor)
+        }else{
+            settings.set('oldColor', {})
+        }
+
+        settings.save()
+    }
+
+    private async recoverThemeElementColor () {
+        const [themeMode, themeName] = this.getThemeInfo();
+        if (themeName in toAdaptThemes) {
+            let Ele = settings.get('oldColor')
+
+            let keyE: keyof typeof Ele; 
+            for (keyE in Ele) {
+                let element = document.getElementById(keyE);
+                element.style.removeProperty('background-color');
+            }
+
+            settings.set('oldColor', {})
+        }
+        settings.save()
+    }
+
     private changeOpacity(opacity: number){
         let bodyOpacity = 0.59 + (0.4 - (opacity*0.4));
         this.body.style.setProperty('opacity', bodyOpacity.toString());
     }
 
-    private changeOpacityMenu() {
-        this.changeOpacity(0.5);
-    }
-
     private async pluginOnOff() {
-        if (settings.get('activate')) {
-            // turn off the background
-            settings.set('activate', false);
-            this.removeBackground(settings.get('imageFileType'));
-        }else{
-            // turn on the background
-            settings.set('activate', true);
-            this.followPluginSettings();
-        }
+        settings.set('activate', !settings.get('activate'))
         settings.save();
+        this.followPluginSettings();
     }
 
     private changeBackground(background:string, mode:imgMode) {
@@ -373,10 +444,12 @@ export default class SwitchBgCover extends Plugin {
 
     private followPluginSettings() {
         if (settings.get('activate')) {
-            this.changeBackground(settings.get('imgPath'), settings.get('imageFileType'));
-            this.changeOpacity(settings.get('opacity'));
+            this.changeBackground(settings.get('imgPath'), settings.get('imageFileType'))
+            this.adaptThemeElementColor()
+            this.changeOpacity(settings.get('opacity'))
         }else{
             this.removeBackground(settings.get('imageFileType'))
+            this.recoverThemeElementColor()
         }
         // todo: update the text string in URL
     }

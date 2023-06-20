@@ -10,7 +10,7 @@ import packageInfo from '../plugin.json'
 type SettingKey = (
     'autoRefresh' | 'imgPath' | 'opacity' |
     'imageFileType' | "imgDir" | 'activate' | 
-    'version'
+    'version' | 'oldColor'
 );
 
 // interface Item {
@@ -32,6 +32,7 @@ const defaultSettings = {
     // 图片路径
     imgDir: '' as string,
     activate: false as boolean,
+    oldColor: {} as object,
     version: packageInfo.version as string
 };
 
