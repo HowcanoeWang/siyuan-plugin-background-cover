@@ -37,6 +37,11 @@ Add `background-image` and `opacity` to `<body>` element's style. The user-defin
 <details open>
 <summary><b>June 2023</b></summary>
 
+**v23.06.20**
+
+- 实现图片上传的对话框 / Implement the image upload dialog
+- 通过思源API实现了选取一张图片上传并保存到缓存路径下 / Implemented the selection of an image upload and saved it to the cache path using the Source API.
+
 **v23.06.18**
 
 - 实现了用户设置的读写 / Support user config IO
@@ -62,8 +67,12 @@ Add `background-image` and `opacity` to `<body>` element's style. The user-defin
 
 ## 致谢 | Acknowledgement
 
-此项目参考了 [vscode-background-cover](https://github.com/AShujiao/vscode-background-cover) 和 [思源dark+主题](https://github.com/Zuoqiu-Yingyi/siyuan-theme-dark-plus) 部分公开的代码    
-This project is inspired and modified from [vscode-background-cover](https://github.com/AShujiao/vscode-background-cover) and [siyuan-theme-dark+](https://github.com/Zuoqiu-Yingyi/siyuan-theme-dark-plus)
+此项目参考了以下项目部分公开的代码 / This project is inspired and modified from 
+
+* [vscode-background-cover](https://github.com/AShujiao/vscode-background-cover)
+* [思源dark+主题 / siyuan-theme-dark+](https://github.com/Zuoqiu-Yingyi/siyuan-theme-dark-plus)
+* [思源导入插件 / siyuan-plugin-importer](https://github.com/terwer/siyuan-plugin-importer/tree/main)
 
 封面背景图画师 / Background cover artist：    
+
 `劉了了_Ale`  [爱发电AFDIAN](https://afdian.net/a/_LIAO) | [Fanbox](https://www.fanbox.cc/@ale) | [Bilibili](https://space.bilibili.com/3883010) | [Twitter](https://twitter.com/_LIAO)
