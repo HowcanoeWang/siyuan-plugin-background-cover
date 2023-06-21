@@ -1,6 +1,14 @@
+import { settings } from './configs'
+
 // simple logging functions
 export function info(...msg: any[]): void {
     console.log(`[BgCover Plugin][INFO] ${msg}`);
+}
+
+export function debug(...msg: any[]): void {
+    if (settings.get('inDev')) {
+        console.log(`[BgCover Plugin][DEBUG] ${msg}`);
+    }
 }
 
 export function error(...msg: any[]): void {
@@ -92,7 +100,6 @@ export function getThemeInfo() {
         themeName = (window as any).siyuan.config.appearance.themeDark
     }
 
-    info(`${themeMode}, ${themeName}`)
     return [themeMode, themeName]
 }
 

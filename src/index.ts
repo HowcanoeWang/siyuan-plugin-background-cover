@@ -14,7 +14,7 @@ import {
 
 import { KernelApi } from "./api";
 import { settings } from './configs';
-import { error, info, CloseCV, MD5, getThemeInfo } from './utils';
+import { error, info, debug, CloseCV, MD5, getThemeInfo } from './utils';
 import * as v from './constants'
 import packageInfo from '../plugin.json'
 
@@ -91,7 +91,9 @@ export default class SwitchBgCover extends Plugin {
         settings.set('prevTheme', themeName);
         this.followPluginSettings();
         
-        info(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
+        if (settings.get('inDev')) {
+            debug(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
+        }
     }
 
     onunload() {
@@ -199,14 +201,12 @@ export default class SwitchBgCover extends Plugin {
 
             fileidx[md5] = bgObj
 
-            this.changeBackground(bgObj.path, v.bgMode.image)
-
             settings.set('bgObj', bgObj)
             settings.set('fileidx', fileidx)
             settings.save()
-        }
 
-        console.log(settings)
+            this.followPluginSettings();
+        }
     }
 
     private async addSingleURLImageFile() {
@@ -235,7 +235,7 @@ export default class SwitchBgCover extends Plugin {
 
     private themeOnChange() {
         const [themeMode, themeName] = getThemeInfo();
-        // info(`Theme changed! ${themeMode} | ${themeName}`)
+        debug(`Theme changed! ${themeMode} | ${themeName}`)
 
         // 当目前的主题需要特殊适配时
         if (settings.get('activate') && themeName in v.toAdaptThemes) {
@@ -261,7 +261,7 @@ export default class SwitchBgCover extends Plugin {
                 }
                 
                 element.style.setProperty('background-color', targetColor, 'important');
-                info(`Adapt '${themeName}' theme element '${element}' to background-color: ${targetColor}`)
+                debug(`Adapt '${themeName}' theme element '${element}' to background-color: ${targetColor}`)
             }
         }else{
             // 恢复主题默认的设置
@@ -391,19 +391,16 @@ export default class SwitchBgCover extends Plugin {
             <label class="fn__flex b3-label config__item">
                 <div class="fn__flex-1">
                     ${this.i18n.currentVersionLabel} v${packageInfo.version}
-                    <span id="isInsider"></span>
-                    <!--div class="b3-label__text"><a href="https://github.com/siyuan-note/siyuan/releases" target="_blank">${this.i18n.viewAllVersionsText}</a></div-->
+                    <div class="b3-label__text">
+                        ${this.i18n.inDevModeDes}
+                    </div>
                 </div>
-                <div class="fn__space"></div>
-                <!--div class="fn__flex-center fn__size200 config__item-line">
-                    <button id="checkUpdateBtn" class="b3-button b3-button--outline fn__block">
-                        <svg><use xlink:href="#iconRefresh"></use></svg>检查更新
-                    </button>
-                    <div class="fn__hr fn__none"></div>
-                    <button id="menuSafeQuit" class="b3-button b3-button--outline fn__block fn__none">
-                        <svg><use xlink:href="#iconQuit"></use></svg>退出应用
-                    </button>
-                </div-->
+                <span class="fn__flex-center" />
+                <input
+                    class="b3-switch fn__flex-center"
+                    type="checkbox"
+                    value="${settings.get('inDev')}"
+                />
             </label>
             `,
             width: this.isMobile ? "92vw" : "520px",
@@ -448,6 +445,16 @@ export default class SwitchBgCover extends Plugin {
             this.followPluginSettings();
         })
 
+        // the dev mode settings
+        const devModeElement = dialog.element.querySelectorAll("input")[4];
+        devModeElement.checked = settings.get('inDev');
+
+        devModeElement.addEventListener("click", () => {
+            settings.set('inDev', !settings.get('inDev'));
+            devModeElement.value = `${settings.get('inDev')}`;
+            settings.save();
+        })
+
         // const inputElement = dialog.element.querySelector("textarea");
         // inputElement.value = this.data[STORAGE_NAME].imgPath;
 
@@ -474,7 +481,7 @@ export default class SwitchBgCover extends Plugin {
                 this.changeBackground(v.demoImgURL, v.bgMode.image)
             }else{
                 let bgObj = settings.get('bgObj')
-                this.changeBackground(bgObj.path, bgObj.type)
+                this.changeBackground(bgObj.path, bgObj.mode)
             }
             
             this.themeOnChange()
@@ -485,7 +492,7 @@ export default class SwitchBgCover extends Plugin {
                 this.removeBackground(v.bgMode.image)
             }else{
                 let bgObj = settings.get('bgObj')
-                this.removeBackground(bgObj.type)
+                this.removeBackground(bgObj.mode)
             }
 
             this.themeOnChange()
