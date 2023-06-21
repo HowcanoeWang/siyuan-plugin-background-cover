@@ -12,11 +12,13 @@
   "author": "Vanessa",
   "license": "MIT",
   "devDependencies": {
+    "@types/crypto-js": "^4.1.1",
     "@types/node": "^20.3.1",
     "@types/wicg-file-system-access": "^2020.9.6",
     "@typescript-eslint/eslint-plugin": "5.29.0",
     "@typescript-eslint/parser": "5.29.0",
     "copy-webpack-plugin": "^11.0.0",
+    "crypto-js": "^4.1.1",
     "css-loader": "^6.7.1",
     "esbuild-loader": "^3.0.1",
     "eslint": "^8.42.0",
@@ -29,5 +31,8 @@
     "webpack": "^5.76.0",
     "webpack-cli": "^5.0.2",
     "zip-webpack-plugin": "^4.0.1"
+  },
+  "dependencies": {
+    "install": "^0.13.0"
   }
 }

@@ -11,6 +11,7 @@ import {
     // IModel,
     // Setting, fetchPost
 } from "siyuan";
+import MD5 from "crypto-js/md5";
 
 import { KernelApi } from "./api";
 import { settings } from './configs';
@@ -206,10 +207,10 @@ export default class SwitchBgCover extends Plugin {
         const fileHandle = await window.showOpenFilePicker(pickerOpts);
         let file = await fileHandle[0].getFile();
 
-        var md5 = CryptoJS.MD5(binary).toString();
+        var md5 = MD5(file.text()).toString();
 
         const uploadResult = await this.ka.putFile(`${pluginImgDataDir}/${file.name}`, file);
-        console.log(uploadResult)
+        console.log(uploadResult, md5)
     }
 
     private addDirectory() {
