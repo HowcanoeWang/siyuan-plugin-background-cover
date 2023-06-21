@@ -1,15 +1,15 @@
 import {
     Plugin,
     showMessage,
-    confirm,
+    // confirm,
     Dialog,
     Menu,
-    openTab,
-    adaptHotkey,
+    // openTab,
+    // adaptHotkey,
     getFrontend,
     getBackend,
-    IModel,
-    Setting, fetchPost
+    // IModel,
+    // Setting, fetchPost
 } from "siyuan";
 
 import { KernelApi } from "./api";
@@ -17,30 +17,50 @@ import { settings } from './configs';
 import { error, info, CloseCV } from './utils';
 import packageInfo from '../plugin.json'
 
+/**
+ * 主题使用的常量
+ */
 enum imgMode {
     image = 0,
     live2d = 1,
 }
 
-const pluginImgDataDir = `/data/storage/petal/${packageInfo.name}/base64`
+const pluginImgDataDir = `/data/storage/petal/${packageInfo.name}/assets`.toString()
 
 // 需要针对下面的主题进行适配
 const toAdaptThemes = {
     "Savor": {
         // element id : [LightMode color, Darkmode Color]
-        "toolbar": [`var(--b3-toolbar-background)`, `var(--b3-toolbar-background)`]
+        "toolbar": [`rgb(247, 246, 243)`, `rgb(55, 60, 63)`]
     }
+}
+
+/**
+ * 获取当前主题名字和模式
+ */
+function getThemeInfo() {
+    // 0 -> light, 1 -> dark
+    const themeMode = (window as any).siyuan.config.appearance.mode
+    let themeName = ''
+    
+    if (themeMode === 0 ) {
+        themeName = (window as any).siyuan.config.appearance.themeLight
+    }else{
+        themeName = (window as any).siyuan.config.appearance.themeDark
+    }
+
+    info(`${themeMode}, ${themeName}`)
+    return [themeMode, themeName]
 }
 
 export default class SwitchBgCover extends Plugin {
 
-    private customTab: () => IModel;
     private isMobile: boolean;
     private body = document.body;
     private ka = new KernelApi();
     private cv = new CloseCV();
 
-    private targetNode = document.getElementsByTagName('html')[0];
+    private htmlThemeNode = document.getElementsByTagName('html')[0];
 
     async onload() {
         const frontEnd = getFrontend();
@@ -90,8 +110,9 @@ export default class SwitchBgCover extends Plugin {
 
         info(this.i18n.helloPlugin);
 
-        const observer = new MutationObserver(this.themeOnChange);
-        observer.observe(this.targetNode, {attributes: true});
+        // 侦测theme主题有没有发生变化
+        const themeChangeObserver = new MutationObserver(this.themeOnChange);
+        themeChangeObserver.observe(this.htmlThemeNode, {attributes: true});
 
     }
 
@@ -100,6 +121,8 @@ export default class SwitchBgCover extends Plugin {
     ///////////////////////////////
     onLayoutReady() {
         // load the user setting data
+        const [themeMode, themeName] = getThemeInfo();
+        settings.set('prevTheme', themeName);
         this.followPluginSettings();
         
         info(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
@@ -183,6 +206,8 @@ export default class SwitchBgCover extends Plugin {
         const fileHandle = await window.showOpenFilePicker(pickerOpts);
         let file = await fileHandle[0].getFile();
 
+        var md5 = CryptoJS.MD5(binary).toString();
+
         const uploadResult = await this.ka.putFile(`${pluginImgDataDir}/${file.name}`, file);
         console.log(uploadResult)
     }
@@ -191,74 +216,50 @@ export default class SwitchBgCover extends Plugin {
         this.showIndev();
     }
 
-    private getThemeInfo() {
-        // 0 -> light, 1 -> dark
-        const themeMode = (window as any).siyuan.config.appearance.mode
-        let themeName = ''
-        
-        if (themeMode === 0 ) {
-            themeName = (window as any).siyuan.config.appearance.themeLight
-        }else{
-            themeName = (window as any).siyuan.config.appearance.themeDark
-        }
-
-        return [themeMode, themeName]
-    }
-
     private themeOnChange() {
-        console.log(`Theme changed! ${this.targetNode}`)
-    }
-
-    private async adaptThemeElementColor() {
-        let oldColor = {};
-        const [themeMode, themeName] = this.getThemeInfo();
+        const [themeMode, themeName] = getThemeInfo();
+        info(`Theme changed! ${themeMode} | ${themeName}`)
 
         // 当目前的主题需要特殊适配时
-        if (themeName in toAdaptThemes) {
+        if (settings.get('activate') && themeName in toAdaptThemes) {
             let Ele = toAdaptThemes[themeName as keyof typeof toAdaptThemes]
 
             let keyE: keyof typeof Ele; 
             for (keyE in Ele) {
                 let element = document.getElementById(keyE);
-
-                const originalColor = getComputedStyle( element ,null).getPropertyValue('background-color');
     
                 let targetColorStr = Ele[keyE][themeMode]
                 let targetColor = ''
                 if (targetColorStr.slice(0,4) === 'var(') {
                     const cssvar = targetColorStr.slice(4,-1)
                     targetColor = getComputedStyle(document.querySelector(':root')).getPropertyValue(cssvar);
+                }else if (targetColorStr.slice(0,4) === 'rgb(') {
+                    targetColor = targetColorStr
+                }else if (targetColorStr.slice(0,4) === 'rgba') {
+                    targetColor = this.cv.removeAlpha(targetColorStr)
+                }else if (targetColorStr.slice(0,1) === '#') {
+                    targetColor = this.cv.hex2rgba(targetColorStr)
+                }else{
+                    error(`Unable to parse the color string [${targetColorStr}}], not 'var(--xxx)', 'rgb(xxx)', 'rgba(xxx)', '#hex'`)
                 }
                 
                 element.style.setProperty('background-color', targetColor, 'important');
-    
-                oldColor[keyE] = originalColor
-
-                // console.log(keyE, oldColor, targetColor, targetColorStr, element)
+                info(`Adapt '${themeName}' theme element '${element}' to background-color: ${targetColor}`)
             }
-
-            settings.set('oldColor', oldColor)
         }else{
-            settings.set('oldColor', {})
-        }
+            // 恢复主题默认的设置
+            const prevTheme = settings.get('prevTheme')
+            if (prevTheme in toAdaptThemes) {
+                let Ele = toAdaptThemes[prevTheme as keyof typeof toAdaptThemes]
 
-        settings.save()
-    }
-
-    private async recoverThemeElementColor () {
-        const [themeMode, themeName] = this.getThemeInfo();
-        if (themeName in toAdaptThemes) {
-            let Ele = settings.get('oldColor')
-
-            let keyE: keyof typeof Ele; 
-            for (keyE in Ele) {
-                let element = document.getElementById(keyE);
-                element.style.removeProperty('background-color');
+                let keyE: keyof typeof Ele; 
+                for (keyE in Ele) {
+                    let element = document.getElementById(keyE);
+                    element.style.removeProperty('background-color');
+                }
             }
-
-            settings.set('oldColor', {})
         }
-        settings.save()
+        settings.set('prevTheme', themeName);
     }
 
     private changeOpacity(opacity: number){
@@ -445,11 +446,11 @@ export default class SwitchBgCover extends Plugin {
     private followPluginSettings() {
         if (settings.get('activate')) {
             this.changeBackground(settings.get('imgPath'), settings.get('imageFileType'))
-            this.adaptThemeElementColor()
+            this.themeOnChange()
             this.changeOpacity(settings.get('opacity'))
         }else{
             this.removeBackground(settings.get('imageFileType'))
-            this.recoverThemeElementColor()
+            this.themeOnChange()
         }
         // todo: update the text string in URL
     }

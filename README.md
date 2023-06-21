@@ -37,6 +37,10 @@ Add `background-image` and `opacity` to `<body>` element's style. The user-defin
 <details open>
 <summary><b>June 2023</b></summary>
 
+**v23.06.21**
+
+- 主题变化的监测适配的实现 / Implementation theme adaptation on theme change
+
 **v23.06.20**
 
 - 实现图片上传的对话框 / Implement the image upload dialog
