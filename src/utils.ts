@@ -15,22 +15,22 @@ export function warn(...msg: any[]): void {
 
 export class CloseCV {
 
-    private addAlpha(rgb:string, alpha:number) {
+    public addAlpha(rgb:string, alpha:number) {
         return rgb.replace(')', `, ${alpha})`).replace('rgb', 'rgba');
     }
 
-    private removeAlpha(rgba:string) {
+    public removeAlpha(rgba:string) {
         let split = rgba.split(',');
         console.log(split);
         return split[0].replace('rgba', 'rgb') + split[1] + split[2] + ')';
     }
 
-    private editAlpha(rgba:string, alpha:number){
+    public editAlpha(rgba:string, alpha:number){
         // https://stackoverflow.com/questions/16065998/replacing-changing-alpha-in-rgba-javascript
         return rgba.replace(/[\d\.]+\)$/g, `${alpha})`)
     }
 
-    private getAlpha(rgba:string) {
+    public getAlpha(rgba:string) {
         if (rgba.slice(0,4) !== 'rgba') {
             return null;
         }else{
@@ -38,13 +38,13 @@ export class CloseCV {
         }
     }
 
-    private hex2rgba(hex:string, alpha:number) {
+    public hex2rgba(hex:string, alpha:number=-1) {
         // https://stackoverflow.com/a/44870045/7766665
         hex   = hex.replace('#', '');
         var r = parseInt(hex.length == 3 ? hex.slice(0, 1).repeat(2) : hex.slice(0, 2), 16);
         var g = parseInt(hex.length == 3 ? hex.slice(1, 2).repeat(2) : hex.slice(2, 4), 16);
         var b = parseInt(hex.length == 3 ? hex.slice(2, 3).repeat(2) : hex.slice(4, 6), 16);
-        if ( alpha ) {
+        if ( alpha > 0 ) {
            return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')';
         }
         else {
@@ -52,7 +52,7 @@ export class CloseCV {
         }
     }
 
-    private changeColorOpacity(colorString:string, alpha:number) {
+    public changeColorOpacity(colorString:string, alpha:number) {
         let changedColor = '';
   
         // --> 如果当前元素为#开头，则hex转rgb后，再修改透明度
