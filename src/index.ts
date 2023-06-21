@@ -11,48 +11,13 @@ import {
     // IModel,
     // Setting, fetchPost
 } from "siyuan";
-import MD5 from "crypto-js/md5";
 
 import { KernelApi } from "./api";
 import { settings } from './configs';
-import { error, info, CloseCV } from './utils';
+import { error, info, CloseCV, MD5, getThemeInfo } from './utils';
+import * as v from './constants'
 import packageInfo from '../plugin.json'
 
-/**
- * 主题使用的常量
- */
-enum imgMode {
-    image = 0,
-    live2d = 1,
-}
-
-const pluginImgDataDir = `/data/storage/petal/${packageInfo.name}/assets`.toString()
-
-// 需要针对下面的主题进行适配
-const toAdaptThemes = {
-    "Savor": {
-        // element id : [LightMode color, Darkmode Color]
-        "toolbar": [`rgb(247, 246, 243)`, `rgb(55, 60, 63)`]
-    }
-}
-
-/**
- * 获取当前主题名字和模式
- */
-function getThemeInfo() {
-    // 0 -> light, 1 -> dark
-    const themeMode = (window as any).siyuan.config.appearance.mode
-    let themeName = ''
-    
-    if (themeMode === 0 ) {
-        themeName = (window as any).siyuan.config.appearance.themeLight
-    }else{
-        themeName = (window as any).siyuan.config.appearance.themeDark
-    }
-
-    info(`${themeMode}, ${themeName}`)
-    return [themeMode, themeName]
-}
 
 export default class SwitchBgCover extends Plugin {
 
@@ -181,7 +146,7 @@ export default class SwitchBgCover extends Plugin {
         });
     }
 
-    private selectPictureByHand() {
+    private async selectPictureByHand() {
         this.showIndev();
     }
 
@@ -189,7 +154,7 @@ export default class SwitchBgCover extends Plugin {
         this.showIndev();
     }
 
-    private async addSingleImageFile() {
+    private async addSingleLocalImageFile() {
         const pickerOpts = {
             types: [
               {
@@ -207,23 +172,74 @@ export default class SwitchBgCover extends Plugin {
         const fileHandle = await window.showOpenFilePicker(pickerOpts);
         let file = await fileHandle[0].getFile();
 
-        var md5 = MD5(file.text()).toString();
+        let file_content = await file.text()
+        var md5 = MD5(file_content).toString();
 
-        const uploadResult = await this.ka.putFile(`${pluginImgDataDir}/${file.name}`, file);
-        console.log(uploadResult, md5)
+        if (md5 in settings.get('fileidx')) {
+            const dialog = new Dialog({
+                title: `${this.i18n.inDevTitle}`,
+                content: `<div class="b3-dialog__content">${this.i18n.imageFileExist}</div>`,
+                width: this.isMobile ? "92vw" : "520px",
+            });
+        }else{
+            const hashedName = `${md5}-${file.name}`
+
+            let bgObj = v.bgObj
+
+            bgObj = {
+                name : hashedName,
+                hash : md5,
+                mode : v.bgMode.image,
+                path : `${v.pluginImgDataDir.slice(5)}/${hashedName}`
+            }
+    
+            const uploadResult = await this.ka.putFile(`${v.pluginImgDataDir}/${hashedName}`, file);
+
+            let fileidx = settings.get('fileidx')
+
+            fileidx[md5] = bgObj
+
+            this.changeBackground(bgObj.path, v.bgMode.image)
+
+            settings.set('bgObj', bgObj)
+            settings.set('fileidx', fileidx)
+            settings.save()
+        }
+
+        console.log(settings)
+    }
+
+    private async addSingleURLImageFile() {
+        this.showIndev();
     }
 
     private addDirectory() {
         this.showIndev();
     }
 
+    private async removeDirectory(dir:string){
+        let out = await this.ka.readDir(dir);
+        for (var i = 0; i < out.data.length; i++) {
+            let item = out.data[i]
+
+            if (item.isDir) {
+                continue
+            }else{
+                let full_path = `${dir}/${item.name}`
+                console.log(full_path)
+
+                await this.ka.removeFile(full_path)
+            }
+        }
+    }
+
     private themeOnChange() {
         const [themeMode, themeName] = getThemeInfo();
-        info(`Theme changed! ${themeMode} | ${themeName}`)
+        // info(`Theme changed! ${themeMode} | ${themeName}`)
 
         // 当目前的主题需要特殊适配时
-        if (settings.get('activate') && themeName in toAdaptThemes) {
-            let Ele = toAdaptThemes[themeName as keyof typeof toAdaptThemes]
+        if (settings.get('activate') && themeName in v.toAdaptThemes) {
+            let Ele = v.toAdaptThemes[themeName as keyof typeof v.toAdaptThemes]
 
             let keyE: keyof typeof Ele; 
             for (keyE in Ele) {
@@ -250,8 +266,8 @@ export default class SwitchBgCover extends Plugin {
         }else{
             // 恢复主题默认的设置
             const prevTheme = settings.get('prevTheme')
-            if (prevTheme in toAdaptThemes) {
-                let Ele = toAdaptThemes[prevTheme as keyof typeof toAdaptThemes]
+            if (prevTheme in v.toAdaptThemes) {
+                let Ele = v.toAdaptThemes[prevTheme as keyof typeof v.toAdaptThemes]
 
                 let keyE: keyof typeof Ele; 
                 for (keyE in Ele) {
@@ -274,35 +290,35 @@ export default class SwitchBgCover extends Plugin {
         this.followPluginSettings();
     }
 
-    private changeBackground(background:string, mode:imgMode) {
+    private changeBackground(background:string, mode:v.bgMode) {
         // code inspired from: 
         // https://github.com/Zuoqiu-Yingyi/siyuan-theme-dark-plus/blob/main/script/module/background.js
-        if (mode === imgMode.image) {
+        if (mode === v.bgMode.image) {
             this.body.style.setProperty('background-image', `url('${background}')`);
             this.body.style.setProperty('background-repeat', 'no-repeat');
             this.body.style.setProperty('background-attachment', 'fixed');
             this.body.style.setProperty('background-size', 'cover');
             this.body.style.setProperty('background-position', 'center');
-        }else if (mode == imgMode.live2d){
+        }else if (mode == v.bgMode.live2d){
             this.showIndev();
         }else{
             showMessage(`[${this.i18n.addTopBarIcon} Plugin][Error] Background type [${mode}] is not supported, `, 7000, "error");
         }
     }
 
-    private removeBackground(mode:imgMode) {
+    private removeBackground(mode:v.bgMode) {
         // code inspired from: 
         // https://github.com/Zuoqiu-Yingyi/siyuan-theme-dark-plus/blob/main/script/module/background.js
         // >>> let element = document.querySelector('.fn__flex-1.protyle.fullscreen') || document.body;
         // >>> document.documentElement.style.removeProperty(config.theme.background.color.propertyName);
-        if (mode === imgMode.image) {
+        if (mode === v.bgMode.image) {
             this.body.style.removeProperty('background-image');
             this.body.style.removeProperty('background-repeat');
             this.body.style.removeProperty('background-attachment');
             this.body.style.removeProperty('background-size');
             this.body.style.removeProperty('background-position');
             this.body.style.removeProperty('opacity');
-        }else if (mode == imgMode.live2d){
+        }else if (mode == v.bgMode.live2d){
             this.showIndev();
         }else{
             showMessage(`[${this.i18n.addTopBarIcon} Plugin][Error] Background type [${mode}] is not supported, `, 7000, "error");
@@ -316,7 +332,9 @@ export default class SwitchBgCover extends Plugin {
             <label class="fn__flex b3-label">
                 <div class="fn__flex-1">
                     ${this.i18n.autoRefreshLabel}
-                    <div class="b3-label__text">${this.i18n.autoRefreshDes}</div>
+                    <div class="b3-label__text">
+                        ${this.i18n.autoRefreshDes}
+                    </div>
                 </div>
                 <span class="fn__flex-center" />
                 <input
@@ -329,13 +347,15 @@ export default class SwitchBgCover extends Plugin {
                 <div class="fn__flex-1">
                     ${this.i18n.imgPathLabel}
                     <div class="fn__hr"></div>
-                    <input class="b3-text-field fn__block" id="apiKey" value="${settings.get('imgPath')}">
+                    <input class="b3-text-field fn__block" id="apiKey" value="${settings.get('bgObj') === undefined ? v.demoImgURL : settings.get('bgObj').name}" disabled>
                 </div>
             </label>
             <label class="fn__flex b3-label config__item">
                 <div class="fn__flex-1">
                     ${this.i18n.opacityLabel}
-                    <div class="b3-label__text">${this.i18n.opacityDes}</div>
+                    <div class="b3-label__text">
+                        ${this.i18n.opacityDes}
+                    </div>
                 </div>
                 <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${settings.get('opacity')}">   
                     <input class="b3-slider fn__size200" id="fontSize" max="1" min="0.1" step="0.05" type="range" value="${settings.get('opacity')}">
@@ -343,19 +363,27 @@ export default class SwitchBgCover extends Plugin {
             </label>
             <label class="fn__flex b3-label">
                 <div class="fn__flex-1">
-                    ${this.i18n.randomDirectoryLabel}
-                    <div class="b3-label__text">${this.i18n.randomDirectoryDes}</div>
+                    ${this.i18n.cacheDirectoryLabel}
+                    <div class="b3-label__text">
+                        ${this.i18n.cacheDirectoryDes}
+                        <span class="selected svelte-c3a8hl">
+                            [ ${Object.keys(settings.get('fileidx')).length} ]
+                        </span>
+                    </div>
                     <div class="fn__hr"></div>
-                    <input class="b3-text-field fn__block" id="apiKey" value="${settings.get('imgDir')}">
+                    <input class="b3-text-field fn__block" id="apiKey" value="${v.pluginAssetsDirOS}" disabled>
                 </div>
             </label>
             <label class="b3-label config__item fn__flex">
                 <div class="fn__flex-1">
                 ${this.i18n.resetConfigLabel}
-                    <div class="b3-label__text">${this.i18n.resetConfigDes}</div>
+                    <div class="b3-label__text">
+                        ${this.i18n.resetConfigDes}<span class="selected svelte-c3a8hl">${this.i18n.resetConfigDes2}
+                        </span>
+                    </div>
                 </div>
                 <span class="fn__space"></span>
-                <button class="b3-button b3-button--outline fn__flex-center fn__size200" id="appearanceRefresh">
+                <button class="b3-button b3-button--outline fn__flex-center fn__size100" id="appearanceRefresh">
                     <svg><use xlink:href="#iconRefresh"></use></svg>
                     ${this.i18n.reset}
                 </button>
@@ -393,9 +421,6 @@ export default class SwitchBgCover extends Plugin {
 
         // current image path
         const imgPathElement = dialog.element.querySelectorAll("input")[1];
-        imgPathElement.addEventListener("click", () => {
-            this.showIndev();
-        })
 
         // transparency/opacity slider
         const opacityElement = dialog.element.querySelectorAll("input")[2];
@@ -413,13 +438,11 @@ export default class SwitchBgCover extends Plugin {
 
         // img dir 
         const imgDirElement = dialog.element.querySelectorAll("input")[3];
-        imgDirElement.addEventListener("click", () => {
-            this.showIndev();
-        })
 
         // reset panel
         const resetSettingElement = dialog.element.querySelectorAll("button")[0];
         resetSettingElement.addEventListener("click", () => {
+            this.removeDirectory(v.pluginImgDataDir);
             settings.reset();
             settings.save();
             this.followPluginSettings();
@@ -446,11 +469,25 @@ export default class SwitchBgCover extends Plugin {
 
     private followPluginSettings() {
         if (settings.get('activate')) {
-            this.changeBackground(settings.get('imgPath'), settings.get('imageFileType'))
+            // 缓存文件夹中没有图片 | 用户刚刚使用这个插件 | 用户刚刚重置了插件数据
+            if (Object.keys(settings.get('fileidx')).length === 0 || settings.get('bgObj') === undefined) {
+                this.changeBackground(v.demoImgURL, v.bgMode.image)
+            }else{
+                let bgObj = settings.get('bgObj')
+                this.changeBackground(bgObj.path, bgObj.type)
+            }
+            
             this.themeOnChange()
             this.changeOpacity(settings.get('opacity'))
         }else{
-            this.removeBackground(settings.get('imageFileType'))
+            // 缓存文件夹中没有图片 | 用户刚刚使用这个插件 | 用户刚刚重置了插件数据
+            if (Object.keys(settings.get('fileidx')).length === 0 || settings.get('bgObj') === undefined) {
+                this.removeBackground(v.bgMode.image)
+            }else{
+                let bgObj = settings.get('bgObj')
+                this.removeBackground(bgObj.type)
+            }
+
             this.themeOnChange()
         }
         // todo: update the text string in URL
@@ -492,7 +529,14 @@ export default class SwitchBgCover extends Plugin {
                     icon: "iconImage",
                     label: `${this.i18n.addSingleImageLabel}`,
                     click: () => {
-                        this.addSingleImageFile();
+                        this.addSingleLocalImageFile();
+                    }
+                }, 
+                {
+                    icon: "iconLink",
+                    label: `${this.i18n.addSingleURLImageLabel}`,
+                    click: () => {
+                        this.addSingleURLImageFile();
                     }
                 }, 
                 {

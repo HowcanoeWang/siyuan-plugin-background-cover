@@ -5,54 +5,19 @@
 
 import { Plugin } from 'siyuan';
 import { info, error } from './utils'
+import * as v from './constants'
 import packageInfo from '../plugin.json'
-
-type SettingKey = (
-    'autoRefresh' | 'imgPath' | 'opacity' |
-    'imageFileType' | "imgDir" | 'activate' | 
-    'version' | 'prevTheme'
-);
-
-// interface Item {
-//     key: SettingKey,
-//     value: any
-// }
-
-const SettingFile = 'bg-cover-setting.json';
-
-const defaultSettings = {
-    // 启动时随机更改图片
-    autoRefresh: true as boolean,
-    // 当前配置的背景图路径
-    imgPath: 'https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover/static/FyBE0bUakAELfeF.jpg' as string,
-    // 当前配置的背景图透明度
-    opacity: 0.2 as number,
-    // 图片类型 1:本地文件，2：https
-    imageFileType: 0 as number,
-    // 图片路径
-    imgDir: '' as string,
-    activate: false as boolean,
-    prevTheme: '' as string,
-    version: packageInfo.version as string
-};
 
 class SettingManager {
     plugin: Plugin;
 
-    settings: any = structuredClone(defaultSettings);
-
-    // constructor() {
-    //     eventBus.subscribe(eventBus.EventSetting, (data: Item) => {
-    //         this.set(data.key, data.value);
-    //         this.save();
-    //     });
-    // }
+    settings: any = structuredClone(v.defaultSettings);
 
     setPlugin(plugin: Plugin) {
         this.plugin = plugin;
     }
 
-    get(key: SettingKey) {
+    get(key: v.SettingKey) {
         return this.settings?.[key];
     }
 
@@ -67,7 +32,7 @@ class SettingManager {
     }
 
     async reset() {
-        this.settings = structuredClone(defaultSettings);
+        this.settings = structuredClone(v.defaultSettings);
         this.save();
     }
 
@@ -75,14 +40,14 @@ class SettingManager {
      * 导入的时候，需要先加载设置；如果没有设置，则使用默认设置
      */
     async load() {
-        let loaded = await this.plugin.loadData(SettingFile);
+        let loaded = await this.plugin.loadData(v.SettingFile);
         if (loaded == null || loaded == undefined || loaded == '') {
             //如果没有配置文件，则使用默认配置，并保存
             info(`没有配置文件，使用默认配置`)
             this.save();
         } else {
             //如果有配置文件，则使用配置文件
-            info(`读入配置文件: ${SettingFile}`)
+            info(`读入配置文件: ${v.SettingFile}`)
             info(loaded);
             //Docker 和  Windows 不知为何行为不一致, 一个读入字符串，一个读入对象
             //为了兼容，这里做一下判断
@@ -101,7 +66,7 @@ class SettingManager {
                         continue
                     }
 
-                    if (key in defaultSettings && typeof defaultSettings[key] === typeof loaded[key]) {
+                    if (key in v.defaultSettings && typeof v.defaultSettings[key] === typeof loaded[key]) {
                         this.set(key, loaded[key]);
                     }
                 }
@@ -119,7 +84,7 @@ class SettingManager {
     async save() {
         let json = JSON.stringify(this.settings);
         info(`写入配置文件: ${json}`);
-        this.plugin.saveData(SettingFile, json);
+        this.plugin.saveData(v.SettingFile, json);
     }
 }
 

@@ -18,19 +18,40 @@ Add a picture you like to cover the entire Siyuan Note
 
 ![](https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover/preview.png)
 
+<div align="center">
+默认背景图美少女画师 / Default background cover artist ——   
+<code>劉了了_Ale</code><br>
+<a href="https://afdian.net/a/_LIAO">爱发电AFDIAN</a> | 
+<a href="https://www.fanbox.cc/@ale">Fanbox</a> | 
+<a href="https://space.bilibili.com/3883010">Bilibili</a> | 
+<a href="https://twitter.com/_LIAO">Twitter</a>
+</div>
+
 ## 特性 | Features
 
-- [x] 目前仅支持**桌面端**以及**浏览器端** / Only the **desktop** and **browser-desktop** are supported.
+**目前该插件还处于内测中，请勿使用本插件保存重要图片数据**
+
+- [x] 目前仅支持**桌面端**以及**PC浏览器端** / Only the **desktop** and **browser-desktop (PC)** are supported.
 - [x] 平铺一张图片作为思源笔记背景 / Tiling a picture as a background for SiYuan Notes
-- [ ] 手动设置图库的文件夹 / Manually specify the folder as image library
-- [ ] 每次启动时随机选择图片 / Launching by choosing a random image
+- [x] 适配主题 / Compatible theme：    
+  - [x] `Daylight midnight` (默认 / default)
+  - [x] `写未 Savor` 
+  - [x] `暗色+ Dark+`
+- [x] 手动调整透明度 / Manually adjust the transparency
+- [ ] 背景图库缓存文件夹 / Cached folder for background image library 
+  - [x] 上传单张本地图片 / Upload single local image files
+  - [ ] 上传单张网络图片 / Upload single network image files
+  - [ ] 上传本地文件夹中所有图片 / Upload all images in a local folder
+- [ ] 选择与切换背景图片 / Choose and switch a background image
+  - [ ] 手动选择 / Choosing by manual
+  - [ ] 手动触发随机选择 / Random select by manual action
+  - [ ] 每次启动时随机选择 / Choosing on launch
 
 ## 实现思路 | Implementation
 
 获取`<body>`元素，在其`style`属性中添加`background-image`和`opacity`值。其中，用户可设置的`opacity`定义域为`[0.1, 1]`。但为了笔记内容的可读性，使用[vscode-background-cover](https://github.com/AShujiao/vscode-background-cover)中的加权逻辑`f(O) = 0.59 + [0.4 - (O ⨉ 0.4)]`，加权后`body`透明度值域为`[0.59, 0.99]`。
 
 Add `background-image` and `opacity` to `<body>` element's style. The user-defined domain for opacity is `[0.1, 1]`. However, for the readability of note content, use the weighted opacity `f(O) = 0.59 + [0.4 - (O ⨉ 0.4)]` from [vscode-background-cover](https://github.com/AShujiao/vscode-background-cover). After weighting, the `body` opacity range is `[0.59, 0.99]`.
-
 
 ## 更新日志 | ChangeLogs
 
@@ -40,6 +61,9 @@ Add `background-image` and `opacity` to `<body>` element's style. The user-defin
 **v23.06.21**
 
 - 主题变化的监测适配的实现 / Implementation theme adaptation on theme change
+- 实现单张图片本地上传到缓存文件夹中 / Support upload single local images into the cache folder
+- 清理缓存文件夹的所有图片 / Support clear all cached images
+- 更改缓存图片记录的数据结构 / Update the data structure for recording the cached images
 
 **v23.06.20**
 
@@ -78,7 +102,6 @@ Add `background-image` and `opacity` to `<body>` element's style. The user-defin
 * [vscode-background-cover](https://github.com/AShujiao/vscode-background-cover)
 * [思源dark+主题 / siyuan-theme-dark+](https://github.com/Zuoqiu-Yingyi/siyuan-theme-dark-plus)
 * [思源导入插件 / siyuan-plugin-importer](https://github.com/terwer/siyuan-plugin-importer/tree/main)
+* [思源今日日记看板 / siyuan-dailynote-today](https://github.com/frostime/siyuan-dailynote-today)
 
-封面背景图画师 / Background cover artist：    
-
-`劉了了_Ale`  [爱发电AFDIAN](https://afdian.net/a/_LIAO) | [Fanbox](https://www.fanbox.cc/@ale) | [Bilibili](https://space.bilibili.com/3883010) | [Twitter](https://twitter.com/_LIAO)
+感谢`思源爱好者折腾群`中各类大佬耐心解答我关于此插件开发中遇到的各种问题 / Thanks to the members in the 'Siyuan developer' group for patiently answering my questions regarding this plugin development.
