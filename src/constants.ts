@@ -5,7 +5,7 @@ export enum bgMode {
     live2d = 1,
 }
 
-export var bgObj: {name:string, path:string, hash:string, mode: v.bgMode}
+export var bgObj: {name:string, path:string, hash:string, mode: bgMode}
 
 export const pluginAssetsDir = `/data/plugins/${packageInfo.name}/assets`
 export const pluginImgDataDir = `${pluginAssetsDir}/images`.toString()
@@ -32,7 +32,7 @@ export const SettingFile = 'bg-cover-setting.json';
 
 export type SettingKey = (
     'autoRefresh' |'opacity' | 'activate' | 'bgObj' |
-    'version' | 'prevTheme' | 'fileidx'
+    'version' | 'prevTheme' | 'fileidx' | 'inDev'
 );
 
 export const demoImgURL = 'https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover/static/FyBE0bUakAELfeF.jpg'
@@ -41,12 +41,13 @@ export const defaultSettings = {
     // 启动时随机更改图片
     'autoRefresh': true as boolean,
     // 当前配置的背景图路径
-    'bgObj': bgObj,
+    'bgObj': undefined as any,
     // 当前配置的背景图透明度
     'opacity': 0.2 as number,
     // 图片类型 1:本地文件，2：https
     'activate': false as boolean,
     'prevTheme': '' as string,
     'fileidx': {} as object,
-    'version': packageInfo.version as string
+    'version': packageInfo.version as string,
+    'inDev': false as boolean
 };

@@ -4,7 +4,7 @@
  */
 
 import { Plugin } from 'siyuan';
-import { info, error } from './utils'
+import { info, debug, error } from './utils'
 import * as v from './constants'
 import packageInfo from '../plugin.json'
 
@@ -43,12 +43,11 @@ class SettingManager {
         let loaded = await this.plugin.loadData(v.SettingFile);
         if (loaded == null || loaded == undefined || loaded == '') {
             //如果没有配置文件，则使用默认配置，并保存
-            info(`没有配置文件，使用默认配置`)
+            debug(`没有配置文件，使用默认配置`)
             this.save();
         } else {
             //如果有配置文件，则使用配置文件
-            info(`读入配置文件: ${v.SettingFile}`)
-            info(loaded);
+            debug(`读入配置文件: ${v.SettingFile}`)
             //Docker 和  Windows 不知为何行为不一致, 一个读入字符串，一个读入对象
             //为了兼容，这里做一下判断
             if (typeof loaded === 'string') {
@@ -65,16 +64,13 @@ class SettingManager {
                     if (key === 'version'){
                         continue
                     }
-
-                    if (key in v.defaultSettings && typeof v.defaultSettings[key] === typeof loaded[key]) {
+                    if (key in v.defaultSettings) {
                         this.set(key, loaded[key]);
                     }
                 }
             } catch (error_msg) {
                 error(`Setting load error: ${error_msg}`);
             }
-
-
 
             this.save();
         }
@@ -83,7 +79,7 @@ class SettingManager {
 
     async save() {
         let json = JSON.stringify(this.settings);
-        info(`写入配置文件: ${json}`);
+        debug(`写入配置文件: ${json}`);
         this.plugin.saveData(v.SettingFile, json);
     }
 }

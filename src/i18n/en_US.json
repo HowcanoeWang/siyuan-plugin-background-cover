@@ -33,5 +33,6 @@
   "resetConfigDes2": "(including all cached images!)",
   "currentVersionLabel": "Current plugin version",
   "viewAllVersionsText": "View all published versions",
-  "imageFileExist": "The selected file already exists in the cache folder"
+  "imageFileExist": "The selected file already exists in the cache folder",
+  "inDevModeDes": "Open the developer mode (more logs)"
 }

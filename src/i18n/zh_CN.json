@@ -33,5 +33,6 @@
   "resetConfigDes2": "(包括所有缓存的图片！)",
   "currentVersionLabel": "当前插件版本",
   "viewAllVersionsText": "浏览所有已发布的版本",
-  "imageFileExist": "选择的图片在缓存文件夹中已存在"
+  "imageFileExist": "选择的图片在缓存文件夹中已存在",
+  "inDevModeDes": "开启开发者模式 (更多日志输出)"
 }

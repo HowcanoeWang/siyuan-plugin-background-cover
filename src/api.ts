@@ -23,10 +23,10 @@
  * questions.
  */
 
-import {info, error } from './utils'
+import { info, debug, error } from './utils'
+import { settings } from './configs'
 import { fetchPost } from "siyuan"
 
-const isDev = true
 const siyuanApiUrl = ""
 const siyuanApiToken = ""
 // const mediaDir = `./assets`
@@ -75,17 +75,13 @@ export class BaseApi {
       })
     }
 
-    if (isDev) {
-      info("开始向思源请求数据，reqUrl=>", reqUrl)
-      info("开始向思源请求数据，fetchOps=>", fetchOps)
-    }
+    debug("开始向思源请求数据，reqUrl=>", reqUrl)
+    debug("开始向思源请求数据，fetchOps=>", fetchOps)
 
     const response = await fetch(reqUrl, fetchOps)
     const resJson = (await response.json()) as SiyuanData
 
-    if (isDev) {
-      info("思源请求数据返回，resJson=>", resJson)
-    }
+    debug("思源请求数据返回，resJson=>", resJson)
 
     if (resJson.code === -1) {
       throw new Error(resJson.msg)

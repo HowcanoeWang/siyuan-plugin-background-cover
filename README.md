@@ -64,6 +64,7 @@ Add `background-image` and `opacity` to `<body>` element's style. The user-defin
 - 实现单张图片本地上传到缓存文件夹中 / Support upload single local images into the cache folder
 - 清理缓存文件夹的所有图片 / Support clear all cached images
 - 更改缓存图片记录的数据结构 / Update the data structure for recording the cached images
+- 增加开发者模式按钮 / Add developer debug switch button
 
 **v23.06.20**
 
