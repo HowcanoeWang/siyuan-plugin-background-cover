@@ -10,9 +10,6 @@ dependencies:
     version: 0.13.0
 
 devDependencies:
-  '@types/crypto-js':
-    specifier: ^4.1.1
-    version: 4.1.1
   '@types/node':
     specifier: ^20.3.1
     version: 20.3.1
@@ -28,9 +25,6 @@ devDependencies:
   copy-webpack-plugin:
     specifier: ^11.0.0
     version: 11.0.0(webpack@5.76.0)
-  crypto-js:
-    specifier: ^4.1.1
-    version: 4.1.1
   css-loader:
     specifier: ^6.7.1
     version: 6.7.1(webpack@5.76.0)
@@ -390,10 +384,6 @@ packages:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.15.0
-    dev: true
-
-  /@types/crypto-js@4.1.1:
-    resolution: {integrity: sha512-BG7fQKZ689HIoc5h+6D2Dgq1fABRa0RbBWKBd9SP/MVRVXROflpm5fhwyATX5duFmbStzyzyycPB8qUYKDH3NA==}
     dev: true
 
   /@types/eslint-scope@3.7.4:
@@ -942,10 +932,6 @@ packages:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
-    dev: true
-
-  /crypto-js@4.1.1:
-    resolution: {integrity: sha512-o2JlM7ydqd3Qk9CA0L4NL6mTzU2sdx96a+oOfPu8Mkl/PK51vSyoi8/rQ8NknZtk44vq15lmhAj9CIAGwgeWKw==}
     dev: true
 
   /css-loader@6.7.1(webpack@5.76.0):
