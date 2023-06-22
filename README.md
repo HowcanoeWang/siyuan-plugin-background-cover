@@ -52,9 +52,9 @@ Add a picture you like to cover the entire Siyuan Note
 
 ## 实现思路 | Implementation
 
-获取`<body>`元素，在其`style`属性中添加`background-image`和`opacity`值。其中，用户可设置的`opacity`定义域为`[0.1, 1]`。但为了笔记内容的可读性，使用[vscode-background-cover](https://github.com/AShujiao/vscode-background-cover)中的加权逻辑`f(O) = 0.59 + [0.4 - (O ⨉ 0.4)]`，加权后`body`透明度值域为`[0.59, 0.99]`。
+获取`<body>`元素，在其`style`属性中添加`background-image`和`opacity`值。其中，用户可设置的`opacity`定义域为`[0.1, 1]`。但为了笔记内容的可读性，使用加权逻辑`f(x) = 0.99 - 0.25x`，加权后`body`透明度值域为`[0.74, 0.99]`。
 
-Add `background-image` and `opacity` to `<body>` element's style. The user-defined domain for opacity is `[0.1, 1]`. However, for the readability of note content, use the weighted opacity `f(O) = 0.59 + [0.4 - (O ⨉ 0.4)]` from [vscode-background-cover](https://github.com/AShujiao/vscode-background-cover). After weighting, the `body` opacity range is `[0.59, 0.99]`.
+Add `background-image` and `opacity` to `<body>` element's style. The user-defined domain for opacity is `[0.1, 1]`. However, for the readability of note content, use the weighted opacity `f(x) = 0.99 - 0.25x`. After weighting, the `body` opacity range is `[0.74, 0.99]`.
 
 ## 更新日志 | ChangeLogs
 
@@ -65,6 +65,7 @@ Add `background-image` and `opacity` to `<body>` element's style. The user-defin
 
 - 适配3个主题 / Adapt to 3 more themes
 - 去除设置中当前图片中的hash乱码 / remove the hash code of current image in setting
+- 调整透明度加权逻辑 / Adjust the logic for weighted opacity
 
 **v23.06.21**
 

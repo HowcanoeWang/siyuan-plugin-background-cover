@@ -277,7 +277,7 @@ export default class SwitchBgCover extends Plugin {
     }
 
     private changeOpacity(opacity: number){
-        let bodyOpacity = 0.59 + (0.4 - (opacity*0.4));
+        let bodyOpacity = 0.99 - 0.25 * opacity;
         this.body.style.setProperty('opacity', bodyOpacity.toString());
     }
 

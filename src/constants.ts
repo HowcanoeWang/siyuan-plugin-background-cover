@@ -74,7 +74,7 @@ export const defaultSettings = {
     // 当前配置的背景图路径
     'bgObj': undefined as any,
     // 当前配置的背景图透明度
-    'opacity': 0.2 as number,
+    'opacity': 0.5 as number,
     // 图片类型 1:本地文件，2：https
     'activate': false as boolean,
     'prevTheme': '' as string,
