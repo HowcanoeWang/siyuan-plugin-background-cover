@@ -37,6 +37,9 @@ Add a picture you like to cover the entire Siyuan Note
   - [x] `Daylight midnight` (默认 / default)
   - [x] `写未 Savor` 
   - [x] `暗色+ Dark+`
+  - [x] `Light/Dark-Blue`
+  - [x] `瑞姆工艺 Rem Craft`
+  - [x] `任我行 Odyssey`
 - [x] 手动调整透明度 / Manually adjust the transparency
 - [ ] 背景图库缓存文件夹 / Cached folder for background image library 
   - [x] 上传单张本地图片 / Upload single local image files
@@ -57,6 +60,11 @@ Add `background-image` and `opacity` to `<body>` element's style. The user-defin
 
 <details open>
 <summary><b>June 2023</b></summary>
+
+**v23.06.22**
+
+- 适配3个主题 / Adapt to 3 more themes
+- 去除设置中当前图片中的hash乱码 / remove the hash code of current image in setting
 
 **v23.06.21**
 
