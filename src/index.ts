@@ -33,11 +33,7 @@ export default class SwitchBgCover extends Plugin {
         this.isMobile = frontEnd === "mobile" || frontEnd === "browser-mobile";
 
         // 图标的制作参见帮助文档
-        this.addIcons(`<symbol id="iconLogo" viewBox="0 0 32 32">
-        <path d="M26 28h-20v-4l6-10 8.219 10 5.781-4v8z"></path>
-        <path d="M26 15c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3c1.657 0 3 1.343 3 3z"></path>
-        <path d="M28.681 7.159c-0.694-0.947-1.662-2.053-2.724-3.116s-2.169-2.030-3.116-2.724c-1.612-1.182-2.393-1.319-2.841-1.319h-15.5c-1.378 0-2.5 1.121-2.5 2.5v27c0 1.378 1.122 2.5 2.5 2.5h23c1.378 0 2.5-1.122 2.5-2.5v-19.5c0-0.448-0.137-1.23-1.319-2.841zM24.543 5.457c0.959 0.959 1.712 1.825 2.268 2.543h-4.811v-4.811c0.718 0.556 1.584 1.309 2.543 2.268zM28 29.5c0 0.271-0.229 0.5-0.5 0.5h-23c-0.271 0-0.5-0.229-0.5-0.5v-27c0-0.271 0.229-0.5 0.5-0.5 0 0 15.499-0 15.5 0v7c0 0.552 0.448 1 1 1h7v19.5z"></path>
-        </symbol>`);
+        this.addIcons(v.diyIcon.iconLogo);
 
         settings.setPlugin(this);
         //初始化数据
@@ -189,10 +185,10 @@ export default class SwitchBgCover extends Plugin {
             let bgObj = v.bgObj
 
             bgObj = {
-                name : hashedName,
+                name : file.name,
                 hash : md5,
                 mode : v.bgMode.image,
-                path : `${v.pluginImgDataDir.slice(5)}/${hashedName}`
+                path : `${v.pluginImgDataDir.slice(5)}/${hashedName}`  // slice(5) to remove '/data'
             }
     
             const uploadResult = await this.ka.putFile(`${v.pluginImgDataDir}/${hashedName}`, file);
@@ -219,16 +215,19 @@ export default class SwitchBgCover extends Plugin {
 
     private async removeDirectory(dir:string){
         let out = await this.ka.readDir(dir);
-        for (var i = 0; i < out.data.length; i++) {
-            let item = out.data[i]
-
-            if (item.isDir) {
-                continue
-            }else{
-                let full_path = `${dir}/${item.name}`
-                console.log(full_path)
-
-                await this.ka.removeFile(full_path)
+        if (out !== null || out !== undefined) {
+            for (var i = 0; i < out.data.length; i++) {
+                let item = out.data[i]
+    
+                if (item.isDir) {
+                    // 如果是文件夹，则跳过
+                    continue
+                }else{
+                    let full_path = `${dir}/${item.name}`
+                    console.log(full_path)
+    
+                    await this.ka.removeFile(full_path)
+                }
             }
         }
     }
@@ -250,18 +249,16 @@ export default class SwitchBgCover extends Plugin {
                 if (targetColorStr.slice(0,4) === 'var(') {
                     const cssvar = targetColorStr.slice(4,-1)
                     targetColor = getComputedStyle(document.querySelector(':root')).getPropertyValue(cssvar);
-                }else if (targetColorStr.slice(0,4) === 'rgb(') {
+                }else if (targetColorStr.slice(0,3) === 'rgb') {
                     targetColor = targetColorStr
-                }else if (targetColorStr.slice(0,4) === 'rgba') {
-                    targetColor = this.cv.removeAlpha(targetColorStr)
                 }else if (targetColorStr.slice(0,1) === '#') {
                     targetColor = this.cv.hex2rgba(targetColorStr)
                 }else{
                     error(`Unable to parse the color string [${targetColorStr}}], not 'var(--xxx)', 'rgb(xxx)', 'rgba(xxx)', '#hex'`)
                 }
                 
+                debug(`Adapt '${themeName}' theme element '${keyE}' to background-color: ${targetColor}`, element)
                 element.style.setProperty('background-color', targetColor, 'important');
-                debug(`Adapt '${themeName}' theme element '${element}' to background-color: ${targetColor}`)
             }
         }else{
             // 恢复主题默认的设置
@@ -440,6 +437,7 @@ export default class SwitchBgCover extends Plugin {
         const resetSettingElement = dialog.element.querySelectorAll("button")[0];
         resetSettingElement.addEventListener("click", () => {
             this.removeDirectory(v.pluginImgDataDir);
+            imgPathElement.value = v.demoImgURL.toString()
             settings.reset();
             settings.save();
             this.followPluginSettings();
