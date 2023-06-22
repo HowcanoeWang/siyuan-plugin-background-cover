@@ -15,7 +15,7 @@ import {
 import { KernelApi } from "./api";
 import { settings } from './configs';
 import { error, info, debug, CloseCV, MD5, getThemeInfo } from './utils';
-import * as v from './constants'
+import * as cst from './constants'
 
 import packageInfo from '../plugin.json'
 import "./index.scss";
@@ -36,7 +36,7 @@ export default class SwitchBgCover extends Plugin {
         this.isMobile = frontEnd === "mobile" || frontEnd === "browser-mobile";
 
         // 图标的制作参见帮助文档
-        this.addIcons(v.diyIcon.iconLogo);
+        this.addIcons(cst.diyIcon.iconLogo);
 
         settings.setPlugin(this);
         //初始化数据
@@ -167,16 +167,16 @@ export default class SwitchBgCover extends Plugin {
         }else{
             const hashedName = `${md5}-${file.name}`
 
-            let bgObj = v.bgObj
+            let bgObj = cst.bgObj
 
             bgObj = {
                 name : file.name,
                 hash : md5,
-                mode : v.bgMode.image,
-                path : `${v.pluginImgDataDir.slice(5)}/${hashedName}`  // slice(5) to remove '/data'
+                mode : cst.bgMode.image,
+                path : `${cst.pluginImgDataDir.slice(5)}/${hashedName}`  // slice(5) to remove '/data'
             }
     
-            const uploadResult = await this.ka.putFile(`${v.pluginImgDataDir}/${hashedName}`, file);
+            const uploadResult = await this.ka.putFile(`${cst.pluginImgDataDir}/${hashedName}`, file);
 
             let fileidx = settings.get('fileidx')
 
@@ -222,8 +222,8 @@ export default class SwitchBgCover extends Plugin {
         debug(`Theme changed! ${themeMode} | ${themeName}`)
 
         // 当目前的主题需要特殊适配时
-        if (settings.get('activate') && themeName in v.toAdaptThemes) {
-            let Ele = v.toAdaptThemes[themeName as keyof typeof v.toAdaptThemes]
+        if (settings.get('activate') && themeName in cst.toAdaptThemes) {
+            let Ele = cst.toAdaptThemes[themeName as keyof typeof cst.toAdaptThemes]
 
             for (let keyE in Ele) {
                 let element = document.getElementById(keyE);
@@ -247,8 +247,8 @@ export default class SwitchBgCover extends Plugin {
         }else{
             // 恢复主题默认的设置
             const prevTheme = settings.get('prevTheme')
-            if (prevTheme in v.toAdaptThemes) {
-                let Ele = v.toAdaptThemes[prevTheme as keyof typeof v.toAdaptThemes]
+            if (prevTheme in cst.toAdaptThemes) {
+                let Ele = cst.toAdaptThemes[prevTheme as keyof typeof cst.toAdaptThemes]
 
                 for (let keyE in Ele) {
                     let element = document.getElementById(keyE);
@@ -259,10 +259,10 @@ export default class SwitchBgCover extends Plugin {
         settings.set('prevTheme', themeName);
     }
 
-    private changeBackground(background:string, mode:v.bgMode) {
-        if (mode === v.bgMode.image) {
+    private changeBackground(background:string, mode:cst.bgMode) {
+        if (mode === cst.bgMode.image) {
             this.bgLayer.style.setProperty('background-image', `url('${background}')`);
-        }else if (mode == v.bgMode.live2d){
+        }else if (mode == cst.bgMode.live2d){
             this.showIndev();
         }else{
             showMessage(`[${this.i18n.addTopBarIcon} Plugin][Error] Background type [${mode}] is not supported, `, 7000, "error");
@@ -299,7 +299,7 @@ export default class SwitchBgCover extends Plugin {
         // 缓存文件夹中没有图片 | 用户刚刚使用这个插件 | 用户刚刚重置了插件数据
         if (Object.keys(settings.get('fileidx')).length === 0 || settings.get('bgObj') === undefined) {
             // 使用默认的了了妹图片ULR来当作背景图
-            this.changeBackground(v.demoImgURL, v.bgMode.image)
+            this.changeBackground(cst.demoImgURL, cst.bgMode.image)
         }else{
             let bgObj = settings.get('bgObj')
             this.changeBackground(bgObj.path, bgObj.mode)
@@ -315,7 +315,7 @@ export default class SwitchBgCover extends Plugin {
         if ( crtImageNameElement === null || crtImageNameElement === undefined ) {
             debug(`Element ctrImgName not exists`) 
         }else{
-            crtImageNameElement.textContent = v.demoImgURL.toString()
+            crtImageNameElement.textContent = cst.demoImgURL.toString()
         }
     }
 
@@ -330,7 +330,7 @@ export default class SwitchBgCover extends Plugin {
                 <div class="fn__flex-1">
                     ${this.i18n.imgPathLabel}
                     <div class="b3-label__text">
-                        <code id="crtImgName" class="fn__code">${settings.get('bgObj') === undefined ? v.demoImgURL : settings.get('bgObj').name}</code>
+                        <code id="crtImgName" class="fn__code">${settings.get('bgObj') === undefined ? cst.demoImgURL : settings.get('bgObj').name}</code>
                     </div>
                 </div>
             </label>
@@ -345,7 +345,7 @@ export default class SwitchBgCover extends Plugin {
                         </span>
                     </div>
                     <div class="b3-label__text">
-                        <a href="file:///${v.pluginAssetsDirOS}/" style="word-break: break-all">${v.pluginAssetsDirOS}</a>
+                        <a href="file:///${cst.pluginAssetsDirOS}/" style="word-break: break-all">${cst.pluginAssetsDirOS}</a>
                     </div>
                 </div>
             </label>
@@ -461,6 +461,7 @@ export default class SwitchBgCover extends Plugin {
             settings.set('activate', !settings.get('activate'));
             autoRefreshElement.value = `${settings.get('activate')}`;
             settings.save();
+            this.applySettings();
         })
 
         // the Auto refresh switch
@@ -505,7 +506,7 @@ export default class SwitchBgCover extends Plugin {
         // reset panel
         const resetSettingElement = dialog.element.querySelectorAll("button")[0];
         resetSettingElement.addEventListener("click", () => {
-            this.removeDirectory(v.pluginImgDataDir);
+            this.removeDirectory(cst.pluginImgDataDir);
             settings.reset();
             settings.save();
             this.applySettings();
