@@ -62,6 +62,13 @@ Add a `<div>` element to the `<body>` element, as the container of the backgroun
 <details open>
 <summary><b>June 2023</b></summary>
 
+**v23.06.23**
+
+- 缩减图片哈希文件长度为15个字符 / Reduce the length of the image hash file to 15 characters.
+- 实现启动时缓存文件夹与索引校对与提示功能 / Implement startup cache folders and index calibration and prompt function.
+- 实现随机抽背景的功能 / Implement the function of randomly selecting backgrounds.
+- 优化启动时图片404情况的处理 / Optimize handling of 404 errors for images during startup.
+
 **v23.06.22**
 
 - 适配3个主题 / Adapt to 3 more themes

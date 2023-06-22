@@ -1,3 +1,4 @@
+import { KernelApi } from './api';
 import { settings } from './configs'
 
 // simple logging functions
@@ -102,6 +103,69 @@ export function getThemeInfo() {
 
     return [themeMode, themeName]
 }
+
+export class OS {
+
+    private ka = new KernelApi()
+
+    // public async copyfile(source_file:any, dest_file:string) {
+
+    //     if (source_file instanceof File) {
+    //         const uploadResult = await this.ka.putFile(dest_file, source_file)
+    //     }else if(source_file instanceof String) {
+    //         warn("rename file function has not been implemented")
+    //     }else{
+    //         error(`Can not handle source_file ${source_file} and dist_file ${dest_file}`, )
+    //     }
+
+    //     if (uploadResult.code === 0) {
+    //         return true
+    //     }else{
+    //         error('fail to upload file')
+    //         return false
+    //     }
+    // }
+
+    public async rmtree(dir:string) {
+        let out = await this.listdir(dir)
+
+        for (let i in out) {
+            let item = out[i]
+
+            if (item.isDir) {
+                // 如果是文件夹，则递归删除
+                this.rmtree(`${dir}/${item.name}/`)
+            }else{
+                let full_path = `${dir}/${item.name}`
+                await this.ka.removeFile(full_path)
+            }
+        }
+
+        // 删除文件夹本身
+        if (dir.slice(-1) === '/') {
+            await this.ka.removeFile(dir)
+        }else{
+            await this.ka.removeFile(dir + '/')
+        }
+    }
+
+    public async listdir(dir:string) {
+        let out = await this.ka.readDir(dir);
+        if (out !== null || out !== undefined) {
+            return out.data
+        }else{
+            return []
+        }
+    }
+
+    public splitext(filename:string) {
+        let suffix = filename.substring(filename.lastIndexOf('.')+1, filename.length) || filename
+        let prefix = filename.substring(0, filename.lastIndexOf('.')) || filename
+
+        return [prefix, suffix]
+    }
+}
+
 
 
 // MD5 has function
