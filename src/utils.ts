@@ -7,7 +7,7 @@ export function info(...msg: any[]): void {
 
 export function debug(...msg: any[]): void {
     if (settings.get('inDev')) {
-        console.log(`[BgCover Plugin][DEBUG]`, msg);
+        console.log(`[BgCover Plugin][DEBUG] ${msg}`);
     }
 }
 
