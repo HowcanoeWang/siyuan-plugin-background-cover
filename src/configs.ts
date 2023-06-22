@@ -79,7 +79,8 @@ class SettingManager {
 
     async save() {
         let json = JSON.stringify(this.settings);
-        debug(`写入配置文件: ${json}`);
+        debug(`写入配置文件:`);
+        if (settings.get('inDev')) {console.log(json)}
         this.plugin.saveData(v.SettingFile, json);
     }
 }

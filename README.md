@@ -41,6 +41,7 @@ Add a picture you like to cover the entire Siyuan Note
   - [x] `瑞姆工艺 Rem Craft`
   - [x] `任我行 Odyssey`
 - [x] 手动调整透明度 / Manually adjust the transparency
+- [x] 手动调整背景虚化程度 / Manually adjust the blur effects of the background
 - [ ] 背景图库缓存文件夹 / Cached folder for background image library 
   - [x] 上传单张本地图片 / Upload single local image files
   - [ ] 上传单张网络图片 / Upload single network image files
@@ -52,9 +53,11 @@ Add a picture you like to cover the entire Siyuan Note
 
 ## 实现思路 | Implementation
 
-获取`<body>`元素，在其`style`属性中添加`background-image`和`opacity`值。其中，用户可设置的`opacity`定义域为`[0.1, 1]`。但为了笔记内容的可读性，使用加权逻辑`f(x) = 0.99 - 0.25x`，加权后`body`透明度值域为`[0.74, 0.99]`。
+在`<body>`元素中添加一个`<div>`元素，平铺居中且处于笔记最底层，用来存放图片背景。随后修改思源笔记面板的工具条(`toolbar`)，左右底侧菜单栏(`dockLeft`, `dockRight`, `dockBottom`)， 编辑器(`layouts`), 状态栏(`status`)这几个主要笔记面板的透明度`opacity`属性让背景显示出来。其中，用户可设置的`opacity`定义域为`[0.1, 1]`。但为了笔记内容的可读性，使用加权逻辑`f(x) = 0.99 - 0.25x`，加权后`body`透明度值域为`[0.74, 0.99]`。
 
 Add `background-image` and `opacity` to `<body>` element's style. The user-defined domain for opacity is `[0.1, 1]`. However, for the readability of note content, use the weighted opacity `f(x) = 0.99 - 0.25x`. After weighting, the `body` opacity range is `[0.74, 0.99]`.
+
+Add a `<div>` element to the `<body>` element, as the container of the background which is centered and placed at the bottom of the note. Then, adjust the opacity property of the main note panels, including the toolbar, dock menus (`dockLeft`, `dockRight`, `dockBottom`), layouts, and status bar to achieve transparency of the foreground. The user-defined domain for opacity is `[0.1, 1]`. However, for the readability of note content, use the weighted opacity `f(x) = 0.99 - 0.25x`. After weighting, the `body` opacity range is `[0.74, 0.99]`.
 
 ## 更新日志 | ChangeLogs
 
@@ -64,8 +67,12 @@ Add `background-image` and `opacity` to `<body>` element's style. The user-defin
 **v23.06.22**
 
 - 适配3个主题 / Adapt to 3 more themes
-- 去除设置中当前图片中的hash乱码 / remove the hash code of current image in setting
+- 去除设置中当前图片中的hash乱码 / remove the hash code of the current image in setting
 - 调整透明度加权逻辑 / Adjust the logic for weighted opacity
+- 改用图层容器`<div id="bgLayer">`而不是`<body>`元素来存放背景 / Use layer container `<div id="bgLayer">` instead of the `<body>` element to store the background.
+- 支持背景模糊功能 / Support background blurring function
+- 修改设置界面的UI布局 / Modify the layouts of the setting Panel UI
+- 暂时移除尚未支持的功能按钮 / Temporarily remove the buttons of unsupported functions
 
 **v23.06.21**
 

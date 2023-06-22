@@ -62,7 +62,7 @@ export const toAdaptThemes = {
 export const SettingFile = 'bg-cover-setting.json';
 
 export type SettingKey = (
-    'autoRefresh' |'opacity' | 'activate' | 'bgObj' |
+    'autoRefresh' |'opacity' | 'blur' | 'activate' | 'bgObj' |
     'version' | 'prevTheme' | 'fileidx' | 'inDev'
 );
 
@@ -75,6 +75,7 @@ export const defaultSettings = {
     'bgObj': undefined as any,
     // 当前配置的背景图透明度
     'opacity': 0.5 as number,
+    'blur': 0 as number,
     // 图片类型 1:本地文件，2：https
     'activate': false as boolean,
     'prevTheme': '' as string,
