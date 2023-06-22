@@ -14,18 +14,24 @@ import {
 
 import { KernelApi } from "./api";
 import { settings } from './configs';
-import { error, info, debug, CloseCV, MD5, getThemeInfo } from './utils';
+import { 
+    error, warn, info, debug, 
+    CloseCV, MD5,  OS,
+    getThemeInfo 
+} from './utils';
 import * as cst from './constants'
 
 import packageInfo from '../plugin.json'
 import "./index.scss";
 
+// pythonic style
+let os = new OS();
+let ka = new KernelApi();
+let cv2 = new CloseCV();
 
 export default class SwitchBgCover extends Plugin {
 
     private isMobile: boolean;
-    private ka = new KernelApi();
-    private cv = new CloseCV();
 
     private htmlThemeNode = document.getElementsByTagName('html')[0];
 
@@ -80,24 +86,25 @@ export default class SwitchBgCover extends Plugin {
             }
         });
 
-        info(this.i18n.helloPlugin);
-
         // 侦测theme主题有没有发生变化
         const themeChangeObserver = new MutationObserver(this.themeOnChange);
         themeChangeObserver.observe(this.htmlThemeNode, {attributes: true});
 
+        info(this.i18n.helloPlugin);
     }
 
     ///////////////////////////////
     // siyuan template functions //
     ///////////////////////////////
-    onLayoutReady() {
+    async onLayoutReady() {
         this.createBgLayer();
+
+        await this.checkCacheDirctory();
 
         // load the user setting data
         const [themeMode, themeName] = getThemeInfo();
         settings.set('prevTheme', themeName);
-        this.applySettings();
+        await this.applySettings();
         
         if (settings.get('inDev')) {
             debug(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
@@ -109,9 +116,9 @@ export default class SwitchBgCover extends Plugin {
         settings.save();
     }
 
-    private eventBusLog({detail}: any) {
-        info(detail);
-    }
+    // private eventBusLog({detail}: any) {
+    //     info(detail);
+    // }
 
     //////////////////////
     // Plugin functions //
@@ -121,6 +128,78 @@ export default class SwitchBgCover extends Plugin {
         this.bgLayer.className = "bglayer"
 
         document.body.appendChild(this.bgLayer)
+    }
+
+
+    private async checkCacheDirctory(){
+        // check image files
+        let imgFiles = await os.listdir(cst.pluginImgDataDir)
+        
+        let fileidx = {}
+        let fileidx_db = {}
+        let notCorrectCacheImgs = []
+        let extraCacheImgs = []
+        let missingCacheImgs = []
+
+        for (let i in imgFiles){
+            let item = imgFiles[i]
+            if (item.isDir) {
+                continue
+            }else{
+                console.log(item.name)
+                if (item.name.slice(0,5) === 'hash-'){
+                    const [hash_name, suffix] = os.splitext(item.name.split('-')[1])
+
+                    fileidx_db = settings.get('fileidx')
+
+                    console.log(hash_name, fileidx_db, extraCacheImgs)
+                    if (hash_name in fileidx_db){
+                        fileidx[hash_name] = fileidx_db[hash_name]
+                    }else{
+                        // 在缓存文件夹中，但图片并不在fileidx中（图片多余了）
+                        extraCacheImgs.push(item.name)
+                        ka.removeFile(`${cst.pluginImgDataDir}/${item.name}`)
+                    }
+                }else{
+                    // 非法缓存图片
+                    notCorrectCacheImgs.push(item.name)
+                    ka.removeFile(`${cst.pluginImgDataDir}/${item.name}`)
+                }
+            }
+        }
+
+        // 在缓存文件夹中不存在，更新缓存文件夹
+        for (let k in fileidx_db){
+            if (!(k in fileidx)) {
+                missingCacheImgs.push(fileidx_db[k].name)
+            }
+        }
+
+        settings.set('fileidx', fileidx)
+        await settings.save()
+
+        debug(`[Func][checkCacheDirctory]notCorrectCacheImgs: ${notCorrectCacheImgs}, missingCacheImgs: ${extraCacheImgs}`)
+        // raise warning to users
+        if (notCorrectCacheImgs.length !== 0) {
+            let msgInfo = `${this.i18n.cacheImgWrongName}<br>[${notCorrectCacheImgs}]<br>${this.i18n.doNotOperateCacheFolder}`
+            showMessage(msgInfo, 7000, "info")
+            info(msgInfo)
+        }
+
+        if (extraCacheImgs.length !== 0) {
+            let msgInfo = `${this.i18n.cacheImgExtra}<br>[${extraCacheImgs}]<br>${this.i18n.doNotOperateCacheFolder}`
+            showMessage(msgInfo, 7000, "info")
+            info(msgInfo)
+        }
+
+        if (missingCacheImgs.length !== 0) {
+            let msgInfo = `${this.i18n.cacheImgMissing}<br>[${missingCacheImgs}]<br>${this.i18n.doNotOperateCacheFolder}`
+            showMessage(msgInfo, 7000, "info")
+            info(msgInfo)
+        }
+
+        // check live 2d files
+        let live2dFiles = await os.listdir(cst.pluginLive2DataDir)
     }
 
     private async pluginOnOff() {
@@ -133,8 +212,21 @@ export default class SwitchBgCover extends Plugin {
         this.showIndev();
     }
 
-    private selectPictureRandom() {
-        this.showIndev();
+    private async selectPictureRandom() {
+        const cacheImgNum = this.getCacheImgNum()
+        if (cacheImgNum === 0) {
+            // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
+            this.changeBackground(cst.demoImgURL, cst.bgMode.image)
+            settings.set('bgObj', undefined)
+        }else{
+            // 随机选择一张图
+            let fileidx = settings.get('fileidx')
+            const r = Math.floor(Math.random() * cacheImgNum)
+            const r_hash = Object.keys(fileidx)[r]
+            this.changeBackground(fileidx[r_hash].path, fileidx[r_hash].mode)
+            settings.set('bgObj', fileidx[r_hash])
+        }
+        await settings.save()
     }
 
     private async addSingleLocalImageFile() {
@@ -156,16 +248,17 @@ export default class SwitchBgCover extends Plugin {
         let file = await fileHandle[0].getFile();
 
         let file_content = await file.text()
-        var md5 = MD5(file_content).toString();
+        var md5 = MD5(file_content).toString().slice(0,15);
 
-        if (md5 in settings.get('fileidx')) {
+        if (settings.get('fileidx') !== undefined && md5 in settings.get('fileidx')) {
             const dialog = new Dialog({
                 title: `${this.i18n.inDevTitle}`,
                 content: `<div class="b3-dialog__content">${this.i18n.imageFileExist}</div>`,
                 width: this.isMobile ? "92vw" : "520px",
             });
         }else{
-            const hashedName = `${md5}-${file.name}`
+            const [prefix, suffix] = os.splitext(file.name)
+            const hashedName = `hash-${md5}.${suffix}`
 
             let bgObj = cst.bgObj
 
@@ -176,17 +269,27 @@ export default class SwitchBgCover extends Plugin {
                 path : `${cst.pluginImgDataDir.slice(5)}/${hashedName}`  // slice(5) to remove '/data'
             }
     
-            const uploadResult = await this.ka.putFile(`${cst.pluginImgDataDir}/${hashedName}`, file);
+            const uploadResult = await ka.putFile(`${cst.pluginImgDataDir}/${hashedName}`, file);
 
-            let fileidx = settings.get('fileidx')
+            if (uploadResult.code === 0) {
+                let fileidx = settings.get('fileidx')
 
-            fileidx[md5] = bgObj
+                if (fileidx === undefined || fileidx === null) {
+                    fileidx = {}
+                }
 
-            settings.set('bgObj', bgObj)
-            settings.set('fileidx', fileidx)
-            settings.save()
+                fileidx[md5] = bgObj
+    
+                settings.set('bgObj', bgObj)
+                settings.set('fileidx', fileidx)
+                settings.save()
 
-            this.applySettings();
+                debug(`[func][addSingleLocalImageFile]: fileidx ${fileidx}`)
+    
+                this.applySettings();
+            }else{
+                error(`fail to upload file ${file.name} with error code ${uploadResult}`)
+            }
         }
     }
 
@@ -196,25 +299,6 @@ export default class SwitchBgCover extends Plugin {
 
     private addDirectory() {
         this.showIndev();
-    }
-
-    private async removeDirectory(dir:string){
-        let out = await this.ka.readDir(dir);
-        if (out !== null || out !== undefined) {
-            for (var i = 0; i < out.data.length; i++) {
-                let item = out.data[i]
-    
-                if (item.isDir) {
-                    // 如果是文件夹，则跳过
-                    continue
-                }else{
-                    let full_path = `${dir}/${item.name}`
-                    console.log(full_path)
-    
-                    await this.ka.removeFile(full_path)
-                }
-            }
-        }
     }
 
     private themeOnChange() {
@@ -236,7 +320,7 @@ export default class SwitchBgCover extends Plugin {
                 }else if (targetColorStr.slice(0,3) === 'rgb') {
                     targetColor = targetColorStr
                 }else if (targetColorStr.slice(0,1) === '#') {
-                    targetColor = this.cv.hex2rgba(targetColorStr)
+                    targetColor = cv2.hex2rgba(targetColorStr)
                 }else{
                     error(`Unable to parse the color string [${targetColorStr}}], not 'var(--xxx)', 'rgb(xxx)', 'rgba(xxx)', '#hex'`)
                 }
@@ -289,20 +373,34 @@ export default class SwitchBgCover extends Plugin {
         this.bgLayer.style.setProperty('filter', `blur(${blur}px)`)
     }
 
-    private applySettings() {
+    private async applySettings() {
         if (settings.get('activate')) {
             this.bgLayer.style.removeProperty('display')
         }else{
             this.bgLayer.style.setProperty('display', 'none')
         }
 
-        // 缓存文件夹中没有图片 | 用户刚刚使用这个插件 | 用户刚刚重置了插件数据
-        if (Object.keys(settings.get('fileidx')).length === 0 || settings.get('bgObj') === undefined) {
-            // 使用默认的了了妹图片ULR来当作背景图
+        // 缓存文件夹中没有图片 | 用户刚刚使用这个插件 | 用户刚刚重置了插件数据 | 当前文件404找不到
+        const cacheImgNum = this.getCacheImgNum()
+        console.log('cacheImgNum', cacheImgNum)
+        if (cacheImgNum === 0){
+            // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
             this.changeBackground(cst.demoImgURL, cst.bgMode.image)
+            settings.set('bgObj', undefined)
+        }else if(settings.get('bgObj') === undefined){
+            // 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张
+            await this.selectPictureRandom()
         }else{
+            // 缓存中有1张以上的图片，bjObj也有内容且图片存在，则直接显示该图片
             let bgObj = settings.get('bgObj')
-            this.changeBackground(bgObj.path, bgObj.mode)
+            let fileidx = settings.get('fileidx')
+            if (bgObj.hash in fileidx) {
+                this.changeBackground(bgObj.path, bgObj.mode)
+            }else{
+                // 当bjObj找不到404，则随机调一张作为bjObj
+                await this.selectPictureRandom()
+            }
+            
         }
 
         this.themeOnChange()
@@ -317,9 +415,31 @@ export default class SwitchBgCover extends Plugin {
         }else{
             crtImageNameElement.textContent = cst.demoImgURL.toString()
         }
+
+        // update onoff switch button
+        let onoffElement = document.getElementById('crtImgName')
+        if ( onoffElement === null || onoffElement === undefined ) {
+            debug(`Element ctrImgName not exists`) 
+        }else{
+            onoffElement.checked = `${settings.get('activate')}`;
+        }
+    }
+
+    private getCacheImgNum() {
+        let cacheImgNum: number
+        let fileidx = settings.get('fileidx')
+        if (fileidx === null || fileidx == undefined ){
+            cacheImgNum = 0
+        }else{
+            cacheImgNum = Object.keys(settings.get('fileidx')).length
+        }
+
+        return cacheImgNum
     }
 
     openSetting() {
+        const cacheImgNum = this.getCacheImgNum();
+
         const dialog = new Dialog({
             title: `${this.i18n.addTopBarIcon} ${this.i18n.settingLabel}`,
             content: `
@@ -341,7 +461,7 @@ export default class SwitchBgCover extends Plugin {
                         <span class="fn__space"></span>
                         <span style="color: var(--b3-theme-on-surface)">${this.i18n.cacheDirectoryDes}</span>
                         <span class="selected" style="color: rgb(255,0,0)">
-                            [ ${Object.keys(settings.get('fileidx')).length} ]
+                            [ ${cacheImgNum} ]
                         </span>
                     </div>
                     <div class="b3-label__text">
@@ -363,7 +483,7 @@ export default class SwitchBgCover extends Plugin {
                 </div>
                 <span class="fn__flex-center" />
                 <input
-                    id="autoRefreshInput"
+                    id="onoffInput"
                     class="b3-switch fn__flex-center"
                     type="checkbox"
                     value="${settings.get('activate')}"
@@ -420,7 +540,7 @@ export default class SwitchBgCover extends Plugin {
                 <div class="fn__flex-1">
                 ${this.i18n.resetConfigLabel}
                     <div class="b3-label__text">
-                        ${this.i18n.resetConfigDes}<span class="selected svelte-c3a8hl">${this.i18n.resetConfigDes2}
+                        ${this.i18n.resetConfigDes}<span class="selected" style="color:rgb(255,0,0)">${this.i18n.resetConfigDes2}
                         </span>
                     </div>
                 </div>
@@ -459,7 +579,7 @@ export default class SwitchBgCover extends Plugin {
 
         activateElement.addEventListener("click", () => {
             settings.set('activate', !settings.get('activate'));
-            autoRefreshElement.value = `${settings.get('activate')}`;
+            activateElement.value = `${settings.get('activate')}`;
             settings.save();
             this.applySettings();
         })
@@ -506,7 +626,7 @@ export default class SwitchBgCover extends Plugin {
         // reset panel
         const resetSettingElement = dialog.element.querySelectorAll("button")[0];
         resetSettingElement.addEventListener("click", () => {
-            this.removeDirectory(cst.pluginImgDataDir);
+            os.rmtree(cst.pluginImgDataDir);
             settings.reset();
             settings.save();
             this.applySettings();
@@ -540,6 +660,7 @@ export default class SwitchBgCover extends Plugin {
         //     dialog.destroy();
         // });
     }
+
 
     ////////////////////
     // Plugin UI init //
@@ -586,28 +707,28 @@ export default class SwitchBgCover extends Plugin {
 
     private addMenu(rect?: DOMRect) {
         const menu = new Menu("topBarSample", () => {});
-        // menu.addItem({
-        //     icon:"iconIndent",
-        //     label: `${this.i18n.selectPictureLabel}`,
-        //     type: "submenu",
-        //     submenu: [
-        //         {
-        //             icon: "iconHand",
-        //             label: `${this.i18n.selectPictureManualLabel}`,
-        //             click: () => {
-        //                 this.selectPictureByHand();
-        //             }
-        //         }, 
-        //         {
-        //             icon: "iconMark",
-        //             label: `${this.i18n.selectPictureRandomLabel}`,
-        //             accelerator: this.commands[0].customHotkey,
-        //             click: () => {
-        //                 this.selectPictureRandom();
-        //             }
-        //         }, 
-        //     ]
-        // });
+        menu.addItem({
+            icon:"iconIndent",
+            label: `${this.i18n.selectPictureLabel}`,
+            type: "submenu",
+            submenu: [
+                // {
+                //     icon: "iconHand",
+                //     label: `${this.i18n.selectPictureManualLabel}`,
+                //     click: () => {
+                //         this.selectPictureByHand();
+                //     }
+                // }, 
+                {
+                    icon: "iconMark",
+                    label: `${this.i18n.selectPictureRandomLabel}`,
+                    accelerator: this.commands[0].customHotkey,
+                    click: () => {
+                        this.selectPictureRandom();
+                    }
+                }, 
+            ]
+        });
         menu.addItem({
             icon:"iconAdd",
             label: `${this.i18n.addImageLabel}`,
