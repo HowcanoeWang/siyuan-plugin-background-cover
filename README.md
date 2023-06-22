@@ -55,8 +55,6 @@ Add a picture you like to cover the entire Siyuan Note
 
 在`<body>`元素中添加一个`<div>`元素，平铺居中且处于笔记最底层，用来存放图片背景。随后修改思源笔记面板的工具条(`toolbar`)，左右底侧菜单栏(`dockLeft`, `dockRight`, `dockBottom`)， 编辑器(`layouts`), 状态栏(`status`)这几个主要笔记面板的透明度`opacity`属性让背景显示出来。其中，用户可设置的`opacity`定义域为`[0.1, 1]`。但为了笔记内容的可读性，使用加权逻辑`f(x) = 0.99 - 0.25x`，加权后`body`透明度值域为`[0.74, 0.99]`。
 
-Add `background-image` and `opacity` to `<body>` element's style. The user-defined domain for opacity is `[0.1, 1]`. However, for the readability of note content, use the weighted opacity `f(x) = 0.99 - 0.25x`. After weighting, the `body` opacity range is `[0.74, 0.99]`.
-
 Add a `<div>` element to the `<body>` element, as the container of the background which is centered and placed at the bottom of the note. Then, adjust the opacity property of the main note panels, including the toolbar, dock menus (`dockLeft`, `dockRight`, `dockBottom`), layouts, and status bar to achieve transparency of the foreground. The user-defined domain for opacity is `[0.1, 1]`. However, for the readability of note content, use the weighted opacity `f(x) = 0.99 - 0.25x`. After weighting, the `body` opacity range is `[0.74, 0.99]`.
 
 ## 更新日志 | ChangeLogs
