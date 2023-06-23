@@ -21,50 +21,71 @@ if ((window as any).siyuan.config.system.os === 'windows'){
 }
 
 // 需要针对下面的主题进行适配
-export const toAdaptThemes = {
+interface toAdaptThemes {
+    [key: string]: {
+        [key: string]: string[]
+    }
+}
+
+export const toAdaptThemes: toAdaptThemes = {
     "Savor": {
         // element id : [LightMode color, Darkmode Color]
-        "toolbar": [`rgb(247, 246, 243)`, `rgb(55, 60, 63)`]
+        // ${opacity} is the weighted transparency
+        // ${alpha} is not weighted transparency
+        // This varalbes will automatically adjust to transparency settings later
+        "toolbar":    ['rgba(237, 236, 233, ${opacity})', 'rgba(65, 70, 72, ${opacity})'],
+        "dockBottom": ['rgba(255, 255, 255, 0)',          'rgba(255, 255, 255, 0)'],
+        "status":     ['rgba(255, 255, 255, 0)',          'rgba(255, 255, 255, 0)']
     },
     "Rem Craft": {
-        "dockLeft": ['rgb(247, 248, 250)', 'rgb(30, 34, 39)'],
-        "dockRight": ['rgb(247, 248, 250)', 'rgb(30, 34, 39)'],
+        "layouts":    ['rgb(247, 248, 250)',    'rgb(30, 34, 39)'],
+        "toolbar":    ['rgb(247, 248, 250)',    'rgb(30, 34, 39)'],
+        "dockLeft":   ['rgb(247, 248, 250)',    'rgb(30, 34, 39)'],
+        "dockRight":  ['rgb(247, 248, 250)',    'rgb(30, 34, 39)'],
+        "dockBottom": ['rgb(247, 248, 250)',    'rgb(30, 34, 39)'],
+        "status":     ['rgba(255, 255, 255, 0)','rgba(255, 255, 255, 0)'],
+    },
+    "mini-vlook": {
+        "status":     ['rgba(255, 255, 255, 0)','rgba(255, 255, 255, 0)']
+    },
+    "Dark+": {
+        "layouts":    ['rgba(238, 238, 238, ${0.3/opacity})', 'rgba(17, 17, 17, ${0.3/opacity})'],
     },
     "Light-Blue": {
         // Only light theme
-        "toolbar":    ['rgba(255, 255, 255, 0.7)', ''],
-        "dockLeft":   ['rgba(255, 255, 255, 0.7)', ''],
-        "dockRight":  ['rgba(255, 255, 255, 0.7)', ''],
-        "dockBottom": ['rgba(255, 255, 255, 0.7)', ''],
-        "layouts":    ['rgba(255, 255, 255, 0.7)', ''],
-        "status":     ['rgba(255, 255, 255, 0.7)', '']
+        "layouts":    ['rgba(255, 255, 255, ${0.7/opacity})', ''],
+        "toolbar":    ['rgba(255, 255, 255, ${0.7})',           ''],
+        "dockLeft":   ['rgba(255, 255, 255, ${0.7})',           ''],
+        "dockRight":  ['rgba(255, 255, 255, ${0.7})',           ''],
+        "dockBottom": ['rgba(255, 255, 255, ${0.7})',           ''],
+        "status":     ['rgba(255, 255, 255, ${0.7})',           '']
     },
     "Dark-Blue": {
         // only dark theme
-        "toolbar":    ['', 'rgba(30, 34, 39, 0.5)'],
-        "dockLeft":   ['', 'rgba(30, 34, 39, 0.5)'],
-        "dockRight":  ['', 'rgba(30, 34, 39, 0.5)'],
-        "dockBottom": ['', 'rgba(30, 34, 39, 0.5)'],
-        "layouts":    ['', 'rgba(30, 34, 39, 0.5)'],
-        "status":     ['', 'rgba(30, 34, 39, 0.5)']
+        "layouts":    ['', 'rgba(30, 34, 39, ${0.7/opacity})'],
+        "toolbar":    ['', 'rgba(30, 34, 39, ${0.7})'],
+        "dockLeft":   ['', 'rgba(30, 34, 39, ${0.7})'],
+        "dockRight":  ['', 'rgba(30, 34, 39, ${0.7})'],
+        "dockBottom": ['', 'rgba(30, 34, 39, ${0.7})'],
+        "status":     ['', 'rgba(30, 34, 39, ${0.7})']
     },
     "Odyssey": {
         // only light theme
-        "toolbar":    ['rgb(224, 229, 223)', ''],
-        "dockLeft":   ['rgb(224, 229, 223)', ''],
-        "dockRight":  ['rgb(224, 229, 223)', ''],
-        "dockBottom": ['rgb(224, 229, 223)', ''],
-        "layouts":    ['rgb(224, 229, 223)', ''],
-        "status":     ['rgb(224, 229, 223)', '']
+        "layouts":    ['rgba(220, 228, 220, ${0.7/opacity})', ''],
+        "toolbar":    ['rgba(220, 228, 220, ${0.7})', ''],
+        "dockLeft":   ['rgba(220, 228, 220, ${0.7})', ''],
+        "dockRight":  ['rgba(220, 228, 220, ${0.7})', ''],
+        "dockBottom": ['rgba(220, 228, 220, ${0.7})', ''],
+        "status":     ['rgba(220, 228, 220, ${0.7})', '']
     },
     "StarDust": {
         // only dark theme
-        "toolbar":    ['', 'rgba(29, 70, 94, 0.5)'],
-        "dockLeft":   ['', 'rgba(29, 70, 94, 0.5)'],
-        "dockRight":  ['', 'rgba(29, 70, 94, 0.5)'],
-        "dockBottom": ['', 'rgba(29, 70, 94, 0.5)'],
-        "layouts":    ['', 'rgba(29, 70, 94, 0.5)'],
-        "status":     ['', 'rgba(29, 70, 94, 0.5)']
+        "toolbar":    ['', 'rgb(29, 70, 94)'],
+        "dockLeft":   ['', 'rgb(29, 70, 94)'],
+        "dockRight":  ['', 'rgb(29, 70, 94)'],
+        "dockBottom": ['', 'rgb(29, 70, 94)'],
+        "layouts":    ['', 'rgb(29, 70, 94)'],
+        "status":     ['', 'rgb(29, 70, 94)']
     }
 }
 

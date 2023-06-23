@@ -87,7 +87,7 @@ export default class SwitchBgCover extends Plugin {
         });
 
         // 侦测theme主题有没有发生变化
-        const themeChangeObserver = new MutationObserver(this.themeOnChange);
+        const themeChangeObserver = new MutationObserver(this.themeOnChange.bind(this));
         themeChangeObserver.observe(this.htmlThemeNode, {attributes: true});
 
         info(this.i18n.helloPlugin);
@@ -104,6 +104,8 @@ export default class SwitchBgCover extends Plugin {
         // load the user setting data
         const [themeMode, themeName] = getThemeInfo();
         settings.set('prevTheme', themeName);
+
+        // this.changeOpacity(0.85);
         await this.applySettings();
         
         if (settings.get('inDev')) {
@@ -134,9 +136,14 @@ export default class SwitchBgCover extends Plugin {
     private async checkCacheDirctory(){
         // check image files
         let imgFiles = await os.listdir(cst.pluginImgDataDir)
-        
-        let fileidx = {}
-        let fileidx_db = {}
+        interface fileIndex{
+            [key:string]: {
+                name: string, hash: string, mode: cst.bgMode, path:string
+            }
+        }
+
+        let fileidx: fileIndex = {}
+        let fileidx_db: fileIndex = {}
         let notCorrectCacheImgs = []
         let extraCacheImgs = []
         let missingCacheImgs = []
@@ -303,46 +310,18 @@ export default class SwitchBgCover extends Plugin {
         this.showIndev();
     }
 
-    private themeOnChange() {
+    private async themeOnChange() {
         const [themeMode, themeName] = getThemeInfo();
-        debug(`Theme changed! ${themeMode} | ${themeName}`)
+        let prevTheme = settings.get('prevTheme')
 
-        // 当目前的主题需要特殊适配时
-        if (settings.get('activate') && themeName in cst.toAdaptThemes) {
-            let Ele = cst.toAdaptThemes[themeName as keyof typeof cst.toAdaptThemes]
+        debug(`Theme changed! from ${prevTheme} to ${themeMode} | ${themeName}`)
 
-            for (let keyE in Ele) {
-                let element = document.getElementById(keyE);
-    
-                let targetColorStr = Ele[keyE][themeMode]
-                let targetColor = ''
-                if (targetColorStr.slice(0,4) === 'var(') {
-                    const cssvar = targetColorStr.slice(4,-1)
-                    targetColor = getComputedStyle(document.querySelector(':root')).getPropertyValue(cssvar);
-                }else if (targetColorStr.slice(0,3) === 'rgb') {
-                    targetColor = targetColorStr
-                }else if (targetColorStr.slice(0,1) === '#') {
-                    targetColor = cv2.hex2rgba(targetColorStr)
-                }else{
-                    error(`Unable to parse the color string [${targetColorStr}}], not 'var(--xxx)', 'rgb(xxx)', 'rgba(xxx)', '#hex'`)
-                }
-                
-                debug(`Adapt '${themeName}' theme element '${keyE}' to background-color: ${targetColor}`, element)
-                element.style.setProperty('background-color', targetColor, 'important');
-            }
-        }else{
-            // 恢复主题默认的设置
-            const prevTheme = settings.get('prevTheme')
-            if (prevTheme in cst.toAdaptThemes) {
-                let Ele = cst.toAdaptThemes[prevTheme as keyof typeof cst.toAdaptThemes]
-
-                for (let keyE in Ele) {
-                    let element = document.getElementById(keyE);
-                    element.style.removeProperty('background-color');
-                }
-            }
+        if (prevTheme !== themeName) {
+            // 更换主题时，强制刷新笔记页面
+            settings.set('prevTheme', themeName);
+            await settings.save()
+            window.location.reload()
         }
-        settings.set('prevTheme', themeName);
     }
 
     private changeBackground(background:string, mode:cst.bgMode) {
@@ -355,23 +334,90 @@ export default class SwitchBgCover extends Plugin {
         }
     }
 
-    private changeOpacity(opacity: number){
-        let bodyOpacity = 0.99 - 0.25 * opacity;
+    private changeOpacity(alpha:number){
+        // let opacity = 0.99 - 0.25 * settings.get('opacity');
+        let opacity = 0.99 - 0.25 * alpha;
 
+        const [themeMode, themeName] = getThemeInfo();
+        debug(`Theme changed! ${themeMode} | ${themeName}`)
+
+        // 只有layouts部分可以通过设置opacity来实现整体透明度
+        // 其他侧栏带按钮的，一旦设置opacity就会跟显示或者功能冲突，只能使用CSS的coloralpha值来调整
+        // 大概是一个chrome的bug
         let addOpacityElement: string[]
-        addOpacityElement = ["toolbar", "dockLeft", "layouts", "dockRight", "dockBottom", "status"]
-
+        addOpacityElement = ["layouts"]
         for (let eid in addOpacityElement) {
             var changeItem = document.getElementById(addOpacityElement[eid])
             if (settings.get('activate')) {
-                changeItem.style.setProperty('opacity', bodyOpacity.toString())
+                changeItem.style.setProperty('opacity', opacity.toString())
             }else{
                 changeItem.style.removeProperty('opacity')
             }
         }
+
+        // change the color via rgba alpha
+        let addAlphaElement: string[] = ["toolbar", "dockLeft", "dockRight", "dockBottom", "status"]
+
+        // 创建适配的键值容器
+        interface themeAdaptObject{
+            [key: string]: string[]
+        }
+        let themeAdaptObject: themeAdaptObject
+        let themeAdaptElement: string[] = []
+
+        if (themeName in cst.toAdaptThemes) {
+            themeAdaptObject = cst.toAdaptThemes[themeName] as themeAdaptObject
+            themeAdaptElement = Object.keys(themeAdaptObject) as string[]
+        }
+
+        // 合并键值
+        let mergedElemet: string[]
+        if (themeAdaptElement.length !== 0) {
+            mergedElemet = [...new Set([...addAlphaElement ,...themeAdaptElement ])]
+        }else{
+            mergedElemet = addAlphaElement
+        }
+
+        // 遍历每一个键值
+        for (let eid in mergedElemet) {
+            const elementid:string = mergedElemet[eid]
+            var originalColor:string
+            var adaptColor:string
+
+            var changeItem = document.getElementById(elementid)
+            // 当前元素使用进行主题适配的颜色
+            console.log('elementid: ', elementid, 
+                        'themeAdaptElement', themeAdaptElement, 
+                        themeAdaptElement.includes(elementid)
+            )
+            
+            if (themeAdaptElement.includes(elementid)){
+                originalColor = themeAdaptObject[elementid][themeMode]
+                // 根据适配的定义
+                // 'rgba(255, 255, 255, 0)' -> use directly
+                // 'rgb(237, 236, 233, ${opacity})' -> adapt with alpha value
+                adaptColor = eval('`'+originalColor+'`')
+            }else{
+                // 不需要针对主题进行适配，直接计算当前元素的颜色
+                originalColor = getComputedStyle( changeItem ,null).getPropertyValue('background-color');
+                adaptColor = cv2.changeColorOpacity(originalColor, opacity);
+            }
+
+            debug(`[Func][changeOpacity] ${elementid} originalColor: ${originalColor}, adaptColor: ${adaptColor}`)
+
+            if (settings.get('activate')) {
+                changeItem.style.setProperty('background-color', adaptColor, 'important');
+                changeItem.style.setProperty('background-blend-mode', `lighten`)
+            }else{
+                changeItem.style.removeProperty('background-color')
+                changeItem.style.removeProperty('background-blend-mode')
+            }
+        }
+
+        settings.set('prevTheme', themeName);
     }
 
-    private changeBlur(blur: number) {
+    private changeBlur(blur:number) {
         this.bgLayer.style.setProperty('filter', `blur(${blur}px)`)
     }
 
@@ -405,9 +451,8 @@ export default class SwitchBgCover extends Plugin {
             
         }
 
-        this.themeOnChange()
+        // this.themeOnChange()
         this.changeOpacity(settings.get('opacity'))
-
         this.changeBlur(settings.get('blur'))
 
         // update current image URL
@@ -419,7 +464,7 @@ export default class SwitchBgCover extends Plugin {
         }
 
         // update onoff switch button
-        let onoffElement = document.getElementById('onoffInput')
+        let onoffElement = document.getElementById('onoffInput') as HTMLInputElement
         if ( onoffElement === null || onoffElement === undefined ) {
             debug(`Element onoffElement not exists`) 
         }else{

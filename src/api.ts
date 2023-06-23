@@ -258,13 +258,13 @@ export class KernelApi extends BaseApi {
      * @param notebook - 笔记本
      * @param path - 路径
      */
-    public async importStdMd(localPath, notebook: string, path: string): Promise<SiyuanData> {
-      const params = {
-        // Users/terwer/Documents/mydocs/SiYuanWorkspace/public/temp/convert/pandoc/西蒙学习法：如何在短时间内快速学会新知识-友荣方略.md
-        localPath: localPath,
-        notebook: notebook,
-        toPath: path,
-      }
-      return await this.siyuanRequest("/api/import/importStdMd", params)
-    }
+    // public async importStdMd(localPath, notebook: string, path: string): Promise<SiyuanData> {
+    //   const params = {
+    //     // Users/terwer/Documents/mydocs/SiYuanWorkspace/public/temp/convert/pandoc/西蒙学习法：如何在短时间内快速学会新知识-友荣方略.md
+    //     localPath: localPath,
+    //     notebook: notebook,
+    //     toPath: path,
+    //   }
+    //   return await this.siyuanRequest("/api/import/importStdMd", params)
+    // }
 }
