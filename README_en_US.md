@@ -46,23 +46,22 @@ Default background cover artist ——
 
 ## Theme Compativity
 
-| Theme name            | Compativity        | Versions | Descrip                                                                      |
-| --------------------- | ------------------ | -------- | ---------------------------------------------------------------------------- |
-| `Daylight midnight` | ✅Naturally        |2.9.2      | Siyuan default theme                                                         |
-| `Tsundoku (dark)`   | ✅Naturally        |v1.7.6     |                                                                              |
-| `Tsundoku (light)`  | ❌Component Error  |v1.7.6     | Skin toggle button dropdown menu not working.                                |
-| `Zhihu`             | ✅Naturally        |v0.0.6     |                                                                              |
-| `VSCode Light`      | ✅Naturally        |v1.1.2     |                                                                              |
-| `Z-Acrylic`         | ✅Naturally        |v0.2.2     |                                                                              |
-| `sy-darkpruple`     | ✅Naturally        |v0.2.1     |                                                                              |
-| `Savor`             | ✅After adaptation |v3.4.6     | Compatible by blocking toolbar transparency color.                           |
-| `Light/Dark-Blue`   | ✅After adaptation |v1.1.0     | Compatible through transparency of all components being blocked.             |
-| `Odyssey`           | ✅After adaptation |v1.0.4     | Compatible through transparency of all components being blocked.             |
-| `StarDust`          | ✅After adaptation |v0.6.1     | Compatible through transparency of all components being blocked.             |
-| `mini-vlook`        | ❌Component Error  |v2.8.704   | The text opacity of buttons in the left column is abnormal.                 |
-| `Rem Craft`         | ❌Component Error  |v2.6.11    | The upper toolbar menu cannot be clicked.                                    |
-| `Dark+`             | ❌Component Error  |v1.9.4     | Unable to drag floating tool menu.                                           |
-| `pink-room`         | ❌Component Error  |v0.7.6     | Adding opacity modifications panel is ineffective for changing transparency. |
+| Theme name            | Compativity        | Versions | Descrip                                                                       |
+| --------------------- | ------------------ | -------- | ----------------------------------------------------------------------------- |
+| `Daylight midnight` | ✅Naturally        | 2.9.2    | Siyuan default theme                                                          |
+| `Tsundoku`          | ✅Naturally        | v1.7.6   |                                                                               |
+| `Zhihu`             | ✅Naturally        | v0.0.6   |                                                                               |
+| `VSCode Light`      | ✅Naturally        | v1.1.2   |                                                                               |
+| `Z-Acrylic`         | ✅Naturally        | v0.2.2   |                                                                               |
+| `sy-darkpruple`     | ✅Naturally        | v0.2.1   |                                                                               |
+| `Dark+`             | ✅After adaptation | v1.9.4   | Compatible through transparency of components.                               |
+| `Light/Dark-Blue`   | ✅After adaptation | v1.1.0   | Compatible through transparency of components.                               |
+| `Odyssey`           | ✅After adaptation | v1.0.4   | Compatible through transparency of components.                               |
+| `StarDust`          | ✅After adaptation | v0.6.1   | Compatible through transparency of components.                               |
+| `mini-vlook`        | ✅After adaptation | v2.8.704 | Compatible through transparency of components.                               |
+| `Savor`             | ❌Slightly not     | v3.4.6   | The bottom bar and some of the skin's CSS styles are abnormally incompatible. |
+| `Rem Craft`         | ❌Slightly not     | v2.6.11  | The background style of the tool menu component is too complex to adapt.      |
+| `pink-room`         | ❌Serverly not     | v0.7.6   | Adding opacity and modifying color transparency are both ineffective.         |
 
 ## Implementation
 
@@ -72,6 +71,12 @@ Add a `<div>` element to the `<body>` element, as the container of the backgroun
 
 <details open>
 <summary><b>June 2023</b></summary>
+
+**v23.06.24**
+
+- Change the transparency scheme to: toolbar, dockLeft, dockRight, dockBottom and status bar modifying alpha value of colors, and editor (layouts) modifying the opacity property.
+- When changing the theme, force-reload the note interface.
+- Modify the compatitivity on theme again
 
 **v23.06.23**
 

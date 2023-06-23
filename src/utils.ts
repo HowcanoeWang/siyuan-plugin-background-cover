@@ -63,6 +63,7 @@ export class CloseCV {
 
     public changeColorOpacity(colorString:string, alpha:number) {
         let changedColor = '';
+        let cssVarColors = getComputedStyle(document.querySelector(':root'));
   
         // --> 如果当前元素为#开头，则hex转rgb后，再修改透明度
         if (colorString.slice(0,1) === '#') {
@@ -71,7 +72,7 @@ export class CloseCV {
         //     var(--b3-theme-background)
         }else if (colorString.slice(0,4) === 'var(') {  // e.g.  var(--b3-theme-background)
             let cssvar_name = colorString.slice(4,-1);
-            let originalColor = this.cssVarColors.getPropertyValue(cssvar_name);
+            let originalColor = cssVarColors.getPropertyValue(cssvar_name);
             changedColor = this.changeColorOpacity(originalColor, alpha)
         // --> 如果当前元素为正常的rgb开头
         }else if (colorString.slice(0,4) === 'rgb(') {
@@ -150,12 +151,19 @@ export class OS {
     }
 
     public async listdir(dir:string) {
+        interface outArray {
+            isDir: number; name: string
+        }
+        interface outArray extends Array<outArray>{}
+
+        var outArray: outArray
         let out = await this.ka.readDir(dir);
         if (out !== null || out !== undefined) {
-            return out.data
-        }else{
-            return []
+            console.log("out.data", out.data)
+            outArray = out.data as outArray
         }
+        
+        return outArray
     }
 
     public splitext(filename:string) {
