@@ -30,7 +30,7 @@
   "cacheImgWrongName": "发现下列图片不符合缓存图片的命名规则:",
   "cacheImgMissing": "发现下列图片在缓存文件夹中丢失:",
   "cacheImgExtra": "发现下列图片未被缓存记录:",
-  "doNotOperateCacheFolder": "请勿手动操作缓存文件夹",
+  "doNotOperateCacheFolder": "不要恐慌，但请不要手动去修改缓存文件夹中的内容",
   "confirm": "仍然汇报",
   "reset": "重置",
   "cancel": "取消",
@@ -41,5 +41,6 @@
   "currentVersionLabel": "当前插件版本",
   "viewAllVersionsText": "浏览所有已发布的版本",
   "imageFileExist": "选择的图片在缓存文件夹中已存在",
-  "inDevModeDes": "开启开发者模式 (更多日志输出)"
+  "inDevModeDes": "开启开发者模式 (更多日志输出)",
+  "noCachedImg4random": "未找到任何缓存的背景图片，请先上传"
 }

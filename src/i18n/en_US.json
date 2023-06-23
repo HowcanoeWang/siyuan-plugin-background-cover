@@ -30,7 +30,7 @@
   "cacheImgWrongName": "Find the following images not fitting to cache name:",
   "cacheImgMissing": "Find the following images missing in the cache folder:",
   "cacheImgExtra": "Find the following images not in the cache index:",
-  "doNotOperateCacheFolder": "Please do not operate the cache directory manually",
+  "doNotOperateCacheFolder": "No worries, but please do not operate the cache directory in the file explorer manually",
   "confirm": "Still reporting",
   "reset": "Reset",
   "cancel": "Cancel",
@@ -41,5 +41,6 @@
   "currentVersionLabel": "Current plugin version",
   "viewAllVersionsText": "View all published versions",
   "imageFileExist": "The selected file already exists in the cache folder",
-  "inDevModeDes": "Open the developer mode (more logs)"
+  "inDevModeDes": "Open the developer mode (more logs)",
+  "noCachedImg4random": "Can not find cached images, please upload first"
 }

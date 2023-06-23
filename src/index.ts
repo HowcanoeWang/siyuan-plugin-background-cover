@@ -218,6 +218,7 @@ export default class SwitchBgCover extends Plugin {
             // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
             this.changeBackground(cst.demoImgURL, cst.bgMode.image)
             settings.set('bgObj', undefined)
+            showMessage(`${this.i18n.noCachedImg4random}`, 3000, "info")
         }else{
             // 随机选择一张图
             let fileidx = settings.get('fileidx')
