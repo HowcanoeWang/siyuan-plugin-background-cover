@@ -33,12 +33,6 @@ Default background cover artist ——
 - [X] Only the **desktop** and **browser-desktop (PC)** are supported.
 - [X] Tiling a picture as a background for SiYuan Notes
 - [X] Compatible theme：
-  - [X] `Daylight midnight` (default)
-  - [X] `Savor`
-  - [X] `Dark+`
-  - [X] `Light/Dark-Blue`
-  - [X] `Rem Craft`
-  - [X] `Odyssey`
 - [X] Manually adjust the transparency
 - [X] Manually adjust the blur effects of the background
 - [ ] Cached folder for background image library
@@ -48,7 +42,27 @@ Default background cover artist ——
 - [ ] Choose and switch a background image
   - [ ] Choosing by manual
   - [X] Random select by manual action
-  - [ ] Choosing on launch
+  - [X] Choosing randomly on launch
+
+## Theme Compativity
+
+| Theme name            | Compativity        | Versions | Descrip                                                                      |
+| --------------------- | ------------------ | -------- | ---------------------------------------------------------------------------- |
+| `Daylight midnight` | ✅Naturally        |2.9.2      | Siyuan default theme                                                         |
+| `Tsundoku (dark)`   | ✅Naturally        |v1.7.6     |                                                                              |
+| `Tsundoku (light)`  | ❌Component Error  |v1.7.6     | Skin toggle button dropdown menu not working.                                |
+| `Zhihu`             | ✅Naturally        |v0.0.6     |                                                                              |
+| `VSCode Light`      | ✅Naturally        |v1.1.2     |                                                                              |
+| `Z-Acrylic`         | ✅Naturally        |v0.2.2     |                                                                              |
+| `sy-darkpruple`     | ✅Naturally        |v0.2.1     |                                                                              |
+| `Savor`             | ✅After adaptation |v3.4.6     | Compatible by blocking toolbar transparency color.                           |
+| `Light/Dark-Blue`   | ✅After adaptation |v1.1.0     | Compatible through transparency of all components being blocked.             |
+| `Odyssey`           | ✅After adaptation |v1.0.4     | Compatible through transparency of all components being blocked.             |
+| `StarDust`          | ✅After adaptation |v0.6.1     | Compatible through transparency of all components being blocked.             |
+| `mini-vlook`        | ❌Component Error  |v2.8.704   | The text opacity of buttons in the left column is abnormal.                 |
+| `Rem Craft`         | ❌Component Error  |v2.6.11    | The upper toolbar menu cannot be clicked.                                    |
+| `Dark+`             | ❌Component Error  |v1.9.4     | Unable to drag floating tool menu.                                           |
+| `pink-room`         | ❌Component Error  |v0.7.6     | Adding opacity modifications panel is ineffective for changing transparency. |
 
 ## Implementation
 
@@ -66,6 +80,8 @@ Add a `<div>` element to the `<body>` element, as the container of the backgroun
 - Implement the function of randomly selecting backgrounds.
 - Optimize handling of 404 errors for images during startup.
 - Separate the bilingual documents.
+- Implement the random selection function on launching
+- Check the compatitivity on theme again
 
 **v23.06.22**
 

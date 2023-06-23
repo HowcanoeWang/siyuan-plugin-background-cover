@@ -146,13 +146,14 @@ export default class SwitchBgCover extends Plugin {
             if (item.isDir) {
                 continue
             }else{
-                console.log(item.name)
+               debug(`[Func][checkCacheDirectory] Check ${item.name} in cached dir`)
                 if (item.name.slice(0,5) === 'hash-'){
                     const [hash_name, suffix] = os.splitext(item.name.split('-')[1])
 
                     fileidx_db = settings.get('fileidx')
 
-                    console.log(hash_name, fileidx_db, extraCacheImgs)
+                    debug(hash_name, fileidx_db, extraCacheImgs)
+
                     if (hash_name in fileidx_db){
                         fileidx[hash_name] = fileidx_db[hash_name]
                     }else{
@@ -383,7 +384,6 @@ export default class SwitchBgCover extends Plugin {
 
         // 缓存文件夹中没有图片 | 用户刚刚使用这个插件 | 用户刚刚重置了插件数据 | 当前文件404找不到
         const cacheImgNum = this.getCacheImgNum()
-        console.log('cacheImgNum', cacheImgNum)
         if (cacheImgNum === 0){
             // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
             this.changeBackground(cst.demoImgURL, cst.bgMode.image)
@@ -392,13 +392,14 @@ export default class SwitchBgCover extends Plugin {
             // 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张
             await this.selectPictureRandom()
         }else{
-            // 缓存中有1张以上的图片，bjObj也有内容且图片存在，则直接显示该图片
+            // 缓存中有1张以上的图片，bjObj也有内容且图片存在
             let bgObj = settings.get('bgObj')
             let fileidx = settings.get('fileidx')
-            if (bgObj.hash in fileidx) {
+            // 没有开启启动自动更换图片，则直接显示该图片
+            if (bgObj.hash in fileidx && !settings.get('autoRefresh')) {
                 this.changeBackground(bgObj.path, bgObj.mode)
             }else{
-                // 当bjObj找不到404，则随机调一张作为bjObj
+                // 当bjObj找不到404 | 用户选择随机图片，则随机调一张作为bjObj
                 await this.selectPictureRandom()
             }
             
@@ -418,11 +419,11 @@ export default class SwitchBgCover extends Plugin {
         }
 
         // update onoff switch button
-        let onoffElement = document.getElementById('crtImgName')
+        let onoffElement = document.getElementById('onoffInput')
         if ( onoffElement === null || onoffElement === undefined ) {
-            debug(`Element ctrImgName not exists`) 
+            debug(`Element onoffElement not exists`) 
         }else{
-            onoffElement.checked = `${settings.get('activate')}`;
+            onoffElement.checked = settings.get('activate');
         }
     }
 
@@ -580,7 +581,7 @@ export default class SwitchBgCover extends Plugin {
 
         activateElement.addEventListener("click", () => {
             settings.set('activate', !settings.get('activate'));
-            activateElement.value = `${settings.get('activate')}`;
+            activateElement.value = settings.get('activate');
             settings.save();
             this.applySettings();
         })

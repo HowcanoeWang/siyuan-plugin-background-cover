@@ -56,6 +56,15 @@ export const toAdaptThemes = {
         "dockBottom": ['rgb(224, 229, 223)', ''],
         "layouts":    ['rgb(224, 229, 223)', ''],
         "status":     ['rgb(224, 229, 223)', '']
+    },
+    "StarDust": {
+        // only dark theme
+        "toolbar":    ['', 'rgba(29, 70, 94, 0.5)'],
+        "dockLeft":   ['', 'rgba(29, 70, 94, 0.5)'],
+        "dockRight":  ['', 'rgba(29, 70, 94, 0.5)'],
+        "dockBottom": ['', 'rgba(29, 70, 94, 0.5)'],
+        "layouts":    ['', 'rgba(29, 70, 94, 0.5)'],
+        "status":     ['', 'rgba(29, 70, 94, 0.5)']
     }
 }
 
