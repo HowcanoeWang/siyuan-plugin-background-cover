@@ -15,8 +15,9 @@
     "zh_CN": "添加一张你喜欢的图片铺满整个思源笔记"
   },
   "readme": {
-    "default": "README.md",
-    "zh_CN": "README.md"
+    "default": "README_en_US.md",
+    "zh_CN": "README.md",
+    "en_US": "README_en_US.md"
   },
   "funding": {
     "openCollective": "",

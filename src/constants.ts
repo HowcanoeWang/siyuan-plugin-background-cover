@@ -77,7 +77,7 @@ export const defaultSettings = {
     'opacity': 0.5 as number,
     'blur': 0 as number,
     // 图片类型 1:本地文件，2：https
-    'activate': false as boolean,
+    'activate': true as boolean,
     'prevTheme': '' as string,
     'fileidx': {} as object,
     'version': packageInfo.version as string,
