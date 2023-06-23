@@ -9,7 +9,7 @@
 <p align="center">
 添加一张你喜欢的图片铺满整个思源笔记
 <br/>
-<a href="./README.md">English</a>
+<a href="./README_en_US.md">English</a>
 </p>
 
 ## 预览
