@@ -65,7 +65,18 @@ Default background cover artist ——
 
 ## Implementation
 
-Add a `<div>` element to the `<body>` element, as the container of the background which is centered and placed at the bottom of the note. Then, adjust the opacity property of the main note panels, including the toolbar, dock menus (`dockLeft`, `dockRight`, `dockBottom`), layouts, and status bar to achieve transparency of the foreground. The user-defined domain for opacity is `[0.1, 1]`. However, for the readability of note content, use the weighted opacity `f(x) = 0.99 - 0.25x`. After weighting, the `body` opacity range is `[0.74, 0.99]`.
+Add a `<div>` element in the `<body>` element, with a tiled and centered placement and positioned at the bottom to hold the background image. Then modify the opacity property of the top toolbar, left,right,bottom dock (`dockLeft`, `dockRight`, `dockBottom`), status bar, and editor layouts of the Source Note panel to achieve transparent foreground with the background image displayed. The user-defined opacity range is `[0.1, 1]`, but to ensure readability of the note content, a weighted logic of `f(x) = 0.99 - 0.25x` is used to limit the opacity value range to `[0.74, 0.99]`. However, identical opacity settings can yield different results across different themes due to varying color sets per theme.
+
+Some themes encounter compatibility issues with the above solution, particularly:
+
+1. Some themes set the background color of the `` element and set the color of the top toolbar, dock, and status bar to transparent to ensure color consistency.
+   * `Compatibility issue`: The plugin adds a layer of image on top of the `` element, resulting in poor readability of the text and icons on top of these completely transparent menus.
+   * `Fix`: The plugin manually sets the transparent background color to a fixed value.
+   * `Adaptation suggestion`: Theme authors are recommended to follow the Source Theme Template and modify the color of each element to a specified background color instead of using the transparent option.
+2. Some themes encounter issues where buttons cannot be clicked after activating the plugin.
+   * `Compatibility issue`: Changing the opacity value also affects the z-index, causing stacking order issues and buttons being covered by other layers. The toolbar is mainly affected by the layouts layer.
+   * `Fix`: Use the plugin's compatibility mode to read the panel's color and modify the alpha value to achieve a similar transparency effect instead of changing the opacity value. The drawback is that buttons with a set background color in the theme cannot be transparent, resulting in abrupt visual inconsistency (e.g., `Savor` and `Ram Craft` themes).
+   * `Adaptation suggestion`: Theme authors are recommended to follow the Source Theme Template's layout and arrange the elements in a way that avoids overlapping.
 
 ## ChangeLogs
 
@@ -77,6 +88,8 @@ Add a `<div>` element to the `<body>` element, as the container of the backgroun
 - Change the transparency scheme to: toolbar, dockLeft, dockRight, dockBottom and status bar modifying alpha value of colors, and editor (layouts) modifying the opacity property.
 - When changing the theme, force-reload the note interface.
 - Modify the compatitivity on theme again
+- Add a compatibility mode button that can switch between overall opacity mode and CSS opacity mode.
+- Optimize file hash method to speed up calculation speed.
 
 **v23.06.23**
 

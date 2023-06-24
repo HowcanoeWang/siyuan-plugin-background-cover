@@ -108,9 +108,7 @@ export default class SwitchBgCover extends Plugin {
         // this.changeOpacity(0.85);
         await this.applySettings();
         
-        if (settings.get('inDev')) {
-            debug(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
-        }
+        debug(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
     }
 
     onunload() {
@@ -236,6 +234,7 @@ export default class SwitchBgCover extends Plugin {
             settings.set('bgObj', fileidx[r_hash])
         }
         await settings.save()
+        this.updateSettingPanelValues()
     }
 
     private async addSingleLocalImageFile() {
@@ -256,8 +255,10 @@ export default class SwitchBgCover extends Plugin {
         const fileHandle = await window.showOpenFilePicker(pickerOpts);
         let file = await fileHandle[0].getFile();
 
-        let file_content = await file.text()
-        var md5 = MD5(file_content).toString().slice(0,15);
+        showMessage(`${file.name}-${(file.size/1024/1024).toFixed(2)}MB<br>${this.i18n.addSingleImageUploadNotice}`, 3000, "info")
+
+        // let file_content = await file.text()
+        var md5 = MD5(`${file.name}${file.size}${file.lastModified}`.slice(0,15));
 
         if (settings.get('fileidx') !== undefined && md5 in settings.get('fileidx')) {
             const dialog = new Dialog({
@@ -291,11 +292,12 @@ export default class SwitchBgCover extends Plugin {
     
                 settings.set('bgObj', bgObj)
                 settings.set('fileidx', fileidx)
-                settings.save()
+                await settings.save()
 
                 debug(`[func][addSingleLocalImageFile]: fileidx ${fileidx}`)
     
-                this.applySettings();
+                this.changeBackground(bgObj.path, bgObj.mode)
+                this.updateSettingPanelValues();
             }else{
                 error(`fail to upload file ${file.name} with error code ${uploadResult}`)
             }
@@ -334,26 +336,65 @@ export default class SwitchBgCover extends Plugin {
         }
     }
 
-    private changeOpacity(alpha:number){
+    private changeOpacity(alpha:number, themeAdapt:boolean){
         // let opacity = 0.99 - 0.25 * settings.get('opacity');
         let opacity = 0.99 - 0.25 * alpha;
 
         const [themeMode, themeName] = getThemeInfo();
-        debug(`Theme changed! ${themeMode} | ${themeName}`)
 
-        // 只有layouts部分可以通过设置opacity来实现整体透明度
-        // 其他侧栏带按钮的，一旦设置opacity就会跟显示或者功能冲突，只能使用CSS的coloralpha值来调整
-        // 大概是一个chrome的bug
-        let addOpacityElement: string[]
-        addOpacityElement = ["layouts"]
-        for (let eid in addOpacityElement) {
-            var changeItem = document.getElementById(addOpacityElement[eid])
+        // 默认直接调整opacity和z_index来忽略各个主体之间的差异
+        let operateOpacityElement: string[]
+        let allOpacityElement: string[] = [
+            "layouts", "toolbar", "dockLeft", "dockRight", "dockBottom", "status"
+        ]
+        if (themeAdapt) {
+            operateOpacityElement = ["layouts"]
+        }else{
+            operateOpacityElement = [
+                "layouts", "toolbar", "dockLeft", "dockRight", "dockBottom", "status"
+            ]
+        }
+        
+        for (let eid in allOpacityElement) {
+            // 调整opacity还需要修改z-index的值，不然会导致按钮点击不了
+            // https://blog.csdn.net/weixin_51474815/article/details/121070612
+            // 
+            // 使用下面的代码，获取所有的z-index值：
+            // window.document.defaultView.getComputedStyle(
+            //    document.getElementById('layouts')
+            // ).getPropertyValue('z-index');
+            // 计算之后的结果为：
+            // layouts -> 10
+            // toolbar -> auto
+            // dockLeft -> auto
+            // dockRight -> auto
+            // dockBottom -> auto
+            // status -> 2
+            const o_zindex = window.document.defaultView.getComputedStyle(
+                document.getElementById(allOpacityElement[eid])
+            ).getPropertyValue('z-index')
+            debug('original z-index', o_zindex)
+
+            const z_index: string[] = ['auto', '7', 'auto', 'auto', 'auto', 'auto', '2']
+
+            var changeItem = document.getElementById(allOpacityElement[eid])
+
             if (settings.get('activate')) {
-                changeItem.style.setProperty('opacity', opacity.toString())
+                debug(`allOpacityElement[eid] ${allOpacityElement[eid]} in operateOpacityElement ${operateOpacityElement}`, operateOpacityElement.includes(allOpacityElement[eid]))
+
+                if (operateOpacityElement.includes(allOpacityElement[eid])) {
+                    changeItem.style.setProperty('opacity', opacity.toString())
+                    changeItem.style.setProperty('z-index', z_index[eid])
+                }else{
+                    changeItem.style.removeProperty('opacity')
+                    changeItem.style.removeProperty('z-index')
+                }
             }else{
                 changeItem.style.removeProperty('opacity')
+                changeItem.style.removeProperty('z-index')
             }
         }
+
 
         // change the color via rgba alpha
         let addAlphaElement: string[] = ["toolbar", "dockLeft", "dockRight", "dockBottom", "status"]
@@ -380,32 +421,35 @@ export default class SwitchBgCover extends Plugin {
 
         // 遍历每一个键值
         for (let eid in mergedElemet) {
-            const elementid:string = mergedElemet[eid]
-            var originalColor:string
-            var adaptColor:string
+            // 启用插件并开启了主题适配
+            var changeItem = document.getElementById(operateOpacityElement[eid])
+            if (settings.get('activate') && themeAdapt) {
+                const elementid:string = mergedElemet[eid]
+                var originalColor:string
+                var adaptColor:string
+    
+                var changeItem = document.getElementById(elementid)
+                // 当前元素使用进行主题适配的颜色
+                debug('[Func][changeOpacity]',
+                    'elementid: ', elementid, 
+                    'themeAdaptElement', themeAdaptElement, 
+                    themeAdaptElement.includes(elementid)
+                )
+                
+                if (themeAdaptElement.includes(elementid)){
+                    originalColor = themeAdaptObject[elementid][themeMode]
+                    // 根据适配的定义
+                    // 'rgba(255, 255, 255, 0)' -> use directly
+                    // 'rgb(237, 236, 233, ${opacity})' -> adapt with alpha value
+                    adaptColor = eval('`'+originalColor+'`')
+                }else{
+                    // 不需要针对主题进行适配，直接计算当前元素的颜色
+                    originalColor = getComputedStyle( changeItem ,null).getPropertyValue('background-color');
+                    adaptColor = cv2.changeColorOpacity(originalColor, opacity);
+                }
+    
+                debug(`[Func][changeOpacity] ${elementid} originalColor: ${originalColor}, adaptColor: ${adaptColor}`)
 
-            var changeItem = document.getElementById(elementid)
-            // 当前元素使用进行主题适配的颜色
-            console.log('elementid: ', elementid, 
-                        'themeAdaptElement', themeAdaptElement, 
-                        themeAdaptElement.includes(elementid)
-            )
-            
-            if (themeAdaptElement.includes(elementid)){
-                originalColor = themeAdaptObject[elementid][themeMode]
-                // 根据适配的定义
-                // 'rgba(255, 255, 255, 0)' -> use directly
-                // 'rgb(237, 236, 233, ${opacity})' -> adapt with alpha value
-                adaptColor = eval('`'+originalColor+'`')
-            }else{
-                // 不需要针对主题进行适配，直接计算当前元素的颜色
-                originalColor = getComputedStyle( changeItem ,null).getPropertyValue('background-color');
-                adaptColor = cv2.changeColorOpacity(originalColor, opacity);
-            }
-
-            debug(`[Func][changeOpacity] ${elementid} originalColor: ${originalColor}, adaptColor: ${adaptColor}`)
-
-            if (settings.get('activate')) {
                 changeItem.style.setProperty('background-color', adaptColor, 'important');
                 changeItem.style.setProperty('background-blend-mode', `lighten`)
             }else{
@@ -414,7 +458,7 @@ export default class SwitchBgCover extends Plugin {
             }
         }
 
-        settings.set('prevTheme', themeName);
+
     }
 
     private changeBlur(blur:number) {
@@ -452,9 +496,12 @@ export default class SwitchBgCover extends Plugin {
         }
 
         // this.themeOnChange()
-        this.changeOpacity(settings.get('opacity'))
+        this.changeOpacity(settings.get('opacity'), settings.get('themeAdapt'))
         this.changeBlur(settings.get('blur'))
+        this.updateSettingPanelValues()
+    }
 
+    private updateSettingPanelValues(){
         // update current image URL
         let crtImageNameElement = document.getElementById('crtImgName')
         if ( crtImageNameElement === null || crtImageNameElement === undefined ) {
@@ -488,7 +535,7 @@ export default class SwitchBgCover extends Plugin {
         const cacheImgNum = this.getCacheImgNum();
 
         const dialog = new Dialog({
-            title: `${this.i18n.addTopBarIcon} ${this.i18n.settingLabel}`,
+            title: `${this.i18n.addTopBarIcon}(v${packageInfo.version}) ${this.i18n.settingLabel}`,
             content: `
             <!--
             // info panel part
@@ -598,13 +645,30 @@ export default class SwitchBgCover extends Plugin {
                 </button>
             </label>
 
+
+
             <!--
-            // debug panel part, input[4]
+            // debug panel part, input[4] [5]
             -->
+
 
             <label class="fn__flex b3-label config__item">
                 <div class="fn__flex-1">
-                    ${this.i18n.currentVersionLabel} v${packageInfo.version}
+                    ${this.i18n.themeAdaptLabel}
+                    <div class="b3-label__text">
+                        ${this.i18n.themeAdaptDes}
+                    </div>
+                </div>
+                <span class="fn__flex-center" />
+                <input
+                    class="b3-switch fn__flex-center"
+                    type="checkbox"
+                    value="${settings.get('themeAdapt')}"
+                />
+            </label>
+            <label class="fn__flex b3-label config__item">
+                <div class="fn__flex-1">
+                    ${this.i18n.inDevModeLabel}
                     <div class="b3-label__text">
                         ${this.i18n.inDevModeDes}
                     </div>
@@ -646,7 +710,7 @@ export default class SwitchBgCover extends Plugin {
         opacityElement.addEventListener("change", () => {
             settings.set('opacity', parseFloat(opacityElement.value));
             if (settings.get('activate')) {
-                this.changeOpacity(settings.get('opacity'));
+                this.changeOpacity(settings.get('opacity'), settings.get('themeAdapt'));
             }
             settings.save();
         })
@@ -679,8 +743,19 @@ export default class SwitchBgCover extends Plugin {
             this.applySettings();
         })
 
+        // the theme adapt switches
+        const themeAdaptElement = dialog.element.querySelectorAll("input")[4];
+        themeAdaptElement.checked = settings.get('themeAdapt');
+
+        themeAdaptElement.addEventListener("click", () => {
+            settings.set('themeAdapt', !settings.get('themeAdapt'));
+            themeAdaptElement.value = `${settings.get('themeAdapt')}`;
+            this.changeOpacity(settings.get('opacity'), settings.get('themeAdapt'));
+            settings.save();
+        })
+
         // the dev mode settings
-        const devModeElement = dialog.element.querySelectorAll("input")[4];
+        const devModeElement = dialog.element.querySelectorAll("input")[5];
         devModeElement.checked = settings.get('inDev');
 
         devModeElement.addEventListener("click", () => {
