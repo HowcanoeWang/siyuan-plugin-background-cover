@@ -8,7 +8,7 @@ export function info(...msg: any[]): void {
 
 export function debug(...msg: any[]): void {
     if (settings.get('inDev')) {
-        console.log(`[BgCover Plugin][DEBUG] ${msg}`);
+        console.log(`[BgCover Plugin][DEBUG]`, ...msg);
     }
 }
 
@@ -159,7 +159,7 @@ export class OS {
         var outArray: outArray
         let out = await this.ka.readDir(dir);
         if (out !== null || out !== undefined) {
-            console.log("out.data", out.data)
+            debug("out.data", out.data)
             outArray = out.data as outArray
         }
         

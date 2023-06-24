@@ -11,6 +11,7 @@
   "selectPictureRandomLabel": "Random Selection",
   "addImageLabel": "Add Image(s)",
   "addSingleImageLabel": "Add Single Image from Local",
+  "addSingleImageUploadNotice": "Uploading, please wait a while",
   "addSingleURLImageLabel": "Add Single Image from URL",
   "addDirectoryLabel": "Add from Local Directory",
   "closeBackgroundLabel": "Closing Background",
@@ -38,9 +39,10 @@
   "resetConfigLabel": "Reset Configs",
   "resetConfigDes": "Reset all configs to default values ",
   "resetConfigDes2": "(including all cached images!)",
-  "currentVersionLabel": "Current plugin version",
-  "viewAllVersionsText": "View all published versions",
   "imageFileExist": "The selected file already exists in the cache folder",
-  "inDevModeDes": "Open the developer mode (more logs)",
-  "noCachedImg4random": "Can not find cached images, please upload first"
+  "noCachedImg4random": "Can not find cached images, please upload first",
+  "themeAdaptLabel": "Theme adapation",
+  "themeAdaptDes": "Using the plugin author's temporary theme adaptation solution, disabling it later makes it easier for the theme author to make adaptation adjustments.",
+  "inDevModeLabel": "Developer mode",
+  "inDevModeDes": "Show more logs when open"
 }
