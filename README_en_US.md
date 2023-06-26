@@ -32,12 +32,11 @@ Default background cover artist ——
 
 - [X] Only the **desktop** and **browser-desktop (PC)** are supported.
 - [X] Tiling a picture as a background for SiYuan Notes
-- [X] Compatible theme：
+- [X] Compatible theme
 - [X] Manually adjust the transparency
 - [X] Manually adjust the blur effects of the background
 - [ ] Cached folder for background image library
   - [X] Upload single local image files
-  - [ ] Upload single network image files
   - [ ] Upload all images in a local folder
 - [ ] Choose and switch a background image
   - [ ] Choosing by manual
@@ -54,6 +53,7 @@ Default background cover artist ——
 | `VSCode Light`      | ✅Naturally        | v1.1.2   |                                                                               |
 | `Z-Acrylic`         | ✅Naturally        | v0.2.2   |                                                                               |
 | `sy-darkpruple`     | ✅Naturally        | v0.2.1   |                                                                               |
+| `pink-room`         | ✅Naturally        | v0.7.9   | In theme whitelist                                                            |
 | `Dark+`             | ✅After adaptation | v1.9.4   | Compatible through transparency of components.                               |
 | `Light/Dark-Blue`   | ✅After adaptation | v1.1.0   | Compatible through transparency of components.                               |
 | `Odyssey`           | ✅After adaptation | v1.0.4   | Compatible through transparency of components.                               |
@@ -61,7 +61,6 @@ Default background cover artist ——
 | `mini-vlook`        | ✅After adaptation | v2.8.704 | Compatible through transparency of components.                               |
 | `Savor`             | ❌Slightly not     | v3.4.6   | The bottom bar and some of the skin's CSS styles are abnormally incompatible. |
 | `Rem Craft`         | ❌Slightly not     | v2.6.11  | The background style of the tool menu component is too complex to adapt.      |
-| `pink-room`         | ❌Serverly not     | v0.7.6   | Adding opacity and modifying color transparency are both ineffective.         |
 
 ## Implementation
 
