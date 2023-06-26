@@ -5,7 +5,12 @@ export enum bgMode {
     live2d = 1,
 }
 
-export var bgObj: {name:string, path:string, hash:string, mode: bgMode}
+export interface bgObj {
+    name:string, path:string, hash:string, 
+    mode: bgMode, offx: number, offy: number,
+    height: number, width: number
+}
+export var bgObj: bgObj
 
 export const pluginAssetsDir = `/data/plugins/${packageInfo.name}/assets`
 export const pluginImgDataDir = `${pluginAssetsDir}/images`.toString()
@@ -26,6 +31,10 @@ interface toAdaptThemes {
         [key: string]: string[]
     }
 }
+
+export const noAdaptThemes: string[] = [
+    "pink-room", 
+]
 
 export const toAdaptThemes: toAdaptThemes = {
     "Savor": {

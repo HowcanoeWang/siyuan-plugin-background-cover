@@ -83,6 +83,11 @@ Some themes encounter compatibility issues with the above solution, particularly
 <details open>
 <summary><b>June 2023</b></summary>
 
+**v23.06.26**
+
+- Add image offset settings
+- Add theme adaptation whitelist, which not support theme adaptation switch
+
 **v23.06.24**
 
 - Change the transparency scheme to: toolbar, dockLeft, dockRight, dockBottom and status bar modifying alpha value of colors, and editor (layouts) modifying the opacity property.

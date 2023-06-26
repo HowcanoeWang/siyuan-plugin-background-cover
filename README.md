@@ -83,6 +83,11 @@
 <details open>
 <summary><b>June 2023</b></summary>
 
+**v23.06.26**
+
+- 支持修改图片偏移位置
+- 增加主题白名单，白名单内的主题不支持开启兼容模式
+
 **v23.06.24**
 
 - 修改透明度方案为：工具条(`toolbar`)，左右底侧菜单栏(`dockLeft`, `dockRight`, `dockBottom`)， 状态栏(`status`)修改颜色的alpha值，编辑器(`layouts`)修改 `opacity`属性

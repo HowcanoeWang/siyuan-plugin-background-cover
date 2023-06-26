@@ -86,6 +86,40 @@ export class CloseCV {
         }
         return changedColor;
     }
+
+    public getImageSize(imgPath:string): Promise<{ width: number; height: number }> {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.src = imgPath;
+      
+          img.onload = () => {
+            const { naturalWidth, naturalHeight } = img;
+            resolve({ width: naturalWidth, height: naturalHeight });
+          };
+      
+          img.onerror = () => {
+            reject(new Error('无法加载图像'));
+          };
+        });
+    }
+
+    public getFullSide(container_w:number, container_h:number, img_w:number, img_h:number) {
+        const container_ratio = container_w / container_h
+        const img_ratio = img_w / img_h
+
+        let fullside = ''
+
+        if (container_ratio > img_ratio) {
+            fullside = 'X'
+        }else{
+            fullside = 'Y'
+        }
+
+        debug(`container W:H = [${container_w} / ${container_h} = ${container_ratio}], image W:H = [${img_w} / ${img_h} = ${img_ratio}], fullsize = ${fullside}`)
+
+        return fullside
+    }
+
 }
 
 /**
