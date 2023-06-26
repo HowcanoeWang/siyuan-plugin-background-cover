@@ -134,33 +134,60 @@ export default class SwitchBgCover extends Plugin {
     private async checkCacheDirctory(){
         // check image files
         let imgFiles = await os.listdir(cst.pluginImgDataDir)
-        interface fileIndex{
-            [key:string]: {
-                name: string, hash: string, mode: cst.bgMode, path:string
-            }
+        interface fileIndex  {
+            [key:string]: cst.bgObj;
         }
 
         let fileidx: fileIndex = {}
-        let fileidx_db: fileIndex = {}
+        let fileidx_db: fileIndex = settings.get('fileidx')
         let notCorrectCacheImgs = []
         let extraCacheImgs = []
         let missingCacheImgs = []
 
+        if (fileidx_db === undefined || fileidx_db === null ) {
+            debug(`The settings.fileidx is empty {}`)
+        }
+
         for (let i in imgFiles){
             let item = imgFiles[i]
             if (item.isDir) {
+                // live2d的文件目录
                 continue
             }else{
-               debug(`[Func][checkCacheDirectory] Check ${item.name} in cached dir`)
+                // 背景图片
+                debug(`[Func][checkCacheDirectory] Check ${item.name} in cached dir`)
                 if (item.name.slice(0,5) === 'hash-'){
                     const [hash_name, suffix] = os.splitext(item.name.split('-')[1])
-
-                    fileidx_db = settings.get('fileidx')
 
                     debug(hash_name, fileidx_db, extraCacheImgs)
 
                     if (hash_name in fileidx_db){
-                        fileidx[hash_name] = fileidx_db[hash_name]
+                        let bgObj_old = fileidx_db[hash_name]
+                        
+                        // 对于旧版本的fileidx_db, 检查bgObj的属性是否有遗漏，有的话就补上新属性
+                        if (bgObj_old.offx === undefined || 
+                            bgObj_old.width === undefined || 
+                            bgObj_old.width === 0) {
+                            // 旧版缓存，需要更新
+                            const imageSize = await cv2.getImageSize(bgObj_old.path)
+
+                            let bgObj: cst.bgObj = {
+                                name: bgObj_old.name,
+                                path: bgObj_old.path,
+                                hash: bgObj_old.hash,
+                                mode: bgObj_old.mode,
+                                offx: 50,
+                                offy: 50,
+                                height: imageSize.height,
+                                width: imageSize.width
+                            }
+
+                            fileidx[hash_name] = bgObj
+
+                            debug("settings.fileidx为旧版配置，已更新", bgObj)
+                        }else{
+                            fileidx[hash_name] = bgObj_old
+                        }
                     }else{
                         // 在缓存文件夹中，但图片并不在fileidx中（图片多余了）
                         extraCacheImgs.push(item.name)
@@ -205,7 +232,7 @@ export default class SwitchBgCover extends Plugin {
         }
 
         // check live 2d files
-        let live2dFiles = await os.listdir(cst.pluginLive2DataDir)
+        // let live2dFiles = await os.listdir(cst.pluginLive2DataDir)
     }
 
     private async pluginOnOff() {
@@ -222,7 +249,7 @@ export default class SwitchBgCover extends Plugin {
         const cacheImgNum = this.getCacheImgNum()
         if (cacheImgNum === 0) {
             // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
-            this.changeBackground(cst.demoImgURL, cst.bgMode.image)
+            this.changeBackgroundContent(cst.demoImgURL, cst.bgMode.image)
             settings.set('bgObj', undefined)
             showMessage(`${this.i18n.noCachedImg4random}`, 3000, "info")
         }else{
@@ -230,7 +257,7 @@ export default class SwitchBgCover extends Plugin {
             let fileidx = settings.get('fileidx')
             const r = Math.floor(Math.random() * cacheImgNum)
             const r_hash = Object.keys(fileidx)[r]
-            this.changeBackground(fileidx[r_hash].path, fileidx[r_hash].mode)
+            this.changeBackgroundContent(fileidx[r_hash].path, fileidx[r_hash].mode)
             settings.set('bgObj', fileidx[r_hash])
         }
         await settings.save()
@@ -270,15 +297,6 @@ export default class SwitchBgCover extends Plugin {
             const [prefix, suffix] = os.splitext(file.name)
             const hashedName = `hash-${md5}.${suffix}`
 
-            let bgObj = cst.bgObj
-
-            bgObj = {
-                name : file.name,
-                hash : md5,
-                mode : cst.bgMode.image,
-                path : `${cst.pluginImgDataDir.slice(5)}/${hashedName}`  // slice(5) to remove '/data'
-            }
-    
             const uploadResult = await ka.putFile(`${cst.pluginImgDataDir}/${hashedName}`, file);
 
             if (uploadResult.code === 0) {
@@ -286,6 +304,24 @@ export default class SwitchBgCover extends Plugin {
 
                 if (fileidx === undefined || fileidx === null) {
                     fileidx = {}
+                }
+
+                let bgObj = cst.bgObj
+
+                // slice(5) to remove '/data' prefix
+                const imgPath = `${cst.pluginImgDataDir.slice(5)}/${hashedName}`  
+
+                const imageSize = await cv2.getImageSize(imgPath)
+
+                bgObj = {
+                    name : file.name,
+                    hash : md5,
+                    mode : cst.bgMode.image,
+                    path : imgPath,
+                    offx : 50,
+                    offy : 50,
+                    width: imageSize.width,
+                    height: imageSize.width
                 }
 
                 fileidx[md5] = bgObj
@@ -296,16 +332,12 @@ export default class SwitchBgCover extends Plugin {
 
                 debug(`[func][addSingleLocalImageFile]: fileidx ${fileidx}`)
     
-                this.changeBackground(bgObj.path, bgObj.mode)
+                this.changeBackgroundContent(bgObj.path, bgObj.mode)
                 this.updateSettingPanelValues();
             }else{
                 error(`fail to upload file ${file.name} with error code ${uploadResult}`)
             }
         }
-    }
-
-    private async addSingleURLImageFile() {
-        this.showIndev();
     }
 
     private addDirectory() {
@@ -326,7 +358,7 @@ export default class SwitchBgCover extends Plugin {
         }
     }
 
-    private changeBackground(background:string, mode:cst.bgMode) {
+    private changeBackgroundContent(background:string, mode:cst.bgMode) {
         if (mode === cst.bgMode.image) {
             this.bgLayer.style.setProperty('background-image', `url('${background}')`);
         }else if (mode == cst.bgMode.live2d){
@@ -341,6 +373,10 @@ export default class SwitchBgCover extends Plugin {
         let opacity = 0.99 - 0.25 * alpha;
 
         const [themeMode, themeName] = getThemeInfo();
+
+        if (cst.noAdaptThemes.includes(themeName)) {
+            themeAdapt = false;
+        }
 
         // 默认直接调整opacity和z_index来忽略各个主体之间的差异
         let operateOpacityElement: string[]
@@ -422,13 +458,13 @@ export default class SwitchBgCover extends Plugin {
         // 遍历每一个键值
         for (let eid in mergedElemet) {
             // 启用插件并开启了主题适配
-            var changeItem = document.getElementById(operateOpacityElement[eid])
+            const elementid:string = mergedElemet[eid]
+            var changeItem = document.getElementById(elementid)
             if (settings.get('activate') && themeAdapt) {
-                const elementid:string = mergedElemet[eid]
+                
                 var originalColor:string
                 var adaptColor:string
     
-                var changeItem = document.getElementById(elementid)
                 // 当前元素使用进行主题适配的颜色
                 debug('[Func][changeOpacity]',
                     'elementid: ', elementid, 
@@ -457,12 +493,18 @@ export default class SwitchBgCover extends Plugin {
                 changeItem.style.removeProperty('background-blend-mode')
             }
         }
-
-
     }
 
     private changeBlur(blur:number) {
         this.bgLayer.style.setProperty('filter', `blur(${blur}px)`)
+    }
+
+    public changeBgPosition(x:string, y:string) {
+        if (x == null || x == undefined) {
+            this.bgLayer.style.setProperty('background-position', `center`);
+        }else{
+            this.bgLayer.style.setProperty('background-position', `${x}% ${y}%`);
+        }  
     }
 
     private async applySettings() {
@@ -476,7 +518,7 @@ export default class SwitchBgCover extends Plugin {
         const cacheImgNum = this.getCacheImgNum()
         if (cacheImgNum === 0){
             // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
-            this.changeBackground(cst.demoImgURL, cst.bgMode.image)
+            this.changeBackgroundContent(cst.demoImgURL, cst.bgMode.image)
             settings.set('bgObj', undefined)
         }else if(settings.get('bgObj') === undefined){
             // 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张
@@ -487,17 +529,20 @@ export default class SwitchBgCover extends Plugin {
             let fileidx = settings.get('fileidx')
             // 没有开启启动自动更换图片，则直接显示该图片
             if (bgObj.hash in fileidx && !settings.get('autoRefresh')) {
-                this.changeBackground(bgObj.path, bgObj.mode)
+                this.changeBackgroundContent(bgObj.path, bgObj.mode)
             }else{
                 // 当bjObj找不到404 | 用户选择随机图片，则随机调一张作为bjObj
                 await this.selectPictureRandom()
             }
-            
         }
 
         // this.themeOnChange()
         this.changeOpacity(settings.get('opacity'), settings.get('themeAdapt'))
         this.changeBlur(settings.get('blur'))
+        this.changeBgPosition(
+            settings.get('bgObj').offx.toString, 
+            settings.get('bgObj').offy.toString
+        )
         this.updateSettingPanelValues()
     }
 
@@ -505,7 +550,7 @@ export default class SwitchBgCover extends Plugin {
         // update current image URL
         let crtImageNameElement = document.getElementById('crtImgName')
         if ( crtImageNameElement === null || crtImageNameElement === undefined ) {
-            debug(`Element ctrImgName not exists`) 
+            // debug(`Setting panel not open`) 
         }else{
             crtImageNameElement.textContent = cst.demoImgURL.toString()
         }
@@ -513,9 +558,41 @@ export default class SwitchBgCover extends Plugin {
         // update onoff switch button
         let onoffElement = document.getElementById('onoffInput') as HTMLInputElement
         if ( onoffElement === null || onoffElement === undefined ) {
-            debug(`Element onoffElement not exists`) 
+            // debug(`Setting panel not open`) 
         }else{
             onoffElement.checked = settings.get('activate');
+        }
+
+        this.updateOffsetSwitch()
+    }
+
+    private updateOffsetSwitch(){
+        let cxElement = document.getElementById('cx') as HTMLInputElement
+        let cyElement = document.getElementById('cy') as HTMLInputElement
+
+        if ( cxElement === null || cxElement === undefined ) {
+            // debug(`Setting panel not open`) 
+        }else{
+            let bglayerElement = document.getElementById('bglayer')
+            const container_h = parseInt(getComputedStyle(bglayerElement).height)  // -> '1280px'
+            const container_w = parseInt(getComputedStyle(bglayerElement).width)
+    
+            let fullside = cv2.getFullSide(
+                container_w, container_h, 
+                settings.get('bgObj').width, settings.get('bgObj').height
+            )
+    
+            if (fullside === 'X') {
+                cxElement.disabled = true
+                cyElement.disabled = false
+                cxElement.style.setProperty('opacity', '0.1')
+                cyElement.style.removeProperty('opacity')
+            }else{
+                cyElement.disabled = true
+                cxElement.disabled = false
+                cyElement.style.setProperty('opacity', '0.1')
+                cxElement.style.removeProperty('opacity')
+            }
         }
     }
 
@@ -538,13 +615,23 @@ export default class SwitchBgCover extends Plugin {
             title: `${this.i18n.addTopBarIcon}(v${packageInfo.version}) ${this.i18n.settingLabel}`,
             content: `
             <!--
-            // info panel part
+            // info panel part， input [0] [1]
             -->
             <label class="fn__flex b3-label">
                 <div class="fn__flex-1">
                     ${this.i18n.imgPathLabel}
                     <div class="b3-label__text">
                         <code id="crtImgName" class="fn__code">${settings.get('bgObj') === undefined ? cst.demoImgURL : settings.get('bgObj').name}</code>
+                    </div>
+                </div>
+                <div class="fn__flex-center">  
+                    <div>
+                        <label for="cx">X</label> 
+                        <input class="b3-slider fn__size50" id="cx" max="100" min="0" step="5" type="range" value=${settings.get('bgObj') === undefined ? '50' : settings.get('bgObj').offx}>
+                    </div>
+                    <div>
+                        <label for="cy">Y</label> 
+                        <input class="b3-slider fn__size50" id="cy" max="100" min="0" step="5" type="range" value=${settings.get('bgObj') === undefined ? '50' : settings.get('bgObj').offy}>
                     </div>
                 </div>
             </label>
@@ -565,7 +652,7 @@ export default class SwitchBgCover extends Plugin {
             </label>
 
             <!--
-            // onoff switch part, Input[0] - Input [1]
+            // onoff switch part, Input[2] - Input [3]
             -->
 
             <label class="fn__flex b3-label">
@@ -600,7 +687,7 @@ export default class SwitchBgCover extends Plugin {
             </label>
 
             <!--
-            // slider part Input[2] - Input [3]
+            // slider part Input[4] - Input [5]
             -->
 
             <label class="fn__flex b3-label config__item">
@@ -611,7 +698,7 @@ export default class SwitchBgCover extends Plugin {
                     </div>
                 </div>
                 <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${settings.get('opacity')}">   
-                    <input class="b3-slider fn__size200" id="fontSize" max="1" min="0.1" step="0.05" type="range" value="${settings.get('opacity')}">
+                    <input class="b3-slider fn__size200" max="1" min="0.1" step="0.05" type="range" value="${settings.get('opacity')}">
                 </div>
             </label>
             <label class="fn__flex b3-label config__item">
@@ -622,7 +709,7 @@ export default class SwitchBgCover extends Plugin {
                     </div>
                 </div>
                 <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${settings.get('blur')}">   
-                    <input class="b3-slider fn__size200" id="fontSize" max="10" min="0" step="1" type="range" value="${settings.get('blur')}">
+                    <input class="b3-slider fn__size200" max="10" min="0" step="1" type="range" value="${settings.get('blur')}">
                 </div>
             </label>
 
@@ -648,19 +735,20 @@ export default class SwitchBgCover extends Plugin {
 
 
             <!--
-            // debug panel part, input[4] [5]
+            // debug panel part, input[6] [7]
             -->
 
 
             <label class="fn__flex b3-label config__item">
                 <div class="fn__flex-1">
                     ${this.i18n.themeAdaptLabel}
-                    <div class="b3-label__text">
+                    <div id="themeAdaptDes" class="b3-label__text">
                         ${this.i18n.themeAdaptDes}
                     </div>
                 </div>
                 <span class="fn__flex-center" />
                 <input
+                    id="themeAdaptInput"
                     class="b3-switch fn__flex-center"
                     type="checkbox"
                     value="${settings.get('themeAdapt')}"
@@ -684,8 +772,41 @@ export default class SwitchBgCover extends Plugin {
             width: this.isMobile ? "92vw" : "520px",
         });
 
+        // image position slider
+        const cxElement = dialog.element.querySelectorAll("input")[0];
+        const cyElement = dialog.element.querySelectorAll("input")[1];
+
+        this.updateOffsetSwitch()
+        window.addEventListener('resize', this.updateOffsetSwitch)
+
+        let elementsArray = [cxElement, cyElement]
+        // 用循环给两个element绑定相同的函数功能
+        for (let i=0; i<2; i++) {
+            // 拖动的时候，修改图片的位置
+            elementsArray[i].addEventListener("input", () => {
+                debug(elementsArray, cxElement.value, cyElement.value)
+                this.changeBgPosition(cxElement.value, cyElement.value)
+            })
+            // 停止拖动的时候，保存图片的位置
+            elementsArray[i].addEventListener("change", () => {
+                //
+                let bgObj = settings.get('bgObj')
+                bgObj.offx = cxElement.value
+                bgObj.offy = cyElement.value
+
+                settings.set('bgObj', bgObj)
+
+                let fileidx = settings.get('fileidx')
+                fileidx[bgObj.hash] = bgObj
+
+                settings.set('fileidx', fileidx)
+
+                settings.save();
+            })
+        }
+
         // plugin onoff switch
-        const activateElement = dialog.element.querySelectorAll("input")[0];
+        const activateElement = dialog.element.querySelectorAll("input")[2];
         activateElement.checked = settings.get('activate');
 
         activateElement.addEventListener("click", () => {
@@ -696,7 +817,7 @@ export default class SwitchBgCover extends Plugin {
         })
 
         // the Auto refresh switch
-        const autoRefreshElement = dialog.element.querySelectorAll("input")[1];
+        const autoRefreshElement = dialog.element.querySelectorAll("input")[3];
         autoRefreshElement.checked = settings.get('autoRefresh');
 
         autoRefreshElement.addEventListener("click", () => {
@@ -706,7 +827,7 @@ export default class SwitchBgCover extends Plugin {
         })
 
         // transparency/opacity slider
-        const opacityElement = dialog.element.querySelectorAll("input")[2];
+        const opacityElement = dialog.element.querySelectorAll("input")[4];
         opacityElement.addEventListener("change", () => {
             settings.set('opacity', parseFloat(opacityElement.value));
             if (settings.get('activate')) {
@@ -720,7 +841,7 @@ export default class SwitchBgCover extends Plugin {
         })
 
         // blur slider
-        const blurElement = dialog.element.querySelectorAll("input")[3];
+        const blurElement = dialog.element.querySelectorAll("input")[5];
         blurElement.addEventListener("change", () => {
             settings.set('blur', parseFloat(blurElement.value));
             if (settings.get('activate')) {
@@ -744,8 +865,19 @@ export default class SwitchBgCover extends Plugin {
         })
 
         // the theme adapt switches
-        const themeAdaptElement = dialog.element.querySelectorAll("input")[4];
-        themeAdaptElement.checked = settings.get('themeAdapt');
+        const themeAdaptElement = dialog.element.querySelectorAll("input")[6];
+        const themeAdaptDesElement = document.getElementById("themeAdaptDes");
+        // 白名单模式
+        const [themeMode, themeName] = getThemeInfo();
+        if (cst.noAdaptThemes.includes(themeName)){
+            themeAdaptElement.disabled = true
+            themeAdaptElement.checked = false
+            themeAdaptDesElement.textContent = this.i18n.themeNoAdaptTitle
+        }else{
+            themeAdaptElement.disabled = false
+            themeAdaptElement.checked = settings.get('themeAdapt');
+            themeAdaptDesElement.textContent = this.i18n.themeAdaptDes
+        }
 
         themeAdaptElement.addEventListener("click", () => {
             settings.set('themeAdapt', !settings.get('themeAdapt'));
@@ -755,7 +887,7 @@ export default class SwitchBgCover extends Plugin {
         })
 
         // the dev mode settings
-        const devModeElement = dialog.element.querySelectorAll("input")[5];
+        const devModeElement = dialog.element.querySelectorAll("input")[7];
         devModeElement.checked = settings.get('inDev');
 
         devModeElement.addEventListener("click", () => {
@@ -863,13 +995,6 @@ export default class SwitchBgCover extends Plugin {
                         this.addSingleLocalImageFile();
                     }
                 }, 
-                // {
-                //     icon: "iconLink",
-                //     label: `${this.i18n.addSingleURLImageLabel}`,
-                //     click: () => {
-                //         this.addSingleURLImageFile();
-                //     }
-                // }, 
                 // {
                 //     icon:"iconFolder",
                 //     label: `${this.i18n.addDirectoryLabel}`,
