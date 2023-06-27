@@ -11,7 +11,7 @@ export interface bgObj {
     height: number, width: number
 }
 
-export const pluginAssetsDir = `/data/plugins/${packageInfo.name}/assets`
+export const pluginAssetsDir = `/data/public/${packageInfo.name}/assets`
 export const pluginImgDataDir = `${pluginAssetsDir}/images`.toString()
 export const pluginLive2DataDir = `${pluginAssetsDir}/live2d`.toString()
 
