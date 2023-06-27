@@ -16,7 +16,7 @@ import { KernelApi } from "./api";
 import { settings } from './configs';
 import { 
     error, warn, info, debug, 
-    CloseCV, MD5,  OS,
+    CloseCV, MD5,  OS, Numpy,
     getThemeInfo 
 } from './utils';
 import * as cst from './constants'
@@ -28,6 +28,7 @@ import "./index.scss";
 let os = new OS();
 let ka = new KernelApi();
 let cv2 = new CloseCV();
+let np = new Numpy();
 
 export default class SwitchBgCover extends Plugin {
 
@@ -99,6 +100,9 @@ export default class SwitchBgCover extends Plugin {
     async onLayoutReady() {
         this.createBgLayer();
 
+        let dockPanelElement = document.getElementById('layouts').parentElement
+        dockPanelElement.id = 'dockPanel'
+
         await this.checkCacheDirctory();
 
         // load the user setting data
@@ -114,6 +118,9 @@ export default class SwitchBgCover extends Plugin {
     onunload() {
         info(`${this.i18n.byePlugin}`)
         settings.save();
+
+        let dockPanelElement = document.getElementById('dockPanel')
+        dockPanelElement.id = null
     }
 
     // private eventBusLog({detail}: any) {
@@ -211,7 +218,6 @@ export default class SwitchBgCover extends Plugin {
         settings.set('fileidx', fileidx)
         await settings.save()
 
-        debug(`[Func][checkCacheDirctory]notCorrectCacheImgs: ${notCorrectCacheImgs}, missingCacheImgs: ${extraCacheImgs}`)
         // raise warning to users
         if (notCorrectCacheImgs.length !== 0) {
             let msgInfo = `${this.i18n.cacheImgWrongName}<br>[${notCorrectCacheImgs}]<br>${this.i18n.doNotOperateCacheFolder}`
@@ -261,7 +267,7 @@ export default class SwitchBgCover extends Plugin {
             settings.set('bgObj', fileidx[r_hash])
         }
         await settings.save()
-        this.updateSettingPanelValues()
+        this.updateSettingPanelElementStatus()
     }
 
     private async addSingleLocalImageFile() {
@@ -306,14 +312,12 @@ export default class SwitchBgCover extends Plugin {
                     fileidx = {}
                 }
 
-                let bgObj = cst.bgObj
-
                 // slice(5) to remove '/data' prefix
                 const imgPath = `${cst.pluginImgDataDir.slice(5)}/${hashedName}`  
 
                 const imageSize = await cv2.getImageSize(imgPath)
 
-                bgObj = {
+                let bgObj:cst.bgObj = {
                     name : file.name,
                     hash : md5,
                     mode : cst.bgMode.image,
@@ -333,7 +337,7 @@ export default class SwitchBgCover extends Plugin {
                 debug(`[func][addSingleLocalImageFile]: fileidx ${fileidx}`)
     
                 this.changeBackgroundContent(bgObj.path, bgObj.mode)
-                this.updateSettingPanelValues();
+                this.updateSettingPanelElementStatus();
             }else{
                 error(`fail to upload file ${file.name} with error code ${uploadResult}`)
             }
@@ -369,7 +373,6 @@ export default class SwitchBgCover extends Plugin {
     }
 
     private changeOpacity(alpha:number, themeAdapt:boolean){
-        // let opacity = 0.99 - 0.25 * settings.get('opacity');
         let opacity = 0.99 - 0.25 * alpha;
 
         const [themeMode, themeName] = getThemeInfo();
@@ -378,117 +381,171 @@ export default class SwitchBgCover extends Plugin {
             themeAdapt = false;
         }
 
-        // 默认直接调整opacity和z_index来忽略各个主体之间的差异
-        let operateOpacityElement: string[]
-        let allOpacityElement: string[] = [
-            "layouts", "toolbar", "dockLeft", "dockRight", "dockBottom", "status"
-        ]
-        if (themeAdapt) {
-            operateOpacityElement = ["layouts"]
-        }else{
-            operateOpacityElement = [
-                "layouts", "toolbar", "dockLeft", "dockRight", "dockBottom", "status"
-            ]
+        let operateElement: {
+            opacity: {
+                operateOpacityElement: string[],
+                zIndexValue: string[]
+                operateCssElement: string[]
+            },
+            css: {
+                operateOpacityElement: string[],
+                zIndexValue: string[]
+                operateCssElement: string[]
+            },
         }
-        
-        for (let eid in allOpacityElement) {
-            // 调整opacity还需要修改z-index的值，不然会导致按钮点击不了
-            // https://blog.csdn.net/weixin_51474815/article/details/121070612
-            // 
-            // 使用下面的代码，获取所有的z-index值：
-            // window.document.defaultView.getComputedStyle(
-            //    document.getElementById('layouts')
-            // ).getPropertyValue('z-index');
-            // 计算之后的结果为：
-            // layouts -> 10
-            // toolbar -> auto
-            // dockLeft -> auto
-            // dockRight -> auto
-            // dockBottom -> auto
-            // status -> 2
-            const o_zindex = window.document.defaultView.getComputedStyle(
-                document.getElementById(allOpacityElement[eid])
-            ).getPropertyValue('z-index')
-            debug('original z-index', o_zindex)
-
-            const z_index: string[] = ['auto', '7', 'auto', 'auto', 'auto', 'auto', '2']
-
-            var changeItem = document.getElementById(allOpacityElement[eid])
-
-            if (settings.get('activate')) {
-                debug(`allOpacityElement[eid] ${allOpacityElement[eid]} in operateOpacityElement ${operateOpacityElement}`, operateOpacityElement.includes(allOpacityElement[eid]))
-
-                if (operateOpacityElement.includes(allOpacityElement[eid])) {
-                    changeItem.style.setProperty('opacity', opacity.toString())
-                    changeItem.style.setProperty('z-index', z_index[eid])
-                }else{
-                    changeItem.style.removeProperty('opacity')
-                    changeItem.style.removeProperty('z-index')
-                }
-            }else{
-                changeItem.style.removeProperty('opacity')
-                changeItem.style.removeProperty('z-index')
+        operateElement = {
+            // opacity模式：修改组件的opactiy来实现前景的透明, themeAdapt=false
+            opacity: {
+                operateOpacityElement: ["toolbar", "dockPanel", "dockBottom", "status"],
+                // 调整opacity还需要修改z-index的值，不然会导致按钮点击不了
+                // https://blog.csdn.net/weixin_51474815/article/details/121070612
+                // 
+                // 使用下面的代码，获取所有的z-index值：
+                // window.document.defaultView.getComputedStyle(
+                //    document.getElementById('layouts')
+                // ).getPropertyValue('z-index');
+                // 计算之后的结果为（默认的结果）：
+                //    layouts -> 10 (部分主题)
+                //    toolbar -> auto
+                //    dockLeft -> auto
+                //    dockRight -> auto
+                //    dockBottom -> auto
+                //    status -> 2
+                zIndexValue: ['2', '1', '2', '3'],
+                operateCssElement: []
+            },
+            // css模式：修改组件背景颜色的alpha值，来实现前景的透明, themeAdapt=true
+            css: {
+                operateOpacityElement: ["layouts"],
+                zIndexValue: ['1'],
+                operateCssElement: ["toolbar", "dockLeft", "dockRight", "dockBottom", "status"]
             }
         }
 
-
-        // change the color via rgba alpha
-        let addAlphaElement: string[] = ["toolbar", "dockLeft", "dockRight", "dockBottom", "status"]
-
-        // 创建适配的键值容器
+        // 获取constance.ts的配置中，所有需要适配主题对应的element id和对应的css值
         interface themeAdaptObject{
             [key: string]: string[]
         }
         let themeAdaptObject: themeAdaptObject
         let themeAdaptElement: string[] = []
 
-        if (themeName in cst.toAdaptThemes) {
-            themeAdaptObject = cst.toAdaptThemes[themeName] as themeAdaptObject
+        if (themeName in cst.toAdaptThemes) { // 如果当前的主题在主题适配列表中
+            // 获取constance.ts的配置中，所有需要适配主题对应的element id和对应的css值
+            themeAdaptObject = cst.toAdaptThemes[themeName]
+            // >>> "Savor": {...}
             themeAdaptElement = Object.keys(themeAdaptObject) as string[]
+            // >>> ["toolbar", "dockBottoms", ...]
+
+            // 合并并去除重复项
+            operateElement.css.operateCssElement = np.merge(
+                operateElement.css.operateCssElement,
+                themeAdaptElement
+            )
         }
 
-        // 合并键值
-        let mergedElemet: string[]
-        if (themeAdaptElement.length !== 0) {
-            mergedElemet = [...new Set([...addAlphaElement ,...themeAdaptElement ])]
-        }else{
-            mergedElemet = addAlphaElement
-        }
+        /**
+         * 用户打开图片背景
+         */
+        if (settings.get('activate')) {
 
-        // 遍历每一个键值
-        for (let eid in mergedElemet) {
-            // 启用插件并开启了主题适配
-            const elementid:string = mergedElemet[eid]
-            var changeItem = document.getElementById(elementid)
-            if (settings.get('activate') && themeAdapt) {
-                
-                var originalColor:string
-                var adaptColor:string
+            let addOpacityElement: string[]
+            let zIndexValue: string[]
+            let addCssElement: string[]
+
+            let rmOpacityElement: string[]
+            let rmCssElement: string[]
+            
+            if (themeAdapt){ // 开启css的透明模式
+                addOpacityElement = operateElement.css.operateOpacityElement
+                zIndexValue = operateElement.css.zIndexValue
+                addCssElement = operateElement.css.operateCssElement
+
+                rmOpacityElement = operateElement.opacity.operateOpacityElement
+                rmCssElement = operateElement.opacity.operateCssElement
+            }else{  // 开启 opacity 透明模式
+                addOpacityElement = operateElement.opacity.operateOpacityElement
+                zIndexValue = operateElement.opacity.zIndexValue
+                addCssElement = operateElement.opacity.operateCssElement
+
+                rmOpacityElement = operateElement.css.operateOpacityElement
+                rmCssElement = operateElement.css.operateCssElement
+            }
+
+            // 遍历修改opacity
+            for (let eid in addOpacityElement) {
+                var changeItem = document.getElementById(addOpacityElement[eid])
+
+                changeItem.style.setProperty('opacity', opacity.toString())
+                changeItem.style.setProperty('z-index', zIndexValue[eid])
+            }
+            for (let eid in rmOpacityElement) {
+                var changeItem = document.getElementById(rmOpacityElement[eid])
+
+                changeItem.style.removeProperty('opacity')
+                changeItem.style.removeProperty('z-index')
+            }
+
+            // 遍历修改Alpha
+            if (addCssElement.length > 0) {
+                for (let eid in addCssElement) {
+                    const elementid:string = addCssElement[eid]
+                    var changeItem = document.getElementById(elementid)
     
-                // 当前元素使用进行主题适配的颜色
-                debug('[Func][changeOpacity]',
-                    'elementid: ', elementid, 
-                    'themeAdaptElement', themeAdaptElement, 
-                    themeAdaptElement.includes(elementid)
-                )
-                
-                if (themeAdaptElement.includes(elementid)){
-                    originalColor = themeAdaptObject[elementid][themeMode]
-                    // 根据适配的定义
-                    // 'rgba(255, 255, 255, 0)' -> use directly
-                    // 'rgb(237, 236, 233, ${opacity})' -> adapt with alpha value
-                    adaptColor = eval('`'+originalColor+'`')
-                }else{
-                    // 不需要针对主题进行适配，直接计算当前元素的颜色
-                    originalColor = getComputedStyle( changeItem ,null).getPropertyValue('background-color');
-                    adaptColor = cv2.changeColorOpacity(originalColor, opacity);
+                    var originalColor:string
+                    var adaptColor:string
+    
+                    debug(`[Func][changeOpacity] 修改元素ID为${elementid}的元素alpha值`)
+    
+                    if (themeAdaptElement.includes(elementid)){
+                        // 如果当前元素的css在主题适配列表中，直接获取适配列表中的配置
+                        originalColor = themeAdaptObject[elementid][themeMode]
+                        adaptColor = eval('`'+originalColor+'`') // 有些配置涉及到运算
+                    }else{
+                        // 不需要针对主题进行适配，直接计算当前元素的颜色alpha值
+                        originalColor = getComputedStyle( changeItem ,null).getPropertyValue('background-color')
+                        adaptColor = cv2.changeColorOpacity(originalColor, opacity)
+                    }
+    
+                    debug(`[Func][changeOpacity] ${elementid} originalColor: ${originalColor}, adaptColor: ${adaptColor}`)
+    
+                    changeItem.style.setProperty('background-color', adaptColor, 'important')
+                    changeItem.style.setProperty('background-blend-mode', `lighten`)
                 }
-    
-                debug(`[Func][changeOpacity] ${elementid} originalColor: ${originalColor}, adaptColor: ${adaptColor}`)
+            }
+            if (rmCssElement.length > 0) {
+                for (let eid in rmCssElement) {
+                    const elementid:string = rmCssElement[eid]
+                    var changeItem = document.getElementById(elementid)
 
-                changeItem.style.setProperty('background-color', adaptColor, 'important');
-                changeItem.style.setProperty('background-blend-mode', `lighten`)
-            }else{
+                    changeItem.style.removeProperty('background-color')
+                    changeItem.style.removeProperty('background-blend-mode')
+                }
+            }
+        /**
+         * 用户关闭图片背景
+         */
+        }else{
+            // 插件不启用，则需要删除之前添加的所有元素的值
+            let removeOpacityElement = np.merge(
+                operateElement.opacity.operateOpacityElement,
+                operateElement.css.operateOpacityElement,
+            )
+            debug(`[Func][changeOpacity] 移除下列元素的opacity和z-index值:`, removeOpacityElement)
+            for (let eid in removeOpacityElement) {
+                const elementid:string = removeOpacityElement[eid]
+                var changeItem = document.getElementById(elementid)
+                changeItem.style.removeProperty('opacity')
+                changeItem.style.removeProperty('z-index')
+            }
+
+            let removeCssElement = np.merge(
+                operateElement.opacity.operateCssElement,
+                operateElement.css.operateCssElement,
+            )
+            debug(`[Func][changeOpacity] 移除下列元素的background-color和blend-mode值:`, removeCssElement)
+            for (let eid in removeCssElement) {
+                const elementid:string = removeCssElement[eid]
+                var changeItem = document.getElementById(elementid)
                 changeItem.style.removeProperty('background-color')
                 changeItem.style.removeProperty('background-blend-mode')
             }
@@ -501,8 +558,10 @@ export default class SwitchBgCover extends Plugin {
 
     public changeBgPosition(x:string, y:string) {
         if (x == null || x == undefined) {
+            debug(`[Func][changeBgPosition] xy未定义，不进行改变`)
             this.bgLayer.style.setProperty('background-position', `center`);
         }else{
+            debug(`[Func][changeBgPosition] 修改background-position为${x}% ${y}%`)
             this.bgLayer.style.setProperty('background-position', `${x}% ${y}%`);
         }  
     }
@@ -516,15 +575,19 @@ export default class SwitchBgCover extends Plugin {
 
         // 缓存文件夹中没有图片 | 用户刚刚使用这个插件 | 用户刚刚重置了插件数据 | 当前文件404找不到
         const cacheImgNum = this.getCacheImgNum()
+        debug(`[Func][applySettings] cacheImgNum= ${cacheImgNum}`)
         if (cacheImgNum === 0){
             // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
+            debug(`[Func][applySettings] 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图`)
             this.changeBackgroundContent(cst.demoImgURL, cst.bgMode.image)
             settings.set('bgObj', undefined)
         }else if(settings.get('bgObj') === undefined){
             // 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张
+            debug(`[Func][applySettings] 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张`)
             await this.selectPictureRandom()
         }else{
             // 缓存中有1张以上的图片，bjObj也有内容且图片存在
+            debug(`[Func][applySettings] 缓存中有1张以上的图片，bjObj也有内容且图片存在`)
             let bgObj = settings.get('bgObj')
             let fileidx = settings.get('fileidx')
             // 没有开启启动自动更换图片，则直接显示该图片
@@ -536,23 +599,24 @@ export default class SwitchBgCover extends Plugin {
             }
         }
 
-        // this.themeOnChange()
         this.changeOpacity(settings.get('opacity'), settings.get('themeAdapt'))
         this.changeBlur(settings.get('blur'))
-        this.changeBgPosition(
-            settings.get('bgObj').offx.toString, 
-            settings.get('bgObj').offy.toString
-        )
-        this.updateSettingPanelValues()
+        this.changeBgPosition(settings.get('bgObj').offx, settings.get('bgObj').offy)
+        this.updateSettingPanelElementStatus()
     }
 
-    private updateSettingPanelValues(){
+    private updateSettingPanelElementStatus(){
         // update current image URL
         let crtImageNameElement = document.getElementById('crtImgName')
         if ( crtImageNameElement === null || crtImageNameElement === undefined ) {
             // debug(`Setting panel not open`) 
         }else{
-            crtImageNameElement.textContent = cst.demoImgURL.toString()
+            let bgObj = settings.get('bgObj')
+            if(settings.get('bgObj') === undefined){
+                crtImageNameElement.textContent = cst.demoImgURL.toString()
+            }else{
+                crtImageNameElement.textContent = bgObj.name
+            }
         }
 
         // update onoff switch button
@@ -574,24 +638,31 @@ export default class SwitchBgCover extends Plugin {
             // debug(`Setting panel not open`) 
         }else{
             let bglayerElement = document.getElementById('bglayer')
-            const container_h = parseInt(getComputedStyle(bglayerElement).height)  // -> '1280px'
-            const container_w = parseInt(getComputedStyle(bglayerElement).width)
-    
-            let fullside = cv2.getFullSide(
-                container_w, container_h, 
-                settings.get('bgObj').width, settings.get('bgObj').height
-            )
-    
-            if (fullside === 'X') {
-                cxElement.disabled = true
-                cyElement.disabled = false
-                cxElement.style.setProperty('opacity', '0.1')
-                cyElement.style.removeProperty('opacity')
+            if (settings.get('activate')) {
+                const container_h = parseInt(getComputedStyle(bglayerElement).height)  // -> '1280px'
+                const container_w = parseInt(getComputedStyle(bglayerElement).width)
+        
+                let fullside = cv2.getFullSide(
+                    container_w, container_h, 
+                    settings.get('bgObj').width, settings.get('bgObj').height
+                )
+        
+                if (fullside === 'X') {
+                    cxElement.disabled = true
+                    cyElement.disabled = false
+                    cxElement.style.setProperty('opacity', '0.1')
+                    cyElement.style.removeProperty('opacity')
+                }else{
+                    cyElement.disabled = true
+                    cxElement.disabled = false
+                    cyElement.style.setProperty('opacity', '0.1')
+                    cxElement.style.removeProperty('opacity')
+                }
             }else{
                 cyElement.disabled = true
-                cxElement.disabled = false
+                cxElement.disabled = true
                 cyElement.style.setProperty('opacity', '0.1')
-                cxElement.style.removeProperty('opacity')
+                cxElement.style.setProperty('opacity', '0.1')
             }
         }
     }

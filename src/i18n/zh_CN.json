@@ -41,7 +41,7 @@
   "resetConfigDes2": "(包括所有缓存的图片！)",
   "imageFileExist": "选择的图片在缓存文件夹中已存在",
   "noCachedImg4random": "未找到任何缓存的背景图片，请先上传",
-  "themeAdaptLabel": "主题兼容模式 (<code>颜色alpha模式</code>)",
+  "themeAdaptLabel": "主题兼容模式 (<code>CSS颜色alpha模式</code>)",
   "themeAdaptDes": "使用插件作者自己临时的主题适配方案，关闭后使用插件默认的修改元素opacity模式，方便主题作者进行适配调整",
   "themeNoAdaptTitle": "当前主题原生支持opacity模式，无需开启兼容模式",
   "inDevModeLabel": "开发者模式",

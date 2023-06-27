@@ -45,42 +45,58 @@ Default background cover artist ——
 
 ## Theme Compativity
 
-| Theme name            | Compativity        | Versions | Descrip                                                                       |
-| --------------------- | ------------------ | -------- | ----------------------------------------------------------------------------- |
-| `Daylight midnight` | ✅Naturally        | 2.9.2    | Siyuan default theme                                                          |
-| `Tsundoku`          | ✅Naturally        | v1.7.6   |                                                                               |
-| `Zhihu`             | ✅Naturally        | v0.0.6   |                                                                               |
-| `VSCode Light`      | ✅Naturally        | v1.1.2   |                                                                               |
-| `Z-Acrylic`         | ✅Naturally        | v0.2.2   |                                                                               |
-| `sy-darkpruple`     | ✅Naturally        | v0.2.1   |                                                                               |
-| `pink-room`         | ✅Naturally        | v0.7.9   | In theme whitelist                                                            |
-| `Dark+`             | ✅After adaptation | v1.9.4   | Compatible through transparency of components.                               |
-| `Light/Dark-Blue`   | ✅After adaptation | v1.1.0   | Compatible through transparency of components.                               |
-| `Odyssey`           | ✅After adaptation | v1.0.4   | Compatible through transparency of components.                               |
-| `StarDust`          | ✅After adaptation | v0.6.1   | Compatible through transparency of components.                               |
-| `mini-vlook`        | ✅After adaptation | v2.8.704 | Compatible through transparency of components.                               |
-| `Savor`             | ❌Slightly not     | v3.4.6   | The bottom bar and some of the skin's CSS styles are abnormally incompatible. |
-| `Rem Craft`         | ❌Slightly not     | v2.6.11  | The background style of the tool menu component is too complex to adapt.      |
+| Theme name            | Compativity    | Versions | Descrip                                                                       |
+| --------------------- | -------------- | -------- | ----------------------------------------------------------------------------- |
+| `Daylight midnight` | ✅Naturally    | 2.9.2    | Siyuan default theme                                                          |
+| `pink-room`         | ✅Naturally    | v0.7.9   |                                                                               |
+| `Zhihu`             | ✅Naturally    | v0.0.6   |                                                                               |
+| `VSCode Light`      | ✅Naturally    | v1.1.2   |                                                                               |
+| `Z-Acrylic`         | ✅Naturally    | v0.2.2   |                                                                               |
+| `sy-darkpruple`     | ✅Naturally    | v0.2.1   |                                                                               |
+| `Tsundoku`          | ✅In CSS Mode  | v1.7.6   |                                                                               |
+| `Dark+`             | ✅In CSS Mode  | v1.9.4   | Compatible through modifying transparency of some components.                |
+| `Light/Dark-Blue`   | ✅In CSS Mode  | v1.1.0   | Compatible through modifying transparency of some components.                |
+| `Odyssey`           | ✅In CSS Mode  | v1.0.4   | Compatible through modifying transparency of some components.                |
+| `StarDust`          | ✅In CSS Mode  | v0.6.1   | Compatible through modifying transparency of some components.                |
+| `mini-vlook`        | ✅In CSS Mode  | v2.8.704 | Compatible through modifying transparency of some components.                |
+| `Savor`             | ❌Slightly not | v3.4.6   | The bottom bar and some of the skin's CSS styles are abnormally incompatible. |
+| `Rem Craft`         | ❌Slightly not | v2.6.11  | The background style of the tool menu component is too complex to adapt.      |
 
 ## Implementation
 
-Add a `<div>` element in the `<body>` element, with a tiled and centered placement and positioned at the bottom to hold the background image. Then modify the opacity property of the top toolbar, left,right,bottom dock (`dockLeft`, `dockRight`, `dockBottom`), status bar, and editor layouts of the Source Note panel to achieve transparent foreground with the background image displayed. The user-defined opacity range is `[0.1, 1]`, but to ensure readability of the note content, a weighted logic of `f(x) = 0.99 - 0.25x` is used to limit the opacity value range to `[0.74, 0.99]`. However, identical opacity settings can yield different results across different themes due to varying color sets per theme.
+### 1. Adding Background Element
 
-Some themes encounter compatibility issues with the above solution, particularly:
+Add a `<div>` element within the `<body>` element, tiled and centered, to serve as the container for the background image.
 
-1. Some themes set the background color of the `` element and set the color of the top toolbar, dock, and status bar to transparent to ensure color consistency.
-   * `Compatibility issue`: The plugin adds a layer of image on top of the `` element, resulting in poor readability of the text and icons on top of these completely transparent menus.
-   * `Fix`: The plugin manually sets the transparent background color to a fixed value.
-   * `Adaptation suggestion`: Theme authors are recommended to follow the Source Theme Template and modify the color of each element to a specified background color instead of using the transparent option.
-2. Some themes encounter issues where buttons cannot be clicked after activating the plugin.
-   * `Compatibility issue`: Changing the opacity value also affects the z-index, causing stacking order issues and buttons being covered by other layers. The toolbar is mainly affected by the layouts layer.
-   * `Fix`: Use the plugin's compatibility mode to read the panel's color and modify the alpha value to achieve a similar transparency effect instead of changing the opacity value. The drawback is that buttons with a set background color in the theme cannot be transparent, resulting in abrupt visual inconsistency (e.g., `Savor` and `Ram Craft` themes).
-   * `Adaptation suggestion`: Theme authors are recommended to follow the Source Theme Template's layout and arrange the elements in a way that avoids overlapping.
+### 2. Transparency of Foreground Panel
+
+The user-defined range for opacity is `[0.1, 1]`. However, to ensure the readability of the note content, a weighted logic `f(x) = 0.99 - 0.25x` is used, resulting in a weighted opacity range of `[0.74, 0.99]`. Since different themes have completely different color settings, the same opacity setting may not appear consistent across different themes.
+
+There are two modes for implementing foreground transparency:
+
+* Opacity Mode (default)
+  Modify the `opacity` property of the parent elements of the SourceNote panel's top toolbar (`toolbar`), editor, left and right sidebars (`layouts`, `dockLeft`, `dockRight`), bottom sidebar (`dockBottom`), and status bar (`status`) to achieve the transparency effect of the foreground.
+  However, this approach may encounter compatibility issues with certain themes, primarily due to the following problems:
+  1. Some themes set the background color of the `<body>` and make the color of the top toolbar, sidebars, and status bar transparent to ensure consistent appearance. However, when this plugin is enabled, the background pattern will be fully visible through these transparent menus, resulting in poor readability of the text and icons.
+  2. After activating the plugin, some theme buttons may become unclickable. This is because modifying the overall opacity with `opacity` property will also affect the `z-index` ([refer to this article for an explanation](https://blog.csdn.net/weixin_51474815/article/details/121070612)), causing issues with the stacking order. Buttons may be obscured by other layers. Generally, there is no overlapping between the top bar, editor area, and bottom bar to avoid this problem. However, some themes have overlapping regions, such as placing tabs in the top bar, which can lead to this problem.
+* CSS Mode
+  In order to address the compatibility issues caused by the opacity mode, in this mode, opacity modification is abandoned, and the background color of rendered panel elements (with element IDs `toolbar`, `layouts`, `dockLeft`, `dockRight`, `dockBottom`, `status`) is read and the alpha value is modified to achieve a similar transparency effect.
+  However, this approach may still encounter compatibility issues with certain themes. Some themes have specific background colors for buttons or button groups, but the plugin does not recursively modify all elements within the panel, resulting in the panel being transparent while the buttons inside the panel remain opaque, which can lead to poor aesthetics.
+
+### 3. Compatibility Recommendations for Theme Developers
+
+It is recommended for theme authors to follow the SourceNote theme template and avoid achieving color consistency by setting the foreground as `transparent` to reveal the background color. Additionally, try to adhere to the layout structure of the theme template and avoid overlapping between different sections
 
 ## ChangeLogs
 
 <details open>
 <summary><b>June 2023</b></summary>
+
+**v23.06.27**
+
+- Fixing bugs related to UI interactions in the settings panel.
+- Refactoring the logic of the opacity mode to modify the parent component of `dockLeft`, `dockRight`, and `layouts` instead of modifying them individually. The parent component is `<div class="fn__flex-1 fn__flex ...>` and it will be assigned a custom ID by the plugin: `dockPanel`.
+- Adding all natively supported themes to the whitelist for compatibility purposes.
 
 **v23.06.26**
 
