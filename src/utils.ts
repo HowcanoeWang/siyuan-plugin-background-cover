@@ -20,8 +20,17 @@ export function warn(...msg: any[]): void {
     console.warn(`[BgCover][WARN] ${msg}`);
 }
 
-// color processing functions
+// Array merging function
+export class Numpy {
 
+    public merge(array1:any[], array2:any[]) {
+        let mergedElement = [...new Set([...array1 ,...array2 ])]
+        return mergedElement
+    }
+
+}
+
+// color processing functions
 export class CloseCV {
 
     public addAlpha(rgb:string, alpha:number) {

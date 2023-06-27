@@ -10,7 +10,6 @@ export interface bgObj {
     mode: bgMode, offx: number, offy: number,
     height: number, width: number
 }
-export var bgObj: bgObj
 
 export const pluginAssetsDir = `/data/plugins/${packageInfo.name}/assets`
 export const pluginImgDataDir = `${pluginAssetsDir}/images`.toString()
@@ -33,7 +32,10 @@ interface toAdaptThemes {
 }
 
 export const noAdaptThemes: string[] = [
-    "pink-room", 
+    "daylight", "midnight",
+    "pink-room", "Zhihu", 
+    "siyuan-themes-vscodelite",
+    "z-acrylic", "sy-dark-purple"
 ]
 
 export const toAdaptThemes: toAdaptThemes = {
