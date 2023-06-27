@@ -139,6 +139,17 @@ export default class SwitchBgCover extends Plugin {
 
 
     private async checkCacheDirctory(){
+        // check verion and remove old cache directory
+        if ( (window as any).siyuan.config.system.kernelVersion >= '2.9.3') {
+            let oldpluginAssetsDir = `/data/plugins/${packageInfo.name}/assets`
+
+            let imgFiles = await os.listdir(oldpluginAssetsDir)
+            if (imgFiles.length > 0) {
+                showMessage(this.i18n.cacheDirectoryMove, 7000, "info")
+                await os.rmtree(oldpluginAssetsDir)
+            }
+        }
+
         // check image files
         let imgFiles = await os.listdir(cst.pluginImgDataDir)
         interface fileIndex  {

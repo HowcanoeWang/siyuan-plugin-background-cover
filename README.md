@@ -75,7 +75,7 @@
 
 * Opacity模式(默认)
 
-  修改思源笔记面板的顶部工具条(`toolbar`)、编辑器及左右侧菜单栏(`layouts`, `dockLeft`, `dockRight`)的父级元素(`iv class="fn__flex-1 fn__flex ...>`) 、底侧菜单栏(`dockBottom`)和状态栏(`status`)的 `opacity` 属性，来实现前景的透明效果。
+  修改思源笔记面板的顶部工具条(`toolbar`)、编辑器及左右侧菜单栏(`layouts`, `dockLeft`, `dockRight`)的父级元素(`<div class="fn__flex-1 fn__flex ...>`) 、底侧菜单栏(`dockBottom`)和状态栏(`status`)的 `opacity` 属性，来实现前景的透明效果。
 
   但该方案在部分主题上会出现适配的问题，主要遇到的问题有：
 
