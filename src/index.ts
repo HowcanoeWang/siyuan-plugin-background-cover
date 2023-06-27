@@ -76,7 +76,7 @@ export default class SwitchBgCover extends Plugin {
             langKey: "selectPictureRandomLabel",
             hotkey: "⇧⌘F7",
             callback: () => {
-                this.selectPictureRandom();
+                this.selectPictureRandom(true);
             }
         });
         this.addCommand({
@@ -251,18 +251,40 @@ export default class SwitchBgCover extends Plugin {
         this.showIndev();
     }
 
-    private async selectPictureRandom() {
+    private async selectPictureRandom(manualPress:boolean=false) {
         const cacheImgNum = this.getCacheImgNum()
         if (cacheImgNum === 0) {
             // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
             this.changeBackgroundContent(cst.demoImgURL, cst.bgMode.image)
             settings.set('bgObj', undefined)
             showMessage(`${this.i18n.noCachedImg4random}`, 3000, "info")
+        }else if (cacheImgNum === 1) {
+            // 只有一张图，无法进行随机抽选(无变化)
+            if (manualPress) {
+                showMessage(`${this.i18n.selectPictureRandomNotice}`, 3000, "info")
+            }
+            let belayerElement = document.getElementById('bglayer')
+            if (belayerElement.style.getPropertyValue('background-image') === '') {
+                // 如果当前背景不存在任何图片
+                let bgObj = settings.get('bgObj')
+                this.changeBackgroundContent(bgObj.path, bgObj.mode)
+            }
         }else{
             // 随机选择一张图
             let fileidx = settings.get('fileidx')
-            const r = Math.floor(Math.random() * cacheImgNum)
-            const r_hash = Object.keys(fileidx)[r]
+            let crt_hash = settings.get('bgObj').hash
+            let r_hash = ''
+            while (true) {
+                let r = Math.floor(Math.random() * cacheImgNum)
+                r_hash = Object.keys(fileidx)[r]
+                debug(`[Func][selectPictureRandom] 随机抽一张，之前：${crt_hash}，随机到：${r_hash}`)
+                if (r_hash !== crt_hash) {
+                    // 确保随机到另一张图而不是当前的图片
+                    debug(`[Func][selectPictureRandom] 已抽到不同的背景图${r_hash}，进行替换`)
+                    break
+                }
+            }
+            debug('[Func][selectPictureRandom] 跳出抽卡死循环,前景图为：', fileidx[r_hash] )
             this.changeBackgroundContent(fileidx[r_hash].path, fileidx[r_hash].mode)
             settings.set('bgObj', fileidx[r_hash])
         }
@@ -364,6 +386,7 @@ export default class SwitchBgCover extends Plugin {
 
     private changeBackgroundContent(background:string, mode:cst.bgMode) {
         if (mode === cst.bgMode.image) {
+            debug(`[Func][changeBackgroundContent] 替换当前背景图片为${background}`)
             this.bgLayer.style.setProperty('background-image', `url('${background}')`);
         }else if (mode == cst.bgMode.live2d){
             this.showIndev();
@@ -592,9 +615,11 @@ export default class SwitchBgCover extends Plugin {
             let fileidx = settings.get('fileidx')
             // 没有开启启动自动更换图片，则直接显示该图片
             if (bgObj.hash in fileidx && !settings.get('autoRefresh')) {
+                debug(`[Func][applySettings] 没有开启启动自动更换图片，则直接显示当前图片`)
                 this.changeBackgroundContent(bgObj.path, bgObj.mode)
             }else{
                 // 当bjObj找不到404 | 用户选择随机图片，则随机调一张作为bjObj
+                debug(`[Func][applySettings] 用户选择随机图片，则随机调一张作为bjObj`)
                 await this.selectPictureRandom()
             }
         }
@@ -1049,7 +1074,7 @@ export default class SwitchBgCover extends Plugin {
                     label: `${this.i18n.selectPictureRandomLabel}`,
                     accelerator: this.commands[0].customHotkey,
                     click: () => {
-                        this.selectPictureRandom();
+                        this.selectPictureRandom(true);
                     }
                 }, 
             ]
