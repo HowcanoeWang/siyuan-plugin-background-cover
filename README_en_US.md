@@ -35,9 +35,9 @@ Default background cover artist ——
 - [X] Compatible theme
 - [X] Manually adjust the transparency
 - [X] Manually adjust the blur effects of the background
-- [ ] Cached folder for background image library
+- [X] Cached folder for background image library
   - [X] Upload single local image files
-  - [ ] Upload all images in a local folder
+  - [X] Upload all images in a local folder
 - [ ] Choose and switch a background image
   - [ ] Choosing by manual
   - [X] Random select by manual action
@@ -75,12 +75,17 @@ The user-defined range for opacity is `[0.1, 1]`. However, to ensure the readabi
 There are two modes for implementing foreground transparency:
 
 * Opacity Mode (default)
+
   Modify the `opacity` property of the parent elements of the panel's top toolbar (`toolbar`), editor, left and right sidebars (`layouts`, `dockLeft`, `dockRight`), bottom sidebar (`dockBottom`), and status bar (`status`) to achieve the transparency effect of the foreground.
+
   However, this approach may encounter compatibility issues with certain themes, primarily due to the following problems:
+
   1. Some themes set the background color of the `<body>` and make the color of the top toolbar, sidebars, and status bar transparent to ensure consistent appearance. However, when this plugin is enabled, the background pattern will be fully visible through these transparent menus, resulting in poor readability of the text and icons.
   2. After activating the plugin, some theme buttons may become unclickable. This is because modifying the overall opacity with `opacity` property will also affect the `z-index` ([refer to this article for an explanation](https://blog.csdn.net/weixin_51474815/article/details/121070612)), causing issues with the stacking order. Buttons may be obscured by other layers. Generally, there is no overlapping between the top bar, editor area, and bottom bar to avoid this problem. However, some themes have overlapping regions, such as placing tabs in the top bar, which can lead to this problem.
 * CSS Mode
+
   In order to address the compatibility issues caused by the opacity mode, in this mode, opacity modification is abandoned, and the background color of rendered panel elements (with element IDs `toolbar`, `layouts`, `dockLeft`, `dockRight`, `dockBottom`, `status`) is read and the alpha value is modified to achieve a similar transparency effect.
+
   However, this approach may still encounter compatibility issues with certain themes. Some themes have specific background colors for buttons or button groups, but the plugin does not recursively modify all elements within the panel, resulting in the panel being transparent while the buttons inside the panel remain opaque, which can lead to poor aesthetics.
 
 ### 3. Compatibility Recommendations for Theme Developers
@@ -91,6 +96,13 @@ It is recommended for theme authors to follow the SourceNote theme template and 
 
 <details open>
 <summary><b>June 2023</b></summary>
+
+**v23.06.28**
+
+* For the 2.9.3 version of Joplin, modify the cache directory `/data/plugins/{name}/` to `/data/public/{name}/`.
+* Support batch image upload mode (limited to 50 images).
+* Support random non-repetitive image selection for the current image.
+* Fix UI interaction bugs in the settings interface.
 
 **v23.06.27**
 

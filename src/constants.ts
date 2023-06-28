@@ -31,6 +31,8 @@ interface toAdaptThemes {
     }
 }
 
+export const supportedImageSuffix = [".png", ".jpeg", ".jpg", ".jiff", ".jfif"]
+
 export const noAdaptThemes: string[] = [
     "daylight", "midnight",
     "pink-room", "Zhihu", 
