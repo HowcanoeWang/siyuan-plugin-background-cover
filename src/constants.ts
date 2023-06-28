@@ -37,7 +37,8 @@ export const noAdaptThemes: string[] = [
     "daylight", "midnight",
     "pink-room", "Zhihu", 
     "siyuan-themes-vscodelite",
-    "z-acrylic", "sy-dark-purple"
+    "z-acrylic", "sy-dark-purple",
+    "Dark+", "Tsundoku", "toy", "P-Book"
 ]
 
 export const toAdaptThemes: toAdaptThemes = {
@@ -60,9 +61,6 @@ export const toAdaptThemes: toAdaptThemes = {
     },
     "mini-vlook": {
         "status":     ['rgba(255, 255, 255, 0)','rgba(255, 255, 255, 0)']
-    },
-    "Dark+": {
-        "layouts":    ['rgba(238, 238, 238, ${0.3/opacity})', 'rgba(17, 17, 17, ${0.3/opacity})'],
     },
     "Light-Blue": {
         // Only light theme

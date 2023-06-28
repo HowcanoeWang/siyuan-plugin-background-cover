@@ -45,22 +45,24 @@ Default background cover artist ——
 
 ## Theme Compativity
 
-| Theme name            | Compativity    | Versions | Descrip                                                                       |
-| --------------------- | -------------- | -------- | ----------------------------------------------------------------------------- |
-| `Daylight midnight` | ✅Naturally    | 2.9.2    | Siyuan default theme                                                          |
-| `pink-room`         | ✅Naturally    | v0.7.9   |                                                                               |
-| `Zhihu`             | ✅Naturally    | v0.0.6   |                                                                               |
-| `VSCode Light`      | ✅Naturally    | v1.1.2   |                                                                               |
-| `Z-Acrylic`         | ✅Naturally    | v0.2.2   |                                                                               |
-| `sy-darkpruple`     | ✅Naturally    | v0.2.1   |                                                                               |
-| `Tsundoku`          | ✅In CSS Mode  | v1.7.6   |                                                                               |
-| `Dark+`             | ✅In CSS Mode  | v1.9.4   | Compatible through modifying transparency of some components.                |
-| `Light/Dark-Blue`   | ✅In CSS Mode  | v1.1.0   | Compatible through modifying transparency of some components.                |
-| `Odyssey`           | ✅In CSS Mode  | v1.0.4   | Compatible through modifying transparency of some components.                |
-| `StarDust`          | ✅In CSS Mode  | v0.6.1   | Compatible through modifying transparency of some components.                |
-| `mini-vlook`        | ✅In CSS Mode  | v2.8.704 | Compatible through modifying transparency of some components.                |
-| `Savor`             | ❌Slightly not | v3.4.6   | The bottom bar and some of the skin's CSS styles are abnormally incompatible. |
-| `Rem Craft`         | ❌Slightly not | v2.6.11  | The background style of the tool menu component is too complex to adapt.      |
+| Theme name             | Compativity    | Versions | Descrip                                                                       |
+| ---------------------- | -------------- | -------- | ----------------------------------------------------------------------------- |
+| `Daylight midnight`  | ✅Naturally    | 2.9.2    | 思源默认主题                                                                  |
+| `粉色小屋 pink-room` | ✅Naturally    | v0.7.9   |                                                                               |
+| `知乎 Zhihu`         | ✅Naturally    | v0.0.6   |                                                                               |
+| `VSCode Light`       | ✅Naturally    | v1.1.2   |                                                                               |
+| `Z-Acrylic`          | ✅Naturally    | v0.2.2   |                                                                               |
+| `紫夜 sy-darkpruple` | ✅Naturally    | v0.4.1   |                                                                               |
+| `玩具toy`            | ✅Naturally    | v1.1.8   |                                                                               |
+| `印刷品 P-Book`      | ✅Naturally    | v1.33    |                                                                               |
+| `積読 Tsundoku`      | ✅Naturally    | v1.7.6   |                                                                               |
+| `暗色+ Dark+`        | ✅Naturally    | v1.9.5   |                                                                               |
+| `Light/Dark-Blue`    | ✅In CSS Mode  | v1.1.0   | Compatible through modifying transparency of some components.                |
+| `任我行 Odyssey`     | ✅In CSS Mode  | v1.0.4   | Compatible through modifying transparency of some components.                |
+| `星辰 StarDust`      | ✅In CSS Mode  | v0.6.1   | Compatible through modifying transparency of some components.                |
+| `简化版 mini-vlook`  | ✅In CSS Mode  | v2.8.704 | Compatible through modifying transparency of some components.                |
+| `写未 Savor`         | ❌Slightly not | v3.4.6   | The bottom bar and some of the skin's CSS styles are abnormally incompatible. |
+| `瑞姆工艺 Rem Craft` | ❌Slightly not | v2.6.11  | The background style of the tool menu component is too complex to adapt.      |
 
 ## Implementation
 
