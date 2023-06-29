@@ -98,6 +98,11 @@
 <details open>
 <summary><b>June 2023</b></summary>
 
+**v23.06.30**
+
+- 制作缓存管理弹出菜单UI
+- 重新设定快捷键映射
+
 **v23.06.28**
 
 - 对思源笔记2.9.3版本，修改缓存目录 `/data/plugins/{name}/`为 `/data/public/{name}/`

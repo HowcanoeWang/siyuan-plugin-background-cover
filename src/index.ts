@@ -36,7 +36,7 @@ export default class SwitchBgCover extends Plugin {
 
     private htmlThemeNode = document.getElementsByTagName('html')[0];
 
-    private bgLayer = document.createElement('div');
+    private bgLayer = document.createElement('canvas');
 
     async onload() {
         const frontEnd = getFrontend();
@@ -73,6 +73,13 @@ export default class SwitchBgCover extends Plugin {
 
         // 绑定快捷键
         this.addCommand({
+            langKey: "selectPictureManualLabel",
+            hotkey: "⇧⌘F6",
+            callback: () => {
+                this.selectPictureByHand();
+            }
+        });
+        this.addCommand({
             langKey: "selectPictureRandomLabel",
             hotkey: "⇧⌘F7",
             callback: () => {
@@ -81,7 +88,7 @@ export default class SwitchBgCover extends Plugin {
         });
         this.addCommand({
             langKey: "openBackgroundLabel",
-            hotkey: "⇧⌘F6",
+            hotkey: "⇧⌘F4",
             callback: () => {
                 this.pluginOnOff();
             }
@@ -259,7 +266,83 @@ export default class SwitchBgCover extends Plugin {
     }
 
     private async selectPictureByHand() {
-        this.showIndev();
+        const cacheManagerDialog = new Dialog({
+            title: this.i18n.selectPictureManagerTitle,
+            width: this.isMobile ? "92vw" : "520px",
+            height: "92vh",
+            content: `
+            <div class="fn__flex-column" style="height: 100%">
+                <div class="layout-tab-bar fn__flex">
+
+                    <!-- tab 1 title -->
+                    <div class="item item--full item--focus" data-type="remove">
+                        <span class="fn__flex-1"></span>
+                        <span class="item__text">${this.i18n.selectPictureManagerTab1}</span>
+                        <span class="fn__flex-1"></span>
+                    </div>
+
+                    <!-- tab 2 title -->
+                    <!--div class="item item--full" data-type="missing">
+                        <span class="fn__flex-1"></span>
+                        <span class="item__text">${this.i18n.selectPictureManagerTab2}</span>
+                        <span class="fn__flex-1"></span>
+                    </div-->
+                </div>
+                <div class="fn__flex-1">
+
+                    <!-- tab 1 -->
+
+                    <div class="config-assets" data-type="remove" data-init="true">
+                        <div class="fn__hr--b"></div>
+
+                        <label class="fn__flex" style="justify-content: flex-end;">
+                            <button id="removeAll" class="b3-button b3-button--outline fn__flex-center fn__size200">
+                                <svg class="svg"><use xlink:href="#iconTrashcan"></use></svg>
+                                ${this.i18n.deleteAll}
+                            </button>
+                            <div class="fn__space"></div>
+                        </label>
+
+                        <div class="fn__hr"></div>
+
+                        <ul class="b3-list b3-list--background config-assets__list">
+
+                            <li data-path="20230609230328-7vp057x.png" class="b3-list-item b3-list-item--hide-action">
+                                <span class="b3-list-item__text">
+                                    20230609230328-7vp057x.png
+                                </span>
+                                <span data-type="open" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${this.i18n.setAsBg}">
+                                    <svg><use xlink:href="#iconHideDock"></use></svg>
+                                </span>
+                                <span data-type="clear" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${this.i18n.delete}">
+                                    <svg><use xlink:href="#iconTrashcan"></use></svg>
+                                </span>
+                            </li>
+                            
+                        </ul>
+
+                        <!-- after rendering -->
+                        <!--div class="config-assets__preview" data-path="assets/xxxx.png">
+                            <img style="max-height: 100%" src="assets/xxxx.png">
+                        </div-->
+
+                        <!-- default empty -->
+                        <div class="config-assets__preview"></div>
+                    </div>
+
+                    <!-- tab 2, class add fn__none to cancle display -->
+
+                    <!--div class="fn__none config-assets" data-type="missing">
+                        <div class="fn__hr"></div>
+                        <ul class="b3-list b3-list--background config-assets__list">
+                            <li class="fn__loading"><img src="/stage/loading-pure.svg"></li>
+                        </ul>
+                        <div class="fn__hr"></div>
+                    </div>
+                </div>
+            </div>
+            `
+        })
     }
 
     private async selectPictureRandom(manualPress: boolean = false) {
@@ -904,6 +987,7 @@ export default class SwitchBgCover extends Plugin {
 
         const dialog = new Dialog({
             title: `${this.i18n.addTopBarIcon}(v${packageInfo.version}) ${this.i18n.settingLabel}`,
+            width: this.isMobile ? "92vw" : "520px",
             content: `
             <!--
             // info panel part
@@ -940,6 +1024,11 @@ export default class SwitchBgCover extends Plugin {
                         <a href="file:///${cst.pluginAssetsDirOS}/" style="word-break: break-all">${cst.pluginAssetsDirOS}</a>
                     </div>
                 </div>
+                <span class="fn__space"></span>
+                <button id="cacheManagerBtn" class="b3-button b3-button--outline fn__flex-center fn__size100" id="appearanceRefresh">
+                    <svg><use xlink:href="#iconDatabase"></use></svg>
+                    ${this.i18n.cacheManager}
+                </button>
             </label>
 
             <!--
@@ -1017,7 +1106,7 @@ export default class SwitchBgCover extends Plugin {
                     </div>
                 </div>
                 <span class="fn__space"></span>
-                <button class="b3-button b3-button--outline fn__flex-center fn__size100" id="appearanceRefresh">
+                <button id="resetBtn" class="b3-button b3-button--outline fn__flex-center fn__size100" id="appearanceRefresh">
                     <svg><use xlink:href="#iconRefresh"></use></svg>
                     ${this.i18n.reset}
                 </button>
@@ -1059,8 +1148,7 @@ export default class SwitchBgCover extends Plugin {
                     value="${settings.get('inDev')}"
                 />
             </label>
-            `,
-            width: this.isMobile ? "92vw" : "520px",
+            `
         });
 
         // image position slider
@@ -1101,6 +1189,13 @@ export default class SwitchBgCover extends Plugin {
 
             })
         }
+
+        // cacheManger button
+        const cacheManagerElement = document.getElementById('cacheManagerBtn') as HTMLButtonElement;
+        cacheManagerElement.addEventListener("click", async () => {
+            dialog.destroy();
+            this.selectPictureByHand();
+        })
 
         // plugin onoff switch
         const activateElement = document.getElementById('onoffInput') as HTMLInputElement;
@@ -1153,7 +1248,7 @@ export default class SwitchBgCover extends Plugin {
 
 
         // reset panel
-        const resetSettingElement = dialog.element.querySelectorAll("button")[0];
+        const resetSettingElement = document.getElementById('resetBtn') as HTMLButtonElement;
         resetSettingElement.addEventListener("click", async () => {
             os.rmtree(cst.pluginImgDataDir);
             settings.reset();
@@ -1252,17 +1347,18 @@ export default class SwitchBgCover extends Plugin {
             label: `${this.i18n.selectPictureLabel}`,
             type: "submenu",
             submenu: [
-                // {
-                //     icon: "iconHand",
-                //     label: `${this.i18n.selectPictureManualLabel}`,
-                //     click: () => {
-                //         this.selectPictureByHand();
-                //     }
-                // }, 
+                {
+                    icon: "iconHand",
+                    label: `${this.i18n.selectPictureManualLabel}`,
+                    accelerator: this.commands[0].customHotkey,
+                    click: () => {
+                        this.selectPictureByHand();
+                    }
+                }, 
                 {
                     icon: "iconMark",
                     label: `${this.i18n.selectPictureRandomLabel}`,
-                    accelerator: this.commands[0].customHotkey,
+                    accelerator: this.commands[1].customHotkey,
                     click: () => {
                         this.selectPictureRandom(true);
                     }
@@ -1294,7 +1390,7 @@ export default class SwitchBgCover extends Plugin {
             id: 'pluginOnOffMenu',
             icon: `${settings.get('activate') ? 'iconClose' : 'iconSelect'}`,
             label: `${settings.get('activate') ? this.i18n.closeBackgroundLabel : this.i18n.openBackgroundLabel}`,
-            accelerator: this.commands[1].customHotkey,
+            accelerator: this.commands[2].customHotkey,
             click: () => {
                 this.pluginOnOff();
             }
