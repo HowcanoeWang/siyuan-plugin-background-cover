@@ -99,6 +99,11 @@ It is recommended for theme authors to follow the SourceNote theme template and 
 <details open>
 <summary><b>June 2023</b></summary>
 
+**v23.06.30**
+
+- Make popup UI for cache manager
+- Redesign the shortcut key mapping
+
 **v23.06.28**
 
 * For the 2.9.3 version of Joplin, modify the cache directory `/data/plugins/{name}/` to `/data/public/{name}/`.
