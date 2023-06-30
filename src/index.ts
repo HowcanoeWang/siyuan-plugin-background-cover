@@ -20,6 +20,7 @@ import {
     getThemeInfo
 } from './utils';
 import * as cst from './constants'
+import * as adp from './themeAdapt'
 
 import packageInfo from '../plugin.json'
 import "./index.scss";
@@ -316,7 +317,7 @@ export default class SwitchBgCover extends Plugin {
             ka.removeFile(`data/${bgObj.path}`)
 
             settings.save();
-        }
+        };
 
         let listHtml:Array<HTMLLIElement> = []
         let fileidx = settings.get('fileidx')
@@ -702,7 +703,7 @@ export default class SwitchBgCover extends Plugin {
 
         const [themeMode, themeName] = getThemeInfo();
 
-        if (cst.noAdaptThemes.includes(themeName)) {
+        if (adp.noAdaptThemes.includes(themeName)) {
             themeAdapt = false;
         }
 
@@ -754,9 +755,9 @@ export default class SwitchBgCover extends Plugin {
         let themeAdaptObject: themeAdaptObject
         let themeAdaptElement: string[] = []
 
-        if (themeName in cst.toAdaptThemes) { // 如果当前的主题在主题适配列表中
+        if (themeName in adp.toAdaptThemes) { // 如果当前的主题在主题适配列表中
             // 获取constance.ts的配置中，所有需要适配主题对应的element id和对应的css值
-            themeAdaptObject = cst.toAdaptThemes[themeName]
+            themeAdaptObject = adp.toAdaptThemes[themeName]
             // >>> "Savor": {...}
             themeAdaptElement = Object.keys(themeAdaptObject) as string[]
             // >>> ["toolbar", "dockBottoms", ...]
@@ -1010,7 +1011,7 @@ export default class SwitchBgCover extends Plugin {
         }else{
             // 白名单模式
             const [themeMode, themeName] = getThemeInfo();
-            if (cst.noAdaptThemes.includes(themeName)) {
+            if (adp.noAdaptThemes.includes(themeName)) {
                 themeAdaptElement.disabled = true
                 themeAdaptElement.checked = false
                 themeAdaptDesElement.textContent = this.i18n.themeNoAdaptTitle
