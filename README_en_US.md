@@ -101,7 +101,7 @@ It is recommended for theme authors to follow the SourceNote theme template and 
 
 **v23.06.30**
 
-- Make popup UI for cache manager
+- Make popup dialog for cache manager
 - Redesign the shortcut key mapping
 
 **v23.06.28**

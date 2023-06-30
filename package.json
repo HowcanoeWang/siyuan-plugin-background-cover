@@ -1,6 +1,6 @@
 {
   "name": "plugin-background-cover",
-  "version": "0.1.5",
+  "version": "0.3.0",
   "description": "Add a picture you like to cover the entire Siyuan Note",
   "main": ".src/index.js",
   "scripts": {

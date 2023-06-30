@@ -31,6 +31,8 @@ export interface toAdaptThemes {
     }
 }
 
+export const cacheMaxNum = 198;
+
 export const supportedImageSuffix = [".png", ".jpeg", ".jpg", ".jiff", ".jfif"]
 
 export const SettingFile = 'bg-cover-setting.json';
