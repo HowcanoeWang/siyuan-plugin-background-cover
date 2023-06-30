@@ -185,6 +185,27 @@
 
 </details>
 
+## 捐赠
+
+<table>
+<thead>
+<tr>
+<th style="text-align:center;">支付宝</th>
+<th style="text-align:center;">微信支付</th>
+<th style="text-align:center;">爱发电</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;"><img width="256" class="mb-4 rounded" alt="" src="https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover/static/ali.jpg"></td>
+<td style="text-align:center;"><img width="256" class="mb-4 rounded" alt="" src="https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover/static/wechat.png"></td>
+<td style="text-align:center;"><img width="256" class="mb-4 rounded" alt="" src="https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover/static/afdian.jpg"></td>
+</tr>
+</tbody>
+</table>
+
+[爱发电](https://afdian.net/a/HowcanoeWang)
+
 ## 致谢
 
 此项目参考了以下项目部分公开的代码

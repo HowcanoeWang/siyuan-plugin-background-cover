@@ -186,6 +186,25 @@ It is recommended for theme authors to follow the SourceNote theme template and 
 
 </details>
 
+## Donation
+
+<table>
+<thead>
+<tr>
+<th style="text-align:center;">AliPay</th>
+<th style="text-align:center;">WeChat</th>
+<th style="text-align:center;">Afdian</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;"><img width="256" class="mb-4 rounded" alt="" src="https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover/static/ali.jpg"></td>
+<td style="text-align:center;"><img width="256" class="mb-4 rounded" alt="" src="https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover/static/wechat.png"></td>
+<td style="text-align:center;"><img width="256" class="mb-4 rounded" alt="" src="https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover/static/afdian.jpg"></td>
+</tr>
+</tbody>
+</table>
+
 ## Acknowledgement
 
 This project is inspired and modified from
