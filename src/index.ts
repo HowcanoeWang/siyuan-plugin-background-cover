@@ -265,6 +265,96 @@ export default class SwitchBgCover extends Plugin {
         this.applySettings();
     }
 
+    private generateCacheImgList(){
+        // parent id :
+        // template:
+        // 
+        // <li data-path="20230609230328-7vp057x.png" class="b3-list-item b3-list-item--hide-action">
+        //     <span class="b3-list-item__text">
+        //         20230609230328-7vp057x.png
+        //     </span>
+        //     <span data-type="open" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${this.i18n.setAsBg}">
+        //         <svg><use xlink:href="#iconHideDock"></use></svg>
+        //     </span>
+        //     <span data-type="clear" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${this.i18n.delete}">
+        //         <svg><use xlink:href="#iconTrashcan"></use></svg>
+        //     </span>
+        // </li>
+        function _displayImg(bgObj:cst.bgObj) {
+            let displayDivElement = document.getElementById("displayCanvas");
+
+            displayDivElement.innerHTML = `<img style="max-height: 100%" src="${bgObj.path}">`
+        }
+
+        function _setAsBg(bgObj:cst.bgObj) {
+            this.changeBackgroundContent(bgObj.path, bgObj.mode);
+            settings.set('bgObj', bgObj);
+
+            settings.save();
+        };
+
+        function _rmBg(bgObj:cst.bgObj){
+            debug('Remove the background');
+            
+            // 移除管理面板中的项目
+            let ulContainerElement = document.getElementById('cacheImgList');
+            let rmLiEle = ulContainerElement.querySelectorAll(`[data-hash="${bgObj.hash}"]`)[0];
+            rmLiEle.remove();
+
+            // 清理管理面板下方的图片预览
+            let displayDivElement = document.getElementById("displayCanvas");
+            displayDivElement.innerHTML = null;
+
+            // 移除fileidx中的项目
+            this.selectPictureRandom();
+            let fileidx = settings.get('fileidx');
+            delete fileidx[bgObj.hash]
+            settings.set('fileidx', fileidx)
+
+            // 调用os来移除本地文件夹中的缓存文件
+            debug(`[Func][_rmBg] 移除下列路径的图片：${cst.pluginImgDataDir}/${bgObj.name}`)
+            ka.removeFile(`data/${bgObj.path}`)
+
+            settings.save();
+        }
+
+        let listHtml:Array<HTMLLIElement> = []
+        let fileidx = settings.get('fileidx')
+        for (const i in fileidx) {
+            let bgObj = fileidx[i]
+
+            let parser = new DOMParser();
+            let ulElementHtml = parser.parseFromString(
+            `
+            <li data-hash="${bgObj.hash}" class="b3-list-item b3-list-item--hide-action">
+                <span class="b3-list-item__text">
+                    ${bgObj.name}
+                </span>
+                <span data-type="open" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${this.i18n.setAsBg}">
+                    <svg><use xlink:href="#iconHideDock"></use></svg>
+                </span>
+                <span data-type="clear" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${this.i18n.delete}">
+                    <svg><use xlink:href="#iconTrashcan"></use></svg>
+                </span>
+            </li>
+            `,
+            'text/html'
+            ).body.firstChild as HTMLLIElement
+
+            let setBgBtn = ulElementHtml.querySelectorAll('span')[1]
+            let delBtn = ulElementHtml.querySelectorAll('span')[2]
+            
+            setBgBtn.addEventListener('click', _setAsBg.bind(this, bgObj));
+            delBtn.addEventListener('click', _rmBg.bind(this, bgObj));
+
+            ulElementHtml.addEventListener('mouseenter', _displayImg.bind(this, bgObj))
+
+            listHtml.push(ulElementHtml)
+        }
+
+        return listHtml
+    }
+
     private async selectPictureByHand() {
         const cacheManagerDialog = new Dialog({
             title: this.i18n.selectPictureManagerTitle,
@@ -305,7 +395,7 @@ export default class SwitchBgCover extends Plugin {
 
                         <div class="fn__hr"></div>
 
-                        <ul class="b3-list b3-list--background config-assets__list">
+                        <ul id="cacheImgList" class="b3-list b3-list--background config-assets__list">
 
                             <li data-path="20230609230328-7vp057x.png" class="b3-list-item b3-list-item--hide-action">
                                 <span class="b3-list-item__text">
@@ -327,7 +417,7 @@ export default class SwitchBgCover extends Plugin {
                         </div-->
 
                         <!-- default empty -->
-                        <div class="config-assets__preview"></div>
+                        <div id="displayCanvas" class="config-assets__preview"></div>
                     </div>
 
                     <!-- tab 2, class add fn__none to cancle display -->
@@ -343,6 +433,17 @@ export default class SwitchBgCover extends Plugin {
             </div>
             `
         })
+
+        // init the image list when open
+        let listHtmlArray = this.generateCacheImgList();
+        const cacheImgListElement = document.getElementById('cacheImgList');
+        cacheImgListElement.innerHTML = '';
+        for (const element of listHtmlArray) {
+            cacheImgListElement.appendChild(element);
+          }
+
+        debug('[Func][selectPictureByHand]', listHtmlArray, cacheImgListElement);
+
     }
 
     private async selectPictureRandom(manualPress: boolean = false) {
@@ -987,7 +1088,7 @@ export default class SwitchBgCover extends Plugin {
 
         const dialog = new Dialog({
             title: `${this.i18n.addTopBarIcon}(v${packageInfo.version}) ${this.i18n.settingLabel}`,
-            width: this.isMobile ? "92vw" : "520px",
+            width: this.isMobile ? "92vw" : "max(520px, 50vw)",
             content: `
             <!--
             // info panel part
@@ -1323,7 +1424,7 @@ export default class SwitchBgCover extends Plugin {
             </div>
             <div class="b3-dialog__action">
             `,
-            width: this.isMobile ? "92vw" : "520px",
+            width: this.isMobile ? "92vw" : `520px`,
         });
 
         const btnsElement = dialog.element.querySelectorAll(".b3-button");
