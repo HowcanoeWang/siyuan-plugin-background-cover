@@ -96,7 +96,7 @@ export default class SwitchBgCover extends Plugin {
         });
 
         // 侦测theme主题有没有发生变化
-        const themeChangeObserver = new MutationObserver(this.themeOnChange.bind(this));
+        const themeChangeObserver = new MutationObserver(await this.themeOnChange.bind(this));
         themeChangeObserver.observe(this.htmlThemeNode, { attributes: true });
 
         info(this.i18n.helloPlugin);
@@ -650,8 +650,8 @@ export default class SwitchBgCover extends Plugin {
 
         const cacheImgNum = this.getCacheImgNum();
 
-        if (cacheImgNum >= 50) {
-            showMessage(this.i18n.addSingleImageExceed, 7000, 'error');
+        if (cacheImgNum >= cst.cacheMaxNum) {
+            showMessage(this.i18n.addSingleImageExceed1 + cst.cacheMaxNum + this.i18n.addSingleImageExceed2, 7000, 'error');
         }else{
             const pickerOpts = {
                 types: [
@@ -714,8 +714,8 @@ export default class SwitchBgCover extends Plugin {
                 debug(`[Func][addDirectory] fileContainer`, fileContainer)
             }
 
-            if (fileContainer.length >= 50 - cacheImgNum) {
-                showMessage(this.i18n.addDirectoryLabelError, 7000, 'error')
+            if (fileContainer.length >= cst.cacheMaxNum - cacheImgNum) {
+                showMessage(this.i18n.addDirectoryLabelError1 + cst.cacheMaxNum + this.i18n.addDirectoryLabelError2, 7000, 'error')
                 break
             }
         }
