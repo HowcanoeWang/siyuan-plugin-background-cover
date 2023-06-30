@@ -266,6 +266,59 @@ export default class SwitchBgCover extends Plugin {
         this.applySettings();
     }
 
+    private useDefaultLiaoLiaoBg() {
+        debug(`[Func][applySettings] 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图`)
+        this.changeBackgroundContent(cst.demoImgURL, cst.bgMode.image)
+        settings.set('bgObj', undefined);
+    }
+
+    private async clearCacheFolder(mode: cst.bgMode){
+        // 图片模式
+        if (mode == cst.bgMode.image) {
+            let imgList = await os.listdir(cst.pluginImgDataDir);
+            let fileidx = settings.get('fileidx')
+
+            // 此部分魔改os.rmtree，因为要考虑到未来的可拓展性，有可能存在live2d的种类，因此不能直接简单的fileidx={}来解决
+            for (let i in imgList) {
+                let item = imgList[i]
+
+                if (item.isDir) {
+                    // 如果是文件夹，则递归删除，由于这个已经是根目录了，里面的任何文件夹直接无脑删除
+                    os.rmtree(`${cst.pluginImgDataDir}/${item.name}/`)
+                }else{
+                    let full_path = `${cst.pluginImgDataDir}/${item.name}`
+                    await ka.removeFile(full_path)
+
+                    const [hash_name, suffix] = os.splitext(item.name.split('-')[1])
+
+                    delete fileidx[hash_name]
+                }
+            }
+
+            settings.set('fileidx', fileidx)
+
+            // 清除缓存控制面板中的列表项和图片缓存
+            let ulContainerElement = document.getElementById('cacheImgList');
+            ulContainerElement.innerHTML = null;
+
+            let displayDivElement = document.getElementById("displayCanvas");
+            displayDivElement.innerHTML = null;
+
+        // live2d 模式
+        } else if (mode == cst.bgMode.live2d) {
+            // os.rmtree(cst.pluginLive2DataDir);
+            // todo
+        }
+
+        const cacheImgNum = this.getCacheImgNum();
+        if (cacheImgNum === 0) {
+            // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
+            this.useDefaultLiaoLiaoBg();
+        };
+
+        await settings.save();
+    }
+
     private generateCacheImgList(){
         // parent id :
         // template:
@@ -315,6 +368,13 @@ export default class SwitchBgCover extends Plugin {
             // 调用os来移除本地文件夹中的缓存文件
             debug(`[Func][_rmBg] 移除下列路径的图片：${cst.pluginImgDataDir}/${bgObj.name}`)
             ka.removeFile(`data/${bgObj.path}`)
+
+            // 检查当前文件数量是否为空，如果为空则设置为默认了了图
+            const cacheImgNum = this.getCacheImgNum();
+            if (cacheImgNum === 0) {
+                // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
+                this.useDefaultLiaoLiaoBg();
+            };
 
             settings.save();
         };
@@ -387,7 +447,7 @@ export default class SwitchBgCover extends Plugin {
                         <div class="fn__hr--b"></div>
 
                         <label class="fn__flex" style="justify-content: flex-end;">
-                            <button id="removeAll" class="b3-button b3-button--outline fn__flex-center fn__size200">
+                            <button id="removeAllImgs" class="b3-button b3-button--outline fn__flex-center fn__size200">
                                 <svg class="svg"><use xlink:href="#iconTrashcan"></use></svg>
                                 ${this.i18n.deleteAll}
                             </button>
@@ -445,14 +505,16 @@ export default class SwitchBgCover extends Plugin {
 
         debug('[Func][selectPictureByHand]', listHtmlArray, cacheImgListElement);
 
+        let deleteAllImgBtn = document.getElementById('removeAllImgs');
+        deleteAllImgBtn.addEventListener('click', this.clearCacheFolder.bind(this, cst.bgMode.image));
+
     }
 
     private async selectPictureRandom(manualPress: boolean = false) {
         const cacheImgNum = this.getCacheImgNum()
         if (cacheImgNum === 0) {
             // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
-            this.changeBackgroundContent(cst.demoImgURL, cst.bgMode.image)
-            settings.set('bgObj', undefined)
+            this.useDefaultLiaoLiaoBg();
             showMessage(`${this.i18n.noCachedImg4random}`, 3000, "info")
         } else if (cacheImgNum === 1) {
             // 只有一张图，无法进行随机抽选(无变化)
@@ -904,9 +966,7 @@ export default class SwitchBgCover extends Plugin {
         debug(`[Func][applySettings] cacheImgNum= ${cacheImgNum}`)
         if (cacheImgNum === 0) {
             // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
-            debug(`[Func][applySettings] 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图`)
-            this.changeBackgroundContent(cst.demoImgURL, cst.bgMode.image)
-            settings.set('bgObj', undefined)
+            this.useDefaultLiaoLiaoBg();
         } else if (settings.get('bgObj') === undefined) {
             // 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张
             debug(`[Func][applySettings] 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张`)
