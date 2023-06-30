@@ -28,8 +28,6 @@ Default background cover artist ——
 
 ## Features
 
-**Currently, the plugin is still in beta testing. Please do not use this plugin to save important image data.**
-
 - [X] Only the **desktop** and **browser-desktop (PC)** are supported.
 - [X] Tiling a picture as a background for SiYuan Notes
 - [X] Compatible theme
@@ -38,8 +36,8 @@ Default background cover artist ——
 - [X] Cached folder for background image library
   - [X] Upload single local image files
   - [X] Upload all images in a local folder
-- [ ] Choose and switch a background image
-  - [ ] Choosing by manual
+- [x] Choose and switch a background image
+  - [x] Choosing by manual
   - [X] Random select by manual action
   - [X] Choosing randomly on launch
 
