@@ -174,14 +174,17 @@ export default class SwitchBgCover extends Plugin {
             debug(`The settings.fileidx is empty {}`)
         }
 
+        debug(`[index.ts][checkCacheDirectory] result of listdir: imgFiles`, imgFiles)
+
         for (let i in imgFiles) {
+
             let item = imgFiles[i]
             if (item.isDir) {
                 // live2d的文件目录
                 continue
             } else {
                 // 背景图片
-                debug(`[Func][checkCacheDirectory] Check ${item.name} in cached dir`)
+                debug(`[index.ts][checkCacheDirectory] Check ${item.name} in cached dir`)
                 if (item.name.slice(0, 5) === 'hash-') {
                     const [hash_name, suffix] = os.splitext(item.name.split('-')[1])
 
@@ -267,7 +270,7 @@ export default class SwitchBgCover extends Plugin {
     }
 
     private useDefaultLiaoLiaoBg() {
-        debug(`[Func][applySettings] 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图`)
+        debug(`[index.ts][applySettings] 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图`)
         this.changeBackgroundContent(cst.demoImgURL, cst.bgMode.image)
         settings.set('bgObj', undefined);
     }
@@ -366,7 +369,7 @@ export default class SwitchBgCover extends Plugin {
             settings.set('fileidx', fileidx)
 
             // 调用os来移除本地文件夹中的缓存文件
-            debug(`[Func][_rmBg] 移除下列路径的图片：${cst.pluginImgDataDir}/${bgObj.name}`)
+            debug(`[index.ts][_rmBg] 移除下列路径的图片：${cst.pluginImgDataDir}/${bgObj.name}`)
             ka.removeFile(`data/${bgObj.path}`)
 
             // 检查当前文件数量是否为空，如果为空则设置为默认了了图
@@ -503,7 +506,7 @@ export default class SwitchBgCover extends Plugin {
             cacheImgListElement.appendChild(element);
           }
 
-        debug('[Func][selectPictureByHand]', listHtmlArray, cacheImgListElement);
+        debug('[index.ts][selectPictureByHand]', listHtmlArray, cacheImgListElement);
 
         let deleteAllImgBtn = document.getElementById('removeAllImgs');
         deleteAllImgBtn.addEventListener('click', this.clearCacheFolder.bind(this, cst.bgMode.image));
@@ -535,14 +538,14 @@ export default class SwitchBgCover extends Plugin {
             while (true) {
                 let r = Math.floor(Math.random() * cacheImgNum)
                 r_hash = Object.keys(fileidx)[r]
-                debug(`[Func][selectPictureRandom] 随机抽一张，之前：${crt_hash}，随机到：${r_hash}`)
+                debug(`[index.ts][selectPictureRandom] 随机抽一张，之前：${crt_hash}，随机到：${r_hash}`)
                 if (r_hash !== crt_hash) {
                     // 确保随机到另一张图而不是当前的图片
-                    debug(`[Func][selectPictureRandom] 已抽到不同的背景图${r_hash}，进行替换`)
+                    debug(`[index.ts][selectPictureRandom] 已抽到不同的背景图${r_hash}，进行替换`)
                     break
                 }
             }
-            debug('[Func][selectPictureRandom] 跳出抽卡死循环,前景图为：', fileidx[r_hash])
+            debug('[index.ts][selectPictureRandom] 跳出抽卡死循环,前景图为：', fileidx[r_hash])
             this.changeBackgroundContent(fileidx[r_hash].path, fileidx[r_hash].mode)
             settings.set('bgObj', fileidx[r_hash])
         }
@@ -561,7 +564,7 @@ export default class SwitchBgCover extends Plugin {
                     width: this.isMobile ? "92vw" : "520px",
                 });
             }else{
-                debug(`[Func][imgIsInCache] 当前图片${file.name}已存在`)
+                debug(`[index.ts][imgIsInCache] 当前图片${file.name}已存在`)
             }
             return 'exists'
         } else {
@@ -610,7 +613,7 @@ export default class SwitchBgCover extends Plugin {
                 settings.set('bgObj', bgObj);
                 settings.set('fileidx', fileidx);
 
-                debug(`[func][addSingleLocalImageFile]: fileidx ${fileidx}`);
+                debug(`[index.ts][addSingleLocalImageFile]: fileidx ${fileidx}`);
 
                 return bgObj
             } else {
@@ -623,23 +626,23 @@ export default class SwitchBgCover extends Plugin {
     private async batchUploadImages(fileArray: Array<File>, applySetting:boolean=false) {
         let bgObj:cst.bgObj;
 
-        debug('[Func][batchUploadImages] fileArray', fileArray)
+        debug('[index.ts][batchUploadImages] fileArray', fileArray)
 
         if (fileArray.length === 0) {
-            debug('[Func][batchUploadImages] fileArray为空，不存在需要上传的图片')
+            debug('[index.ts][batchUploadImages] fileArray为空，不存在需要上传的图片')
         }else{
             for (let i in fileArray) {
                 let file = fileArray[i];
     
                 bgObj = await this.uploadOneImage(file);
     
-                debug('[Func][batchUploadImages] 在上传的循环内', bgObj)
+                debug('[index.ts][batchUploadImages] 在上传的循环内', bgObj)
             };
     
             await settings.save();
     
             if (applySetting){
-                debug('[Func][batchUploadImages] 在应用设置的判断内', bgObj)
+                debug('[index.ts][batchUploadImages] 在应用设置的判断内', bgObj)
                 this.changeBackgroundContent(bgObj.path, bgObj.mode);
                 this.updateSettingPanelElementStatus();
             }
@@ -699,7 +702,7 @@ export default class SwitchBgCover extends Plugin {
 
                 const [prefix, suffix] = os.splitext(fileName)
                 // suffix = 'jpg'
-                debug(`[Func][addDirectory] 当前图片${fileName}后缀为${suffix}, 存在于允许的图片后缀(${cst.supportedImageSuffix})中：${cst.supportedImageSuffix.includes(`.${suffix}`)}`)
+                debug(`[index.ts][addDirectory] 当前图片${fileName}后缀为${suffix}, 存在于允许的图片后缀(${cst.supportedImageSuffix})中：${cst.supportedImageSuffix.includes(`.${suffix}`)}`)
                 if (cst.supportedImageSuffix.includes(`.${suffix}`)) {
 
                     let md5 = this.imgIsInCache(file, false)
@@ -707,11 +710,11 @@ export default class SwitchBgCover extends Plugin {
                     if (md5 !== 'exists') {
                         fileContainer.push(file)
                     }else{
-                        debug(`[Func][addDirectory] 当前图片${fileName}md5为${md5}, 存在于缓存中`)
+                        debug(`[index.ts][addDirectory] 当前图片${fileName}md5为${md5}, 存在于缓存中`)
                     }
                 }
 
-                debug(`[Func][addDirectory] fileContainer`, fileContainer)
+                debug(`[index.ts][addDirectory] fileContainer`, fileContainer)
             }
 
             if (fileContainer.length >= cst.cacheMaxNum - cacheImgNum) {
@@ -751,7 +754,7 @@ export default class SwitchBgCover extends Plugin {
 
     private changeBackgroundContent(background: string, mode: cst.bgMode) {
         if (mode === cst.bgMode.image) {
-            debug(`[Func][changeBackgroundContent] 替换当前背景图片为${background}`)
+            debug(`[index.ts][changeBackgroundContent] 替换当前背景图片为${background}`)
             this.bgLayer.style.setProperty('background-image', `url('${background}')`);
         } else if (mode == cst.bgMode.live2d) {
             this.showIndev();
@@ -882,7 +885,7 @@ export default class SwitchBgCover extends Plugin {
                     var originalColor: string
                     var adaptColor: string
 
-                    debug(`[Func][changeOpacity] 修改元素ID为${elementid}的元素alpha值`)
+                    debug(`[index.ts][changeOpacity] 修改元素ID为${elementid}的元素alpha值`)
 
                     if (themeAdaptElement.includes(elementid)) {
                         // 如果当前元素的css在主题适配列表中，直接获取适配列表中的配置
@@ -894,7 +897,7 @@ export default class SwitchBgCover extends Plugin {
                         adaptColor = cv2.changeColorOpacity(originalColor, opacity)
                     }
 
-                    debug(`[Func][changeOpacity] ${elementid} originalColor: ${originalColor}, adaptColor: ${adaptColor}`)
+                    debug(`[index.ts][changeOpacity] ${elementid} originalColor: ${originalColor}, adaptColor: ${adaptColor}`)
 
                     changeItem.style.setProperty('background-color', adaptColor, 'important')
                     changeItem.style.setProperty('background-blend-mode', `lighten`)
@@ -918,7 +921,7 @@ export default class SwitchBgCover extends Plugin {
                 operateElement.opacity.operateOpacityElement,
                 operateElement.css.operateOpacityElement,
             )
-            debug(`[Func][changeOpacity] 移除下列元素的opacity和z-index值:`, removeOpacityElement)
+            debug(`[index.ts][changeOpacity] 移除下列元素的opacity和z-index值:`, removeOpacityElement)
             for (let eid in removeOpacityElement) {
                 const elementid: string = removeOpacityElement[eid]
                 var changeItem = document.getElementById(elementid)
@@ -930,7 +933,7 @@ export default class SwitchBgCover extends Plugin {
                 operateElement.opacity.operateCssElement,
                 operateElement.css.operateCssElement,
             )
-            debug(`[Func][changeOpacity] 移除下列元素的background-color和blend-mode值:`, removeCssElement)
+            debug(`[index.ts][changeOpacity] 移除下列元素的background-color和blend-mode值:`, removeCssElement)
             for (let eid in removeCssElement) {
                 const elementid: string = removeCssElement[eid]
                 var changeItem = document.getElementById(elementid)
@@ -946,10 +949,10 @@ export default class SwitchBgCover extends Plugin {
 
     public changeBgPosition(x: string, y: string) {
         if (x == null || x == undefined) {
-            debug(`[Func][changeBgPosition] xy未定义，不进行改变`)
+            debug(`[index.ts][changeBgPosition] xy未定义，不进行改变`)
             this.bgLayer.style.setProperty('background-position', `center`);
         } else {
-            debug(`[Func][changeBgPosition] 修改background-position为${x}% ${y}%`)
+            debug(`[index.ts][changeBgPosition] 修改background-position为${x}% ${y}%`)
             this.bgLayer.style.setProperty('background-position', `${x}% ${y}%`);
         }
     }
@@ -963,26 +966,26 @@ export default class SwitchBgCover extends Plugin {
 
         // 缓存文件夹中没有图片 | 用户刚刚使用这个插件 | 用户刚刚重置了插件数据 | 当前文件404找不到
         const cacheImgNum = this.getCacheImgNum()
-        debug(`[Func][applySettings] cacheImgNum= ${cacheImgNum}`)
+        debug(`[index.ts][applySettings] cacheImgNum= ${cacheImgNum}`)
         if (cacheImgNum === 0) {
             // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
             this.useDefaultLiaoLiaoBg();
         } else if (settings.get('bgObj') === undefined) {
             // 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张
-            debug(`[Func][applySettings] 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张`)
+            debug(`[index.ts][applySettings] 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张`)
             await this.selectPictureRandom()
         } else {
             // 缓存中有1张以上的图片，bjObj也有内容且图片存在
-            debug(`[Func][applySettings] 缓存中有1张以上的图片，bjObj也有内容且图片存在`)
+            debug(`[index.ts][applySettings] 缓存中有1张以上的图片，bjObj也有内容且图片存在`)
             let bgObj = settings.get('bgObj')
             let fileidx = settings.get('fileidx')
             // 没有开启启动自动更换图片，则直接显示该图片
             if (bgObj.hash in fileidx && !settings.get('autoRefresh')) {
-                debug(`[Func][applySettings] 没有开启启动自动更换图片，则直接显示当前图片`)
+                debug(`[index.ts][applySettings] 没有开启启动自动更换图片，则直接显示当前图片`)
                 this.changeBackgroundContent(bgObj.path, bgObj.mode)
             } else {
                 // 当bjObj找不到404 | 用户选择随机图片，则随机调一张作为bjObj
-                debug(`[Func][applySettings] 用户选择随机图片，则随机调一张作为bjObj`)
+                debug(`[index.ts][applySettings] 用户选择随机图片，则随机调一张作为bjObj`)
                 await this.selectPictureRandom()
             }
         }
