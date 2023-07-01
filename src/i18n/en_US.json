@@ -57,9 +57,9 @@
   "resetConfigDes2": "(including all cached images!)",
   "imageFileExist": "The selected file already exists in the cache folder",
   "noCachedImg4random": "Can not find cached images, please upload first",
-  "themeAdaptLabel": "Theme adapation (<code>In CSS color alpha mode</code>)",
-  "themeAdaptDes": "Using the plugin author's temporary theme adaptation solution, disabling it uses the element opacity mode and makes it for the theme author to make adaptation adjustments.",
-  "themeNoAdaptTitle": "This theme is fully supported, no need adapation",
+  "themeAdaptLabel": "Partial transparent mode",
+  "themeAdaptDes": "Default is global transparency mode (Opacity mode), where all elements (such as images and PDFs) are seen through the background image.<br>Enabled to use partial transparency mode (CSS mode), where block elements are not transparent (such as code blocks, images, PDFs, etc.).<br><code style='color:rgb(255,0,0)'>In this mode, some themes may have compatibility issues, and even the skin changing feature will not work</code>",
+  "themeCssReadDOMError": "DOM read css style file failed, this may cause style modification error. Recommend to use global transparency mode or contact theme author for adaptation.",
   "inDevModeLabel": "Developer mode",
   "inDevModeDes": "Show more logs when open"
 }

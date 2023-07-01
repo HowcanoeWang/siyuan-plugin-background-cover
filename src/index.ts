@@ -39,6 +39,8 @@ export default class SwitchBgCover extends Plugin {
 
     private bgLayer = document.createElement('canvas');
 
+    private cssThemeStyle: cst.cssThemeOldStyle = {};
+
     async onload() {
         const frontEnd = getFrontend();
         this.isMobile = frontEnd === "mobile" || frontEnd === "browser-mobile";
@@ -106,8 +108,11 @@ export default class SwitchBgCover extends Plugin {
     // siyuan template functions //
     ///////////////////////////////
     async onLayoutReady() {
+        this.cssThemeStyle = {}
+
         this.createBgLayer();
 
+        // 给layouts, dockLeft, dockRight三个元素的父级面板，增加一个方便定位的ID值
         let dockPanelElement = document.getElementById('layouts').parentElement
         dockPanelElement.id = 'dockPanel'
 
@@ -160,12 +165,9 @@ export default class SwitchBgCover extends Plugin {
 
         // check image files
         let imgFiles = await os.listdir(cst.pluginImgDataDir)
-        interface fileIndex {
-            [key: string]: cst.bgObj;
-        }
 
-        let fileidx: fileIndex = {}
-        let fileidx_db: fileIndex = settings.get('fileidx')
+        let fileidx: cst.fileIndex = {}
+        let fileidx_db: cst.fileIndex = settings.get('fileidx')
         let notCorrectCacheImgs = []
         let extraCacheImgs = []
         let missingCacheImgs = []
@@ -760,25 +762,25 @@ export default class SwitchBgCover extends Plugin {
         }
     }
 
-    private changeOpacity(alpha: number, themeAdapt: boolean) {
+    private changeOpacity(alpha: number, cssMode: boolean) {
+        // opacity mode: fully transparent (cssMode=False)
+        // css mode: only background transparent (cssMode=True)
         let opacity = 0.99 - 0.25 * alpha;
 
         const [themeMode, themeName] = getThemeInfo();
 
-        if (adp.noAdaptThemes.includes(themeName)) {
-            themeAdapt = false;
-        }
-
         let operateElement: {
             opacity: {
                 operateOpacityElement: string[],
-                zIndexValue: string[]
-                operateCssElement: string[]
+                zIndexValue: string[],
+                operateElementStyle: string[],
+                operateCssStyle: string[]
             },
             css: {
                 operateOpacityElement: string[],
-                zIndexValue: string[]
-                operateCssElement: string[]
+                zIndexValue: string[],
+                operateElementStyle: string[],
+                operateCssStyle: string[]
             },
         }
         operateElement = {
@@ -800,118 +802,206 @@ export default class SwitchBgCover extends Plugin {
                 //    dockBottom -> auto
                 //    status -> 2
                 zIndexValue: ['2', '1', '2', '3'],
-                operateCssElement: []
+                operateElementStyle: [],
+                operateCssStyle: [],
             },
             // css模式：修改组件背景颜色的alpha值，来实现前景的透明, themeAdapt=true
             css: {
-                operateOpacityElement: ["layouts"],
+                operateOpacityElement: [],
                 zIndexValue: ['1'],
-                operateCssElement: ["toolbar", "dockLeft", "dockRight", "dockBottom", "status"]
+                operateElementStyle: ["toolbar", "dockLeft", "dockRight", "dockBottom", "status"],
+                operateCssStyle: [
+                    ".layout-tab-bar", ".layout-tab-container", 
+                    ".protyle", ".protyle-breadcrumb", ".protyle-content"]
             }
         }
 
         // 获取constance.ts的配置中，所有需要适配主题对应的element id和对应的css值
-        interface themeAdaptObject {
-            [key: string]: string[]
-        }
-        let themeAdaptObject: themeAdaptObject
-        let themeAdaptElement: string[] = []
+        let themeAdaptObject: cst.themeAdaptObject;
+        let themeAdaptElement: string[] = [];
 
         if (themeName in adp.toAdaptThemes) { // 如果当前的主题在主题适配列表中
             // 获取constance.ts的配置中，所有需要适配主题对应的element id和对应的css值
-            themeAdaptObject = adp.toAdaptThemes[themeName]
+            themeAdaptObject = adp.toAdaptThemes[themeName];
             // >>> "Savor": {...}
-            themeAdaptElement = Object.keys(themeAdaptObject) as string[]
-            // >>> ["toolbar", "dockBottoms", ...]
+            themeAdaptElement = Object.keys(themeAdaptObject) as string[];
+            // >>> ["toolbar", ".protyle", ...]
 
             // 合并并去除重复项
-            operateElement.css.operateCssElement = np.merge(
-                operateElement.css.operateCssElement,
-                themeAdaptElement
-            )
+            for (let i in themeAdaptElement) {
+                const itemName = themeAdaptElement[i];
+
+                // 如果是".xxxx"开头，说明这边要改的是css的样式
+                debug(`[Func][chageOpacity] 添加主题适配列表内容${itemName}.slice(0,1) === '.'`, itemName.slice(0,1) === '.')
+                if (itemName.slice(0,1) === '.') {
+                    // 如果不含有当前的元素，则添加
+                    if (!operateElement.css.operateCssStyle.includes(itemName)) {
+                        operateElement.css.operateCssStyle.push(itemName);
+                    }
+                }else{
+                    if (!operateElement.css.operateElementStyle.includes(itemName)) {
+                        operateElement.css.operateElementStyle.push(itemName);
+                    }
+                }
+            }
         }
+
+        debug(`[Func][changeOpacity] operateElement: `, operateElement)
 
         /**
          * 用户打开图片背景
          */
         if (settings.get('activate')) {
 
-            let addOpacityElement: string[]
-            let zIndexValue: string[]
-            let addCssElement: string[]
+            let addOpacityElement: string[];
+            let zIndexValue: string[];
+            let addElementStyle: string[];
+            let editCssStyle: string[];
 
-            let rmOpacityElement: string[]
-            let rmCssElement: string[]
+            let rmOpacityElement: string[];
+            let rmElementStyle: string[];
+            let restoreCssStyle: string[];
 
-            if (themeAdapt) { // 开启css的透明模式
-                addOpacityElement = operateElement.css.operateOpacityElement
-                zIndexValue = operateElement.css.zIndexValue
-                addCssElement = operateElement.css.operateCssElement
+            if (cssMode) { // 开启css的透明模式
+                addOpacityElement = operateElement.css.operateOpacityElement;
+                zIndexValue = operateElement.css.zIndexValue;
+                addElementStyle = operateElement.css.operateElementStyle;
+                editCssStyle = operateElement.css.operateCssStyle;
 
-                rmOpacityElement = operateElement.opacity.operateOpacityElement
-                rmCssElement = operateElement.opacity.operateCssElement
+                rmOpacityElement = operateElement.opacity.operateOpacityElement;
+                rmElementStyle = operateElement.opacity.operateElementStyle;
+                restoreCssStyle = operateElement.opacity.operateCssStyle;
             } else {  // 开启 opacity 透明模式
-                addOpacityElement = operateElement.opacity.operateOpacityElement
-                zIndexValue = operateElement.opacity.zIndexValue
-                addCssElement = operateElement.opacity.operateCssElement
+                addOpacityElement = operateElement.opacity.operateOpacityElement;
+                zIndexValue = operateElement.opacity.zIndexValue;
+                addElementStyle = operateElement.opacity.operateElementStyle;
+                editCssStyle = operateElement.opacity.operateCssStyle;
 
-                rmOpacityElement = operateElement.css.operateOpacityElement
-                rmCssElement = operateElement.css.operateCssElement
+                rmOpacityElement = operateElement.css.operateOpacityElement;
+                rmElementStyle = operateElement.css.operateElementStyle;
+                restoreCssStyle = operateElement.css.operateCssStyle;
             }
 
             // 遍历修改opacity
             for (let eid in addOpacityElement) {
-                var changeItem = document.getElementById(addOpacityElement[eid])
+                var changeItem = document.getElementById(addOpacityElement[eid]);
 
-                changeItem.style.setProperty('opacity', opacity.toString())
-                changeItem.style.setProperty('z-index', zIndexValue[eid])
+                changeItem.style.setProperty('opacity', opacity.toString());
+                changeItem.style.setProperty('z-index', zIndexValue[eid]);
             }
             for (let eid in rmOpacityElement) {
-                var changeItem = document.getElementById(rmOpacityElement[eid])
+                var changeItem = document.getElementById(rmOpacityElement[eid]);
 
-                changeItem.style.removeProperty('opacity')
-                changeItem.style.removeProperty('z-index')
+                changeItem.style.removeProperty('opacity');
+                changeItem.style.removeProperty('z-index');
             }
 
             // 遍历修改Alpha
-            if (addCssElement.length > 0) {
-                for (let eid in addCssElement) {
-                    const elementid: string = addCssElement[eid]
-                    var changeItem = document.getElementById(elementid)
+            if (addElementStyle.length > 0) {
+                for (let eid in addElementStyle) {
+                    const elementid: string = addElementStyle[eid];
+                    var changeItem = document.getElementById(elementid);
 
-                    var originalColor: string
-                    var adaptColor: string
+                    var themeAdaptColor: string;
+                    var adaptColor: string;
 
-                    debug(`[Func][changeOpacity] 修改元素ID为${elementid}的元素alpha值`)
+                    debug(`[Func][changeOpacity] 修改元素ID为${elementid}的元素alpha值`);
 
                     if (themeAdaptElement.includes(elementid)) {
                         // 如果当前元素的css在主题适配列表中，直接获取适配列表中的配置
-                        originalColor = themeAdaptObject[elementid][themeMode]
-                        adaptColor = eval('`' + originalColor + '`') // 有些配置涉及到运算
+                        themeAdaptColor = themeAdaptObject[elementid][themeMode];
+                        adaptColor = eval('`' + themeAdaptColor + '`'); // 有些配置涉及到运算
                     } else {
                         // 不需要针对主题进行适配，直接计算当前元素的颜色alpha值
-                        originalColor = getComputedStyle(changeItem, null).getPropertyValue('background-color')
-                        adaptColor = cv2.changeColorOpacity(originalColor, opacity)
+                        themeAdaptColor = getComputedStyle(changeItem, null).getPropertyValue('background-color');
+                        adaptColor = cv2.changeColorOpacity(themeAdaptColor, opacity);
                     }
 
-                    debug(`[Func][changeOpacity] ${elementid} originalColor: ${originalColor}, adaptColor: ${adaptColor}`)
+                    debug(`[Func][changeOpacity] ${elementid} originalColor: ${themeAdaptColor}, adaptColor: ${adaptColor}`);
 
-                    changeItem.style.setProperty('background-color', adaptColor, 'important')
-                    changeItem.style.setProperty('background-blend-mode', `lighten`)
+                    changeItem.style.setProperty('background-color', adaptColor, 'important');
+                    changeItem.style.setProperty('background-blend-mode', `lighten`);
                 }
             }
-            if (rmCssElement.length > 0) {
-                for (let eid in rmCssElement) {
-                    const elementid: string = rmCssElement[eid]
-                    var changeItem = document.getElementById(elementid)
+            if (rmElementStyle.length > 0) {
+                for (let eid in rmElementStyle) {
+                    const elementid: string = rmElementStyle[eid];
+                    var changeItem = document.getElementById(elementid);
 
-                    changeItem.style.removeProperty('background-color')
-                    changeItem.style.removeProperty('background-blend-mode')
+                    changeItem.style.removeProperty('background-color');
+                    changeItem.style.removeProperty('background-blend-mode');
                 }
             }
-            /**
-             * 用户关闭图片背景
-             */
+
+            // 遍历修改css自身的值
+            if (cssMode) {
+                var sheets = document.styleSheets;
+                if (editCssStyle.length + restoreCssStyle.length > 0) {
+                    // 遍历所有的css style，找到指定的css
+                    for (var i in sheets) {
+                        debug(`[Func][changeOpacity] 当前遍历到的CSS Style文件为：`, sheets[i].href)
+                        try {
+                            var rules = sheets[i].cssRules;
+                        } catch (err) {
+                            const errorMessage = `[${this.i18n.addTopBarIcon} Plugin] ${this.i18n.themeCssReadDOMError}<br>ErrorFile: <code>${sheets[i].href}</code> when calling <code> document.styleSheets[${i}].cssRules;</code>`
+                            // showMessage(errorMessage, 0, 'error');
+    
+                            error(errorMessage, err);
+                            continue;
+                        }
+                        for (var r in rules) {
+                            let rule = rules[r] as CSSStyleRule;
+                            let csstext = rule.selectorText;
+            
+                            // 需要修改的css属性
+                            if (editCssStyle.includes(csstext)) {
+                                let cssColor = rule.style.getPropertyValue('background-color');
+                                if (!cssColor) {  // 当前样式不存在颜色值，就赋一个白色
+                                    cssColor = 'rgb(255,255,255)';
+                                    this.cssThemeStyle[csstext] = 'null';
+                                }else{
+                                    this.cssThemeStyle[csstext] = cssColor;
+                                }
+                                
+                                let transparentColor: string
+                                if (themeAdaptElement.includes(csstext)) {
+                                    // 如果当前元素的css在主题适配列表中，直接获取适配列表中的配置
+                                    themeAdaptColor = themeAdaptObject[csstext][themeMode];
+                                    transparentColor = eval('`' + themeAdaptColor + '`'); // 有些配置涉及到运算
+                                } else {
+                                    // 不需要针对主题进行适配，直接计算当前元素的颜色alpha值
+                                    if ([".protyle", ".protyle-breadcrumb", ".protyle-content"].includes(csstext)) {
+                                        transparentColor = cv2.changeColorOpacity(cssColor, 0);
+                                    }else{
+                                        transparentColor = cv2.changeColorOpacity(cssColor, opacity);
+                                    }
+                                }
+                                
+                                rule.style.setProperty('background-color', transparentColor, 'important');
+                                debug(`[Func][changeOpacity]修改css属性表${csstext},从${cssColor}修改为透明色${transparentColor}`, rule.style);
+                            }
+    
+                            // 需要恢复的css属性
+                            if (restoreCssStyle.includes(csstext)) {
+                                let originalColor = this.cssThemeStyle[csstext]
+                                // 主题中该项css样式为空，则直接删除这个项
+                                if (originalColor !== 'null') {
+                                    rule.style.setProperty('background-color', originalColor);
+                                }else{
+                                    rule.style.removeProperty('background-color')
+                                }
+                                
+                                debug(`[Func][changeOpacity]恢复css属性表${csstext}为主题默认色${this.cssThemeStyle[csstext]}`, rule.style);
+                            }
+                        }
+                    }
+                }
+            }
+            debug('cssThemeStyle Value:', this.cssThemeStyle);
+            
+        /**
+         * 用户关闭图片背景
+         */
         } else {
             // 插件不启用，则需要删除之前添加的所有元素的值
             let removeOpacityElement = np.merge(
@@ -927,18 +1017,64 @@ export default class SwitchBgCover extends Plugin {
             }
 
             let removeCssElement = np.merge(
-                operateElement.opacity.operateCssElement,
-                operateElement.css.operateCssElement,
-            )
-            debug(`[Func][changeOpacity] 移除下列元素的background-color和blend-mode值:`, removeCssElement)
+                operateElement.opacity.operateElementStyle,
+                operateElement.css.operateElementStyle,
+            );
+            debug(`[Func][changeOpacity] 移除下列元素的background-color和blend-mode值:`, removeCssElement);
             for (let eid in removeCssElement) {
-                const elementid: string = removeCssElement[eid]
-                var changeItem = document.getElementById(elementid)
-                changeItem.style.removeProperty('background-color')
-                changeItem.style.removeProperty('background-blend-mode')
-            }
-        }
-    }
+                const elementid: string = removeCssElement[eid];
+                var changeItem = document.getElementById(elementid);
+                changeItem.style.removeProperty('background-color');
+                changeItem.style.removeProperty('background-blend-mode');
+            };
+
+            // 恢复之前的css样式值
+            let removeCssStyle = np.merge(
+                operateElement.opacity.operateCssStyle,
+                operateElement.css.operateCssStyle,
+            );
+
+            var sheets = document.styleSheets;
+            if (removeCssStyle.length > 0 && cssMode) {
+                // 遍历所有的css style，找到指定的css
+                for (var i in sheets) {
+                    debug(`[Func][changeOpacity] 当前遍历到的CSS Style文件为：`, sheets[i])
+                    try {
+                        var rules = sheets[i].cssRules;
+                    } catch (err) {
+                        const errorMessage = `[${this.i18n.addTopBarIcon} Plugin] ${this.i18n.themeCssReadDOMError}<br>ErrorFile: <code>${sheets[i].href}</code> when calling <code> document.styleSheets[${i}].cssRules;</code>`
+                        // showMessage(errorMessage, 0, 'error');
+
+                        error(errorMessage, err);
+                        continue;
+                    }
+
+                    for (var r in rules) {
+                        let rule = rules[r] as CSSStyleRule;
+                        // switch (rules[r].constructor.name) {
+                        //     case 'CSSStyleRule': 
+                        //         rule = rules[r] as CSSStyleRule;
+                        //     case 'CSSImportRule':
+                        //         // todo
+                        //         continue;
+                        // }
+                        let csstext = rule.selectorText;
+        
+                        // 需要修改的css属性
+                        if (removeCssStyle.includes(csstext)) {
+                            let originalColor = this.cssThemeStyle[csstext]
+                            // 主题中该项css样式为空，则直接删除这个项
+                            if (originalColor !== 'null') {
+                                rule.style.setProperty('background-color', originalColor);
+                            }else{
+                                rule.style.removeProperty('background-color')
+                            }
+                        };
+                    };
+                };
+            };
+        };
+    };
 
     private changeBlur(blur: number) {
         this.bgLayer.style.setProperty('filter', `blur(${blur}px)`)
@@ -987,7 +1123,7 @@ export default class SwitchBgCover extends Plugin {
             }
         }
 
-        this.changeOpacity(settings.get('opacity'), settings.get('themeAdapt'))
+        this.changeOpacity(settings.get('opacity'), settings.get('cssMode'))
         this.changeBlur(settings.get('blur'))
         if (settings.get('bgObj') === undefined){
             this.changeBgPosition(null, null)
@@ -1035,7 +1171,7 @@ export default class SwitchBgCover extends Plugin {
         // 更新blur滑动条
         this._updateSliderElement('blurInput', settings.get('blur'))
 
-        this.updateThemeAdaptSwitch();
+        this._updateCheckedElement('themeAdaptInput', settings.get('cssMode'))
 
         // 更新开发者模式按钮
         this._updateCheckedElement('devModeInput', settings.get('inDev'))
@@ -1063,25 +1199,6 @@ export default class SwitchBgCover extends Plugin {
         }
     }
 
-    private updateThemeAdaptSwitch() {
-        const themeAdaptElement = document.getElementById('themeAdaptInput') as HTMLInputElement;
-        const themeAdaptDesElement = document.getElementById("themeAdaptDes");
-        if (themeAdaptElement === null || themeAdaptElement=== undefined) {
-            // debug(`Setting panel not open`) 
-        }else{
-            // 白名单模式
-            const [themeMode, themeName] = getThemeInfo();
-            if (adp.noAdaptThemes.includes(themeName)) {
-                themeAdaptElement.disabled = true
-                themeAdaptElement.checked = false
-                themeAdaptDesElement.textContent = this.i18n.themeNoAdaptTitle
-            } else {
-                themeAdaptElement.disabled = false
-                themeAdaptElement.checked = settings.get('themeAdapt');
-                themeAdaptDesElement.textContent = this.i18n.themeAdaptDes
-            }
-        }
-    }
 
     private updateOffsetSwitch() {
         let cxElement = document.getElementById('cx') as HTMLInputElement
@@ -1292,7 +1409,7 @@ export default class SwitchBgCover extends Plugin {
                     id="themeAdaptInput"
                     class="b3-switch fn__flex-center"
                     type="checkbox"
-                    value="${settings.get('themeAdapt')}"
+                    value="${settings.get('cssMode')}"
                 />
             </label>
             <label class="fn__flex b3-label config__item">
@@ -1385,7 +1502,7 @@ export default class SwitchBgCover extends Plugin {
         opacityElement.addEventListener("change", () => {
             settings.set('opacity', parseFloat(opacityElement.value));
             if (settings.get('activate')) {
-                this.changeOpacity(settings.get('opacity'), settings.get('themeAdapt'));
+                this.changeOpacity(settings.get('opacity'), settings.get('cssMode'));
             }
             settings.save();
         })
@@ -1420,12 +1537,12 @@ export default class SwitchBgCover extends Plugin {
 
         // the theme adapt switches
         const themeAdaptElement = document.getElementById('themeAdaptInput') as HTMLInputElement;
-        this.updateThemeAdaptSwitch();
+        this._updateCheckedElement('themeAdaptInput',  settings.get('cssMode'))
 
         themeAdaptElement.addEventListener("click", () => {
-            settings.set('themeAdapt', !settings.get('themeAdapt'));
-            themeAdaptElement.value = `${settings.get('themeAdapt')}`;
-            this.changeOpacity(settings.get('opacity'), settings.get('themeAdapt'));
+            settings.set('cssMode', !settings.get('cssMode'));
+            themeAdaptElement.value = `${settings.get('cssMode')}`;
+            this.changeOpacity(settings.get('opacity'), settings.get('cssMode'));
             settings.save();
         })
 
