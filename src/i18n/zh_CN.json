@@ -53,6 +53,8 @@
   "delete": "删除",
   "import": "导入",
   "export": "导出",
+  "addElement": "添加元素",
+  "addStyle": "添加样式",
   "setAsBg": "设为背景",
   "bugReportConfirmText": "由于该背景插件是通过整体修改opacity实现的，如果开启插件后部分UI透明度/显示异常，请联系主题作者进行适配。",
   "resetConfigLabel": "重置设置",

@@ -774,16 +774,8 @@ export default class SwitchBgCover extends Plugin {
             width: this.isMobile ? "92vw" : "520px",
             content: `
             <div class="fn__flex-column" style="height: 100%">
-                <!--label class="b3-label fn__flex">
-                    <div class="fn__flex-1">
-                        ${this.i18n.themeAdaptEditorDes1} <code>${themeName}</code> 
-                        <br>
-                        ${this.i18n.themeAdaptEditorDes2} <code>${themeMode === 0 ? this.i18n.themeAdaptEditorMode0 : this.i18n.themeAdaptEditorMode1}</code> 
-                    </div>
-                </label-->
 
                 <div class="b3-label file-tree config-keymap" id="keymapList" style="height:50vh;">
-                
                     <div class="fn__flex config__item">
                         <a href="https://github.com/HowcanoeWang/siyuan-plugin-background-cover/discussion">${this.i18n.themeAdaptEditorShare}</a>
                     </div>
@@ -791,11 +783,19 @@ export default class SwitchBgCover extends Plugin {
                     <div class="fn__hr"></div>
 
                     <div class="fn__flex config__item">
-                        ${this.i18n.themeAdaptEditorDes1} <code>${themeName}</code> 
+                        <span>${this.i18n.themeAdaptEditorDes1}</span>
+
+                        <span class="fn__space"></span>
+                        
+                        <code style="color:red;">${themeName}</code> 
 
                         <span class="fn__space"></span>
 
-                        <span>${this.i18n.themeAdaptEditorDes2} <code>${themeMode === 0 ? this.i18n.themeAdaptEditorMode0 : this.i18n.themeAdaptEditorMode1}</code></span>
+                        <span>${this.i18n.themeAdaptEditorDes2}</span>
+                        
+                        <span class="fn__space"></span>
+                        
+                        <code style="color:red;">${themeMode === 0 ? this.i18n.themeAdaptEditorMode0 : this.i18n.themeAdaptEditorMode1}</code>
                     </div>
                     
                     <div class="fn__hr"></div>
@@ -815,7 +815,7 @@ export default class SwitchBgCover extends Plugin {
                                 <svg class="b3-list-item__arrow b3-list-item__arrow--open"><use xlink:href="#iconRight"></use></svg>
                             </span>
                             <span class="b3-list-item__text ft__on-surface">${this.i18n.transparentModeOpacity}</span>
-                            <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="添加">
+                            <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="${this.i18n.addElement}">
                                 <svg>
                                     <use xlink:href="#iconAdd"></use>
                                 </svg>
@@ -830,12 +830,12 @@ export default class SwitchBgCover extends Plugin {
                                     <svg class="b3-list-item__arrow b3-list-item__arrow--open"><use xlink:href="#iconRight"></use></svg>
                                 </span>
                                 <span class="b3-list-item__text ft__on-surface">$toolbar</span>
-                                <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="添加">
+                                <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="${this.i18n.addStyle}">
                                     <svg>
                                         <use xlink:href="#iconAdd"></use>
                                     </svg>
                                 </span>
-                                <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="刪除">
+                                <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="${this.i18n.delete}">
                                     <svg>
                                         <use xlink:href="#iconTrashcan"></use>
                                     </svg>
@@ -847,7 +847,7 @@ export default class SwitchBgCover extends Plugin {
                                 <!-- 第三级菜单 start -->
                                 <label class="b3-list-item b3-list-item--narrow b3-list-item--hide-action">
                                     <span class="b3-list-item__text"><code>background-color</code></span>
-                                    <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="刪除">
+                                    <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="${this.i18n.delete}">
                                         <svg>
                                             <use xlink:href="#iconTrashcan"></use>
                                         </svg>
@@ -874,7 +874,7 @@ export default class SwitchBgCover extends Plugin {
                                 <svg class="b3-list-item__arrow"><use xlink:href="#iconRight"></use></svg>
                             </span>
                             <span class="b3-list-item__text ft__on-surface">${this.i18n.transparentModeCss}</span>
-                            <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="添加">
+                            <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="${this.i18n.addElement}">
                             <svg>
                                 <use xlink:href="#iconAdd"></use>
                             </svg>
