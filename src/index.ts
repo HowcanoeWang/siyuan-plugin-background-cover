@@ -277,6 +277,8 @@ export default class SwitchBgCover extends Plugin {
     private async clearCacheFolder(mode: cst.bgMode){
         // 图片模式
         if (mode == cst.bgMode.image) {
+            // 这里应该获取fileidx里面的列表，而不是文件夹内的文件，不然图片缺失的话，删除不掉
+            // todo
             let imgList = await os.listdir(cst.pluginImgDataDir);
             let fileidx = settings.get('fileidx')
 
@@ -760,11 +762,24 @@ export default class SwitchBgCover extends Plugin {
         } else {
             showMessage(`[${this.i18n.addTopBarIcon} Plugin][Error] Background type [${mode}] is not supported, `, 7000, "error");
         }
-    }
+    };
 
-    private changeOpacity(alpha: number, cssMode: boolean) {
-        // opacity mode: fully transparent (cssMode=False)
-        // css mode: only background transparent (cssMode=True)
+    private async adaptConfigEditor() {
+        const configEditor = new Dialog({
+            title: this.i18n.selectPictureManagerTitle,
+            width: this.isMobile ? "92vw" : "520px",
+            height: "92vh",
+            content: `
+            <div class="fn__flex-column" style="height: 100%">
+            
+            </div>
+            `
+        });
+    };
+
+    private changeOpacity(alpha: number, tranMode: number, adaptMode: boolean) {
+        // opacity mode: fully transparent (adaptMode=False)
+        // css mode: only background transparent (adaptMode=True)
         let opacity = 0.99 - 0.25 * alpha;
 
         const [themeMode, themeName] = getThemeInfo();
@@ -862,7 +877,7 @@ export default class SwitchBgCover extends Plugin {
             let rmElementStyle: string[];
             let restoreCssStyle: string[];
 
-            if (cssMode) { // 开启css的透明模式
+            if (adaptMode) { // 开启css的透明模式
                 addOpacityElement = operateElement.css.operateOpacityElement;
                 zIndexValue = operateElement.css.zIndexValue;
                 addElementStyle = operateElement.css.operateElementStyle;
@@ -934,7 +949,7 @@ export default class SwitchBgCover extends Plugin {
             }
 
             // 遍历修改css自身的值
-            if (cssMode) {
+            if (adaptMode) {
                 var sheets = document.styleSheets;
                 if (editCssStyle.length + restoreCssStyle.length > 0) {
                     // 遍历所有的css style，找到指定的css
@@ -1035,7 +1050,7 @@ export default class SwitchBgCover extends Plugin {
             );
 
             var sheets = document.styleSheets;
-            if (removeCssStyle.length > 0 && cssMode) {
+            if (removeCssStyle.length > 0 && adaptMode) {
                 // 遍历所有的css style，找到指定的css
                 for (var i in sheets) {
                     debug(`[Func][changeOpacity] 当前遍历到的CSS Style文件为：`, sheets[i])
@@ -1123,7 +1138,7 @@ export default class SwitchBgCover extends Plugin {
             }
         }
 
-        this.changeOpacity(settings.get('opacity'), settings.get('cssMode'))
+        this.changeOpacity(settings.get('opacity'), settings.get('transMode'), settings.get('adaptMode'))
         this.changeBlur(settings.get('blur'))
         if (settings.get('bgObj') === undefined){
             this.changeBgPosition(null, null)
@@ -1171,7 +1186,7 @@ export default class SwitchBgCover extends Plugin {
         // 更新blur滑动条
         this._updateSliderElement('blurInput', settings.get('blur'))
 
-        this._updateCheckedElement('themeAdaptInput', settings.get('cssMode'))
+        this._updateCheckedElement('themeAdaptInput', settings.get('adaptMode'))
 
         // 更新开发者模式按钮
         this._updateCheckedElement('devModeInput', settings.get('inDev'))
@@ -1373,6 +1388,46 @@ export default class SwitchBgCover extends Plugin {
             </label>
 
             <!--
+            // theme mode and adapt configs
+            -->
+
+            <label class="fn__flex b3-label config__item">
+                <div class="fn__flex-1">
+                    ${this.i18n.transparentMode}
+                    <div class="b3-label__text">${this.i18n.transparentModeDes}</div>
+                </div>
+                <span class="fn__space"></span>
+                <select id="transModeSelect" class="b3-select fn__flex-center fn__size200">
+                    <option value="0" selected="">${this.i18n.transparentModeOpacity}</option>
+                    <option value="1">${this.i18n.transparentModeCss}</option>
+                </select>
+            </label>
+
+            <label class="fn__flex b3-label config__item">
+                <div class="fn__flex-1">
+                    <div class="fn__flex">
+                        ${this.i18n.themeAdaptLabel}
+                        <span class="fn__space"></span>
+                        <a href="javascript:void(0)" id="appearanceOpenIcon">${this.i18n.themeAdaptContentDes}</a>
+                    </div>
+                    
+                    <div id="themeAdaptDes" class="b3-label__text">
+                        ${this.i18n.themeAdaptDes}
+                    </div>
+
+                    <!-- a href="https://github.com/HowcanoeWang/siyuan-plugin-background-cover/discussion">${this.i18n.themeAdaptContentDes2}</a -->
+                </div>
+
+                <span class="fn__space"></span>
+                <input
+                    id="themeAdaptInput"
+                    class="b3-switch fn__flex-center"
+                    type="checkbox"
+                    value="${settings.get('adaptMode')}"
+                />
+            </label>
+
+            <!--
             // reset panel part, Button[0]
             -->
 
@@ -1391,27 +1446,10 @@ export default class SwitchBgCover extends Plugin {
                 </button>
             </label>
 
-
-
             <!--
             // debug panel part
             -->
 
-            <label class="fn__flex b3-label config__item">
-                <div class="fn__flex-1">
-                    ${this.i18n.themeAdaptLabel}
-                    <div id="themeAdaptDes" class="b3-label__text">
-                        ${this.i18n.themeAdaptDes}
-                    </div>
-                </div>
-                <span class="fn__flex-center" />
-                <input
-                    id="themeAdaptInput"
-                    class="b3-switch fn__flex-center"
-                    type="checkbox"
-                    value="${settings.get('cssMode')}"
-                />
-            </label>
             <label class="fn__flex b3-label config__item">
                 <div class="fn__flex-1">
                     ${this.i18n.inDevModeLabel}
@@ -1502,7 +1540,7 @@ export default class SwitchBgCover extends Plugin {
         opacityElement.addEventListener("change", () => {
             settings.set('opacity', parseFloat(opacityElement.value));
             if (settings.get('activate')) {
-                this.changeOpacity(settings.get('opacity'), settings.get('cssMode'));
+                this.changeOpacity(settings.get('opacity'), settings.get('transMode'), settings.get('adaptMode'));
             }
             settings.save();
         })
@@ -1525,6 +1563,28 @@ export default class SwitchBgCover extends Plugin {
             blurElement.parentElement.setAttribute('aria-label', blurElement.value);
         })
 
+        // the transparent mode selection
+        const transModeElement = document.getElementById('transModeSelect') as HTMLSelectElement;
+
+        transModeElement.value = settings.get('transMode');
+
+        transModeElement.addEventListener('change', () => {
+            settings.set('transMode', transModeElement.value);
+            this.changeOpacity(settings.get('opacity'), settings.get('transMode'), settings.get('adaptMode'));
+            settings.save();
+        });
+
+
+        // the theme adapt switches
+        const themeAdaptElement = document.getElementById('themeAdaptInput') as HTMLInputElement;
+        this._updateCheckedElement('themeAdaptInput',  settings.get('adaptMode'));
+
+        themeAdaptElement.addEventListener("click", () => {
+            settings.set('adaptMode', !settings.get('adaptMode'));
+            themeAdaptElement.value = `${settings.get('adaptMode')}`;
+            this.changeOpacity(settings.get('opacity'),  settings.get('transMode'), settings.get('adaptMode'));
+            settings.save();
+        });
 
         // reset panel
         const resetSettingElement = document.getElementById('resetBtn') as HTMLButtonElement;
@@ -1533,17 +1593,6 @@ export default class SwitchBgCover extends Plugin {
             settings.reset();
             await settings.save();
             await this.applySettings();
-        })
-
-        // the theme adapt switches
-        const themeAdaptElement = document.getElementById('themeAdaptInput') as HTMLInputElement;
-        this._updateCheckedElement('themeAdaptInput',  settings.get('cssMode'))
-
-        themeAdaptElement.addEventListener("click", () => {
-            settings.set('cssMode', !settings.get('cssMode'));
-            themeAdaptElement.value = `${settings.get('cssMode')}`;
-            this.changeOpacity(settings.get('opacity'), settings.get('cssMode'));
-            settings.save();
         })
 
         // the dev mode settings
