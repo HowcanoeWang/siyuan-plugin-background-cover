@@ -51,7 +51,7 @@ export const SettingFile = 'bg-cover-setting.json';
 
 export type SettingKey = (
     'autoRefresh' |'opacity' | 'blur' | 'activate' | 'bgObj' |
-    'version' | 'prevTheme' | 'fileidx' | 'inDev' | 'cssMode'
+    'version' | 'prevTheme' | 'fileidx' | 'inDev' | 'adaptMode' | 'transMode' 
 );
 
 export const demoImgURL = 'https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover/static/FyBE0bUakAELfeF.jpg'
@@ -70,7 +70,8 @@ export var defaultSettings = {
     'fileidx': {} as fileIndex,
     'version': packageInfo.version as string,
     'inDev': false as boolean,
-    'cssMode': false as boolean
+    'adaptMode': false as boolean,
+    'transMode': 0 as number,
 };
 
 export const diyIcon = {
