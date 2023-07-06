@@ -126,6 +126,8 @@ export default class SwitchBgCover extends Plugin {
         await this.applySettings();
 
         debug(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
+
+        this.adaptConfigEditor();
     }
 
     onunload() {
@@ -765,13 +767,140 @@ export default class SwitchBgCover extends Plugin {
     };
 
     private async adaptConfigEditor() {
+        const [themeMode, themeName] = getThemeInfo();
+
         const configEditor = new Dialog({
-            title: this.i18n.selectPictureManagerTitle,
+            title: this.i18n.themeAdaptContentDes,
             width: this.isMobile ? "92vw" : "520px",
-            height: "92vh",
             content: `
             <div class="fn__flex-column" style="height: 100%">
-            
+                <!--label class="b3-label fn__flex">
+                    <div class="fn__flex-1">
+                        ${this.i18n.themeAdaptEditorDes1} <code>${themeName}</code> 
+                        <br>
+                        ${this.i18n.themeAdaptEditorDes2} <code>${themeMode === 0 ? this.i18n.themeAdaptEditorMode0 : this.i18n.themeAdaptEditorMode1}</code> 
+                    </div>
+                </label-->
+
+                <div class="b3-label file-tree config-keymap" id="keymapList" style="height:50vh;">
+                
+                    <div class="fn__flex config__item">
+                        <a href="https://github.com/HowcanoeWang/siyuan-plugin-background-cover/discussion">${this.i18n.themeAdaptEditorShare}</a>
+                    </div>
+
+                    <div class="fn__hr"></div>
+
+                    <div class="fn__flex config__item">
+                        ${this.i18n.themeAdaptEditorDes1} <code>${themeName}</code> 
+
+                        <span class="fn__space"></span>
+
+                        <span>${this.i18n.themeAdaptEditorDes2} <code>${themeMode === 0 ? this.i18n.themeAdaptEditorMode0 : this.i18n.themeAdaptEditorMode1}</code></span>
+                    </div>
+                    
+                    <div class="fn__hr"></div>
+
+                    <div class="fn__flex config__item">
+                        <span>${this.i18n.themeAdaptEditorDes3}</span>
+                    </div>
+
+                    <div class="fn__hr"></div>
+
+                    <!-- Top menu -->
+                    <div class="b3-list b3-list--border b3-list--background">
+
+                        <!-- 第一级菜单 start -->
+                        <div class="b3-list-item b3-list-item--narrow b3-list-item--hide-action toggle">
+                            <span class="b3-list-item__toggle b3-list-item__toggle--hl">
+                                <svg class="b3-list-item__arrow b3-list-item__arrow--open"><use xlink:href="#iconRight"></use></svg>
+                            </span>
+                            <span class="b3-list-item__text ft__on-surface">${this.i18n.transparentModeOpacity}</span>
+                            <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="添加">
+                                <svg>
+                                    <use xlink:href="#iconAdd"></use>
+                                </svg>
+                            </span>
+                        </div>
+
+                        <div class="b3-list__panel">
+
+                            <!-- 第二级菜单 start -->
+                            <div class="b3-list-item b3-list-item--narrow b3-list-item--hide-action toggle">
+                                <span class="b3-list-item__toggle b3-list-item__toggle--hl">
+                                    <svg class="b3-list-item__arrow b3-list-item__arrow--open"><use xlink:href="#iconRight"></use></svg>
+                                </span>
+                                <span class="b3-list-item__text ft__on-surface">$toolbar</span>
+                                <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="添加">
+                                    <svg>
+                                        <use xlink:href="#iconAdd"></use>
+                                    </svg>
+                                </span>
+                                <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="刪除">
+                                    <svg>
+                                        <use xlink:href="#iconTrashcan"></use>
+                                    </svg>
+                                </span>
+                            </div>
+
+                            <div class="b3-list__panel">
+
+                                <!-- 第三级菜单 start -->
+                                <label class="b3-list-item b3-list-item--narrow b3-list-item--hide-action">
+                                    <span class="b3-list-item__text"><code>background-color</code></span>
+                                    <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="刪除">
+                                        <svg>
+                                            <use xlink:href="#iconTrashcan"></use>
+                                        </svg>
+                                    </span>
+                                    <span data-type="update" class="config-keymap__key">rgba(237, 236, 233, \${opacity})</span>
+                                    <input data-key="editor​general​alignCenter" data-value="⌥C" data-default="⌥C"
+                                        class="b3-text-field fn__none" value="rgba(237, 236, 233, \${opacity})" spellcheck="false">
+                                </label>
+                                <!-- 第三级菜单 end -->
+
+                            </div>
+                            <!-- 第二级菜单 end -->
+
+                        </div>
+                        <!-- 第一级菜单 end -->
+
+                    </div>
+                    <!-- Top menu -->
+
+                    <div class="b3-list b3-list--border b3-list--background">
+
+                        <div class="b3-list-item b3-list-item--narrow b3-list-item--hide-action toggle">
+                            <span class="b3-list-item__toggle b3-list-item__toggle--hl">
+                                <svg class="b3-list-item__arrow"><use xlink:href="#iconRight"></use></svg>
+                            </span>
+                            <span class="b3-list-item__text ft__on-surface">${this.i18n.transparentModeCss}</span>
+                            <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="添加">
+                            <svg>
+                                <use xlink:href="#iconAdd"></use>
+                            </svg>
+                        </span>
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+                <!--label class="b3-label fn__flex">
+                    <div class="fn__flex-1">
+                        <a href="https://github.com/HowcanoeWang/siyuan-plugin-background-cover/discussion">${this.i18n.themeAdaptEditorShare}</a>
+                    </div>
+                </label-->
+
+                <div class="b3-dialog__action">
+                    <button class="b3-button b3-button--cancel">${this.i18n.cancel}</button>
+                    <div class="fn__space"></div>
+                    <button class="b3-button b3-button--text">${this.i18n.import}</button>
+                    <div class="fn__space"></div>
+                    <button class="b3-button b3-button--text">${this.i18n.save}</button>
+                    <div class="fn__space"></div>
+                    <button class="b3-button b3-button--text">${this.i18n.export}</button>
+                </div>
             </div>
             `
         });
@@ -1408,14 +1537,12 @@ export default class SwitchBgCover extends Plugin {
                     <div class="fn__flex">
                         ${this.i18n.themeAdaptLabel}
                         <span class="fn__space"></span>
-                        <a href="javascript:void(0)" id="appearanceOpenIcon">${this.i18n.themeAdaptContentDes}</a>
+                        <a id="adaptConfigEditorURL">${this.i18n.themeAdaptContentDes}</a>
                     </div>
                     
                     <div id="themeAdaptDes" class="b3-label__text">
                         ${this.i18n.themeAdaptDes}
                     </div>
-
-                    <!-- a href="https://github.com/HowcanoeWang/siyuan-plugin-background-cover/discussion">${this.i18n.themeAdaptContentDes2}</a -->
                 </div>
 
                 <span class="fn__space"></span>
@@ -1574,6 +1701,10 @@ export default class SwitchBgCover extends Plugin {
             settings.save();
         });
 
+        const configEditorURL = document.getElementById('adaptConfigEditorURL') as HTMLLinkElement
+        configEditorURL.addEventListener('click', () => {
+            this.adaptConfigEditor();
+        });
 
         // the theme adapt switches
         const themeAdaptElement = document.getElementById('themeAdaptInput') as HTMLInputElement;
