@@ -22,6 +22,7 @@ import BgCoverPlugin from "./index"
 import { settings } from './configs';
 import * as noticeUI from "./noticeUI";
 import * as bugreportUI from "./bugreportUI";
+import * as settingsUI from "./settingsUI";
 
 /**
  * 顶栏按钮UI
@@ -119,7 +120,7 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                 icon: "iconSettings",
                 label: `${pluginInstance.i18n.settingLabel}`,
                 click: () => {
-                    pluginInstance.openSetting();
+                    settingsUI.openSettingDialog(pluginInstance);
                 }
             });
     
