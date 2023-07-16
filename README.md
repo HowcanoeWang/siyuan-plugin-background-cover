@@ -96,6 +96,10 @@
 <details open>
 <summary><b>July 2023</b></summary>
 
+**23.07.16**
+
+- 添加超出部分UI的滚动条适配
+
 **23.07.07**
 
 - 更改设置UI，添加Transparent Mode切换和兼容性主题
