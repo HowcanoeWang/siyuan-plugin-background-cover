@@ -12,8 +12,8 @@ import {
     // Setting, fetchPost
 } from "siyuan";
 
-import { KernelApi } from "./api";
-import { settings } from './configs';
+import { KernelApi } from "./siyuanAPI";
+import { configs } from './configs';
 import {
     error, warn, info, debug,
     CloseCV, MD5, OS, Numpy,
@@ -51,9 +51,9 @@ export default class BgCoverPlugin extends Plugin {
         // 图标的制作参见帮助文档
         this.addIcons(cst.diyIcon.iconLogo);
 
-        settings.setPlugin(this);
+        configs.setPlugin(this);
         //初始化数据
-        await settings.load();
+        await configs.load();
         await topbarUI.initTopbar(this)
 
         // 绑定快捷键
@@ -102,7 +102,7 @@ export default class BgCoverPlugin extends Plugin {
 
         // load the user setting data
         const [themeMode, themeName] = getThemeInfo();
-        settings.set('prevTheme', themeName);
+        configs.set('prevTheme', themeName);
 
         // this.changeOpacity(0.85);
         await this.applySettings();
@@ -114,7 +114,7 @@ export default class BgCoverPlugin extends Plugin {
 
     onunload() {
         info(`${this.i18n.byePlugin}`);
-        settings.save();
+        configs.save();
 
         let dockPanelElement = document.getElementById('dockPanel');
         dockPanelElement.id = null;
@@ -151,7 +151,7 @@ export default class BgCoverPlugin extends Plugin {
         let imgFiles = await os.listdir(cst.pluginImgDataDir)
 
         let fileidx: cst.fileIndex = {}
-        let fileidx_db: cst.fileIndex = settings.get('fileidx')
+        let fileidx_db: cst.fileIndex = configs.get('fileidx')
         let notCorrectCacheImgs = []
         let extraCacheImgs = []
         let missingCacheImgs = []
@@ -220,8 +220,8 @@ export default class BgCoverPlugin extends Plugin {
             }
         }
 
-        settings.set('fileidx', fileidx)
-        await settings.save()
+        configs.set('fileidx', fileidx)
+        await configs.save()
 
         // raise warning to users
         if (notCorrectCacheImgs.length !== 0) {
@@ -247,15 +247,15 @@ export default class BgCoverPlugin extends Plugin {
     }
 
     public async pluginOnOff() {
-        settings.set('activate', !settings.get('activate'))
-        settings.save();
+        configs.set('activate', !configs.get('activate'))
+        configs.save();
         this.applySettings();
     }
 
     private useDefaultLiaoLiaoBg() {
         debug(`[Func][applySettings] 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图`)
         this.changeBackgroundContent(cst.demoImgURL, cst.bgMode.image)
-        settings.set('bgObj', undefined);
+        configs.set('bgObj', undefined);
     }
 
     private async clearCacheFolder(mode: cst.bgMode){
@@ -264,7 +264,7 @@ export default class BgCoverPlugin extends Plugin {
             // 这里应该获取fileidx里面的列表，而不是文件夹内的文件，不然图片缺失的话，删除不掉
             // todo
             let imgList = await os.listdir(cst.pluginImgDataDir);
-            let fileidx = settings.get('fileidx')
+            let fileidx = configs.get('fileidx')
 
             // 此部分魔改os.rmtree，因为要考虑到未来的可拓展性，有可能存在live2d的种类，因此不能直接简单的fileidx={}来解决
             for (let i in imgList) {
@@ -283,7 +283,7 @@ export default class BgCoverPlugin extends Plugin {
                 }
             }
 
-            settings.set('fileidx', fileidx)
+            configs.set('fileidx', fileidx)
 
             // 清除缓存控制面板中的列表项和图片缓存
             let ulContainerElement = document.getElementById('cacheImgList');
@@ -304,7 +304,7 @@ export default class BgCoverPlugin extends Plugin {
             this.useDefaultLiaoLiaoBg();
         };
 
-        await settings.save();
+        await configs.save();
     }
 
     private generateCacheImgList(){
@@ -330,9 +330,9 @@ export default class BgCoverPlugin extends Plugin {
 
         function _setAsBg(bgObj:cst.bgObj) {
             this.changeBackgroundContent(bgObj.path, bgObj.mode);
-            settings.set('bgObj', bgObj);
+            configs.set('bgObj', bgObj);
 
-            settings.save();
+            configs.save();
         };
 
         function _rmBg(bgObj:cst.bgObj){
@@ -349,9 +349,9 @@ export default class BgCoverPlugin extends Plugin {
 
             // 移除fileidx中的项目
             this.selectPictureRandom();
-            let fileidx = settings.get('fileidx');
+            let fileidx = configs.get('fileidx');
             delete fileidx[bgObj.hash]
-            settings.set('fileidx', fileidx)
+            configs.set('fileidx', fileidx)
 
             // 调用os来移除本地文件夹中的缓存文件
             debug(`[Func][_rmBg] 移除下列路径的图片：${cst.pluginImgDataDir}/${bgObj.name}`)
@@ -364,11 +364,11 @@ export default class BgCoverPlugin extends Plugin {
                 this.useDefaultLiaoLiaoBg();
             };
 
-            settings.save();
+            configs.save();
         };
 
         let listHtml:Array<HTMLLIElement> = []
-        let fileidx = settings.get('fileidx')
+        let fileidx = configs.get('fileidx')
         for (const i in fileidx) {
             let bgObj = fileidx[i]
 
@@ -512,13 +512,13 @@ export default class BgCoverPlugin extends Plugin {
             let belayerElement = document.getElementById('bglayer')
             if (belayerElement.style.getPropertyValue('background-image') === '') {
                 // 如果当前背景不存在任何图片
-                let bgObj = settings.get('bgObj')
+                let bgObj = configs.get('bgObj')
                 this.changeBackgroundContent(bgObj.path, bgObj.mode)
             }
         } else {
             // 随机选择一张图
-            let fileidx = settings.get('fileidx')
-            let crt_hash = settings.get('bgObj').hash
+            let fileidx = configs.get('fileidx')
+            let crt_hash = configs.get('bgObj').hash
             let r_hash = ''
             while (true) {
                 let r = Math.floor(Math.random() * cacheImgNum)
@@ -532,14 +532,14 @@ export default class BgCoverPlugin extends Plugin {
             }
             debug('[Func][selectPictureRandom] 跳出抽卡死循环,前景图为：', fileidx[r_hash])
             this.changeBackgroundContent(fileidx[r_hash].path, fileidx[r_hash].mode)
-            settings.set('bgObj', fileidx[r_hash])
+            configs.set('bgObj', fileidx[r_hash])
         }
-        await settings.save()
+        await configs.save()
         settingsUI.updateSettingPanelElementStatus()
     }
 
     private imgIsInCache(file: File, notice: boolean = true): string {
-        let fileidx = settings.get('fileidx')
+        let fileidx = configs.get('fileidx')
         var md5 = MD5(`${file.name}${file.size}${file.lastModified}`.slice(0, 15));
         if (fileidx !== undefined && md5 in fileidx) {
             if (notice) {
@@ -564,7 +564,7 @@ export default class BgCoverPlugin extends Plugin {
 
         let md5 = this.imgIsInCache(file)
 
-        let fileidx = settings.get('fileidx');
+        let fileidx = configs.get('fileidx');
         if (fileidx === undefined || fileidx === null) {
             fileidx = {};
         };
@@ -595,8 +595,8 @@ export default class BgCoverPlugin extends Plugin {
 
                 fileidx[bgObj.hash] = bgObj;
 
-                settings.set('bgObj', bgObj);
-                settings.set('fileidx', fileidx);
+                configs.set('bgObj', bgObj);
+                configs.set('fileidx', fileidx);
 
                 debug(`[func][addSingleLocalImageFile]: fileidx ${fileidx}`);
 
@@ -624,7 +624,7 @@ export default class BgCoverPlugin extends Plugin {
                 debug('[Func][batchUploadImages] 在上传的循环内', bgObj)
             };
     
-            await settings.save();
+            await configs.save();
     
             if (applySetting){
                 debug('[Func][batchUploadImages] 在应用设置的判断内', bgObj)
@@ -662,7 +662,7 @@ export default class BgCoverPlugin extends Plugin {
     
             // 文件不重复且上传成功
             if (bgObj !== null) {
-                await settings.save();
+                await configs.save();
                 this.changeBackgroundContent(bgObj.path, bgObj.mode);
                 settingsUI.updateSettingPanelElementStatus();
             };
@@ -725,14 +725,14 @@ export default class BgCoverPlugin extends Plugin {
 
     private async themeOnChange() {
         const [themeMode, themeName] = getThemeInfo();
-        let prevTheme = settings.get('prevTheme')
+        let prevTheme = configs.get('prevTheme')
 
         debug(`Theme changed! from ${prevTheme} to ${themeMode} | ${themeName}`)
 
         if (prevTheme !== themeName) {
             // 更换主题时，强制刷新笔记页面
-            settings.set('prevTheme', themeName);
-            await settings.save()
+            configs.set('prevTheme', themeName);
+            await configs.save()
             window.location.reload()
         }
     }
@@ -977,7 +977,7 @@ export default class BgCoverPlugin extends Plugin {
         /**
          * 用户打开图片背景
          */
-        if (settings.get('activate')) {
+        if (configs.get('activate')) {
 
             let addOpacityElement: string[];
             let zIndexValue: string[];
@@ -1217,7 +1217,7 @@ export default class BgCoverPlugin extends Plugin {
     }
 
     public async applySettings() {
-        if (settings.get('activate')) {
+        if (configs.get('activate')) {
             this.bgLayer.style.removeProperty('display')
         } else {
             this.bgLayer.style.setProperty('display', 'none')
@@ -1229,17 +1229,17 @@ export default class BgCoverPlugin extends Plugin {
         if (cacheImgNum === 0) {
             // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
             this.useDefaultLiaoLiaoBg();
-        } else if (settings.get('bgObj') === undefined) {
+        } else if (configs.get('bgObj') === undefined) {
             // 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张
             debug(`[Func][applySettings] 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张`)
             await this.selectPictureRandom()
         } else {
             // 缓存中有1张以上的图片，bjObj也有内容且图片存在
             debug(`[Func][applySettings] 缓存中有1张以上的图片，bjObj也有内容且图片存在`)
-            let bgObj = settings.get('bgObj')
-            let fileidx = settings.get('fileidx')
+            let bgObj = configs.get('bgObj')
+            let fileidx = configs.get('fileidx')
             // 没有开启启动自动更换图片，则直接显示该图片
-            if (bgObj.hash in fileidx && !settings.get('autoRefresh')) {
+            if (bgObj.hash in fileidx && !configs.get('autoRefresh')) {
                 debug(`[Func][applySettings] 没有开启启动自动更换图片，则直接显示当前图片`)
                 this.changeBackgroundContent(bgObj.path, bgObj.mode)
             } else {
@@ -1249,12 +1249,12 @@ export default class BgCoverPlugin extends Plugin {
             }
         }
 
-        this.changeOpacity(settings.get('opacity'), settings.get('transMode'), settings.get('adaptMode'))
-        this.changeBlur(settings.get('blur'))
-        if (settings.get('bgObj') === undefined){
+        this.changeOpacity(configs.get('opacity'), configs.get('transMode'), configs.get('adaptMode'))
+        this.changeBlur(configs.get('blur'))
+        if (configs.get('bgObj') === undefined){
             this.changeBgPosition(null, null)
         }else{
-            this.changeBgPosition(settings.get('bgObj').offx, settings.get('bgObj').offy)
+            this.changeBgPosition(configs.get('bgObj').offx, configs.get('bgObj').offy)
         }
         
         settingsUI.updateSettingPanelElementStatus()
@@ -1262,11 +1262,11 @@ export default class BgCoverPlugin extends Plugin {
 
     public getCacheImgNum() {
         let cacheImgNum: number
-        let fileidx = settings.get('fileidx')
+        let fileidx = configs.get('fileidx')
         if (fileidx === null || fileidx == undefined) {
             cacheImgNum = 0
         } else {
-            cacheImgNum = Object.keys(settings.get('fileidx')).length
+            cacheImgNum = Object.keys(configs.get('fileidx')).length
         }
 
         return cacheImgNum

@@ -2,7 +2,8 @@ import packageInfo from '../plugin.json'
 
 export enum bgMode {
     image = 0,
-    live2d = 1,
+    video = 1,
+    live2d = 2,
 }
 
 export interface bgObj {
@@ -47,16 +48,16 @@ export const cacheMaxNum = 198;
 
 export const supportedImageSuffix = [".png", ".jpeg", ".jpg", ".jiff", ".jfif"]
 
-export const SettingFile = 'bg-cover-setting.json';
+export const configFile = 'bg-cover-setting.json';
 
-export type SettingKey = (
+export type configKey = (
     'autoRefresh' |'opacity' | 'blur' | 'activate' | 'bgObj' |
     'version' | 'prevTheme' | 'fileidx' | 'inDev' | 'adaptMode' | 'transMode' 
 );
 
 export const demoImgURL = 'https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover/static/FyBE0bUakAELfeF.jpg'
 
-export var defaultSettings = {
+export var defaultConfigs = {
     // 启动时随机更改图片
     'autoRefresh': true as boolean,
     // 当前配置的背景图路径

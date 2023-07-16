@@ -1,7 +1,7 @@
 import packageInfo from '../plugin.json'
 
 import { Dialog } from "siyuan";
-import { settings } from './configs';
+import { configs } from './configs';
 import * as cst from './constants';
 import BgCoverPlugin from "./index"
 
@@ -36,17 +36,17 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
             <div class="fn__flex-1">
                 ${pluginInstance.i18n.imgPathLabel}
                 <div class="b3-label__text">
-                    <code id="crtImgName" class="fn__code">${settings.get('bgObj') === undefined ? cst.demoImgURL : settings.get('bgObj').name}</code>
+                    <code id="crtImgName" class="fn__code">${configs.get('bgObj') === undefined ? cst.demoImgURL : configs.get('bgObj').name}</code>
                 </div>
             </div>
             <div class="fn__flex-center">  
                 <div>
                     <label for="cx">X</label> 
-                    <input id="cx" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${settings.get('bgObj') === undefined ? '50' : settings.get('bgObj').offx}>
+                    <input id="cx" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${configs.get('bgObj') === undefined ? '50' : configs.get('bgObj').offx}>
                 </div>
                 <div>
                     <label for="cy">Y</label> 
-                    <input id="cy" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${settings.get('bgObj') === undefined ? '50' : settings.get('bgObj').offy}>
+                    <input id="cy" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${configs.get('bgObj') === undefined ? '50' : configs.get('bgObj').offy}>
                 </div>
             </div>
         </label>
@@ -87,7 +87,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                 id="onoffInput"
                 class="b3-switch fn__flex-center"
                 type="checkbox"
-                value="${settings.get('activate')}"
+                value="${configs.get('activate')}"
             />
         </label>
         <label class="fn__flex b3-label">
@@ -102,7 +102,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                 id="autoRefreshInput"
                 class="b3-switch fn__flex-center"
                 type="checkbox"
-                value="${settings.get('autoRefresh')}"
+                value="${configs.get('autoRefresh')}"
             />
         </label>
 
@@ -117,8 +117,8 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                     ${pluginInstance.i18n.opacityDes}
                 </div>
             </div>
-            <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${settings.get('opacity')}">   
-                <input id="opacityInput" class="b3-slider fn__size200" max="1" min="0.1" step="0.05" type="range" value="${settings.get('opacity')}">
+            <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${configs.get('opacity')}">   
+                <input id="opacityInput" class="b3-slider fn__size200" max="1" min="0.1" step="0.05" type="range" value="${configs.get('opacity')}">
             </div>
         </label>
         <label class="fn__flex b3-label config__item">
@@ -128,8 +128,8 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                     ${pluginInstance.i18n.blurDes}
                 </div>
             </div>
-            <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${settings.get('blur')}">   
-                <input id="blurInput" class="b3-slider fn__size200" max="10" min="0" step="1" type="range" value="${settings.get('blur')}">
+            <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${configs.get('blur')}">   
+                <input id="blurInput" class="b3-slider fn__size200" max="10" min="0" step="1" type="range" value="${configs.get('blur')}">
             </div>
         </label>
 
@@ -167,7 +167,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                 id="themeAdaptInput"
                 class="b3-switch fn__flex-center"
                 type="checkbox"
-                value="${settings.get('adaptMode')}"
+                value="${configs.get('adaptMode')}"
             />
         </label>
 
@@ -206,7 +206,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                 id="devModeInput"
                 class="b3-switch fn__flex-center"
                 type="checkbox"
-                value="${settings.get('inDev')}"
+                value="${configs.get('inDev')}"
             />
         </label>
         </div>`
@@ -230,7 +230,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         // 停止拖动的时候，保存图片的位置
         elementsArray[i].addEventListener("change", () => {
             //
-            let bgObj = settings.get('bgObj')
+            let bgObj = configs.get('bgObj')
 
             // 使用默认的了了图，此时bgObj为undefined，没有下面这些属性，跳过
             if (bgObj !== undefined) {
@@ -238,14 +238,14 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                 bgObj.offx = cxElement.value
                 bgObj.offy = cyElement.value
 
-                settings.set('bgObj', bgObj)
+                configs.set('bgObj', bgObj)
 
-                let fileidx = settings.get('fileidx')
+                let fileidx = configs.get('fileidx')
                 fileidx[bgObj.hash] = bgObj
 
-                settings.set('fileidx', fileidx)
+                configs.set('fileidx', fileidx)
 
-                settings.save();
+                configs.save();
             }
 
         })
@@ -260,33 +260,33 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
     // plugin onoff switch
     const activateElement = document.getElementById('onoffInput') as HTMLInputElement;
-    activateElement.checked = settings.get('activate');
+    activateElement.checked = configs.get('activate');
 
     activateElement.addEventListener("click", () => {
-        settings.set('activate', !settings.get('activate'));
-        activateElement.value = settings.get('activate');
-        settings.save();
+        configs.set('activate', !configs.get('activate'));
+        activateElement.value = configs.get('activate');
+        configs.save();
         pluginInstance.applySettings();
     })
 
     // the Auto refresh switch
     const autoRefreshElement = document.getElementById('autoRefreshInput') as HTMLInputElement;
-    autoRefreshElement.checked = settings.get('autoRefresh');
+    autoRefreshElement.checked = configs.get('autoRefresh');
 
     autoRefreshElement.addEventListener("click", () => {
-        settings.set('autoRefresh', !settings.get('autoRefresh'));
-        autoRefreshElement.value = `${settings.get('autoRefresh')}`;
-        settings.save();
+        configs.set('autoRefresh', !configs.get('autoRefresh'));
+        autoRefreshElement.value = `${configs.get('autoRefresh')}`;
+        configs.save();
     })
 
     // transparency/opacity slider
     const opacityElement = document.getElementById('opacityInput') as HTMLInputElement;
     opacityElement.addEventListener("change", () => {
-        settings.set('opacity', parseFloat(opacityElement.value));
-        if (settings.get('activate')) {
-            pluginInstance.changeOpacity(settings.get('opacity'), settings.get('transMode'), settings.get('adaptMode'));
+        configs.set('opacity', parseFloat(opacityElement.value));
+        if (configs.get('activate')) {
+            pluginInstance.changeOpacity(configs.get('opacity'), configs.get('transMode'), configs.get('adaptMode'));
         }
-        settings.save();
+        configs.save();
     })
     opacityElement.addEventListener("input", () => {
         // update the aira-label value
@@ -296,11 +296,11 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     // blur slider
     const blurElement =  document.getElementById('blurInput') as HTMLInputElement;
     blurElement.addEventListener("change", () => {
-        settings.set('blur', parseFloat(blurElement.value));
-        if (settings.get('activate')) {
-            pluginInstance.changeBlur(settings.get('blur'));
+        configs.set('blur', parseFloat(blurElement.value));
+        if (configs.get('activate')) {
+            pluginInstance.changeBlur(configs.get('blur'));
         }
-        settings.save();
+        configs.save();
     })
     blurElement.addEventListener("input", () => {
         // update the aira-label value
@@ -310,12 +310,12 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     // the transparent mode selection
     const transModeElement = document.getElementById('transModeSelect') as HTMLSelectElement;
 
-    transModeElement.value = settings.get('transMode');
+    transModeElement.value = configs.get('transMode');
 
     transModeElement.addEventListener('change', () => {
-        settings.set('transMode', transModeElement.value);
-        pluginInstance.changeOpacity(settings.get('opacity'), settings.get('transMode'), settings.get('adaptMode'));
-        settings.save();
+        configs.set('transMode', transModeElement.value);
+        pluginInstance.changeOpacity(configs.get('opacity'), configs.get('transMode'), configs.get('adaptMode'));
+        configs.save();
     });
 
     const configEditorURL = document.getElementById('adaptConfigEditorURL') as HTMLLinkElement
@@ -325,32 +325,32 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
     // the theme adapt switches
     const themeAdaptElement = document.getElementById('themeAdaptInput') as HTMLInputElement;
-    updateCheckedElement('themeAdaptInput',  settings.get('adaptMode'));
+    updateCheckedElement('themeAdaptInput',  configs.get('adaptMode'));
 
     themeAdaptElement.addEventListener("click", () => {
-        settings.set('adaptMode', !settings.get('adaptMode'));
-        themeAdaptElement.value = `${settings.get('adaptMode')}`;
-        pluginInstance.changeOpacity(settings.get('opacity'),  settings.get('transMode'), settings.get('adaptMode'));
-        settings.save();
+        configs.set('adaptMode', !configs.get('adaptMode'));
+        themeAdaptElement.value = `${configs.get('adaptMode')}`;
+        pluginInstance.changeOpacity(configs.get('opacity'),  configs.get('transMode'), configs.get('adaptMode'));
+        configs.save();
     });
 
     // reset panel
     const resetSettingElement = document.getElementById('resetBtn') as HTMLButtonElement;
     resetSettingElement.addEventListener("click", async () => {
         os.rmtree(cst.pluginImgDataDir);
-        settings.reset();
-        await settings.save();
+        configs.reset();
+        await configs.save();
         await pluginInstance.applySettings();
     })
 
     // the dev mode settings
     const devModeElement = document.getElementById('devModeInput') as HTMLInputElement;
-    devModeElement.checked = settings.get('inDev');
+    devModeElement.checked = configs.get('inDev');
 
     devModeElement.addEventListener("click", () => {
-        settings.set('inDev', !settings.get('inDev'));
-        devModeElement.value = `${settings.get('inDev')}`;
-        settings.save();
+        configs.set('inDev', !configs.get('inDev'));
+        devModeElement.value = `${configs.get('inDev')}`;
+        configs.save();
     })
 
     // const inputElement = dialog.element.querySelector("textarea");
@@ -400,8 +400,8 @@ export function updateSettingPanelElementStatus() {
     if (crtImageNameElement === null || crtImageNameElement === undefined) {
         // debug(`Setting panel not open`) 
     } else {
-        let bgObj = settings.get('bgObj')
-        if (settings.get('bgObj') === undefined) {
+        let bgObj = configs.get('bgObj')
+        if (configs.get('bgObj') === undefined) {
             crtImageNameElement.textContent = cst.demoImgURL.toString()
         } else {
             crtImageNameElement.textContent = bgObj.name
@@ -420,21 +420,21 @@ export function updateSettingPanelElementStatus() {
     }
 
     // update onoff switch button
-    updateCheckedElement('onoffInput', settings.get('activate'))
+    updateCheckedElement('onoffInput', configs.get('activate'))
 
     // 更新autorefresh按钮
-    updateCheckedElement('autoRefreshInput', settings.get('autoRefresh'))
+    updateCheckedElement('autoRefreshInput', configs.get('autoRefresh'))
 
     // 更新opacity滑动条
-    updateSliderElement('opacityInput', settings.get('opacity'))
+    updateSliderElement('opacityInput', configs.get('opacity'))
 
     // 更新blur滑动条
-    updateSliderElement('blurInput', settings.get('blur'))
+    updateSliderElement('blurInput', configs.get('blur'))
 
-    updateCheckedElement('themeAdaptInput', settings.get('adaptMode'))
+    updateCheckedElement('themeAdaptInput', configs.get('adaptMode'))
 
     // 更新开发者模式按钮
-    updateCheckedElement('devModeInput', settings.get('inDev'))
+    updateCheckedElement('devModeInput', configs.get('inDev'))
 
 }
 
@@ -446,13 +446,13 @@ export function updateOffsetSwitch() {
         // debug(`Setting panel not open`) 
     } else {
         let bglayerElement = document.getElementById('bglayer')
-        if (settings.get('activate')) {
+        if (configs.get('activate')) {
             const container_h = parseInt(getComputedStyle(bglayerElement).height)  // -> '1280px'
             const container_w = parseInt(getComputedStyle(bglayerElement).width)
 
             let fullside: string
             // 使用默认的了了图
-            if (settings.get('bgObj') === undefined) {
+            if (configs.get('bgObj') === undefined) {
                 fullside = cv2.getFullSide(
                     container_w, container_h,
                     2458, 1383 // 默认了了图的宽高
@@ -463,7 +463,7 @@ export function updateOffsetSwitch() {
             }else{
                 fullside = cv2.getFullSide(
                     container_w, container_h,
-                    settings.get('bgObj').width, settings.get('bgObj').height
+                    configs.get('bgObj').width, configs.get('bgObj').height
                 )
             }
 
