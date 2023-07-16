@@ -19,7 +19,7 @@ import {
 } from './utils';
 
 import BgCoverPlugin from "./index"
-import { settings } from './configs';
+import { configs } from './configs';
 import * as noticeUI from "./noticeUI";
 import * as bugreportUI from "./bugreportUI";
 import * as settingsUI from "./settingsUI";
@@ -99,8 +99,8 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
             });
             menu.addItem({
                 id: 'pluginOnOffMenu',
-                icon: `${settings.get('activate') ? 'iconClose' : 'iconSelect'}`,
-                label: `${settings.get('activate') ? pluginInstance.i18n.closeBackgroundLabel : pluginInstance.i18n.openBackgroundLabel}`,
+                icon: `${configs.get('activate') ? 'iconClose' : 'iconSelect'}`,
+                label: `${configs.get('activate') ? pluginInstance.i18n.closeBackgroundLabel : pluginInstance.i18n.openBackgroundLabel}`,
                 accelerator: pluginInstance.commands[2].customHotkey,
                 click: () => {
                     pluginInstance.pluginOnOff();

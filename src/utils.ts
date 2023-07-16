@@ -1,5 +1,5 @@
-import { KernelApi } from './api';
-import { settings } from './configs'
+import { KernelApi } from './siyuanAPI';
+import { configs } from './configs'
 
 // simple logging functions
 export function info(...msg: any[]): void {
@@ -7,7 +7,7 @@ export function info(...msg: any[]): void {
 }
 
 export function debug(...msg: any[]): void {
-    if (settings.get('inDev')) {
+    if (configs.get('inDev')) {
         console.log(`[BgCover Plugin][DEBUG]`, ...msg);
     }
 }
