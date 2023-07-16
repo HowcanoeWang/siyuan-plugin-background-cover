@@ -772,10 +772,11 @@ export default class SwitchBgCover extends Plugin {
         const configEditor = new Dialog({
             title: this.i18n.themeAdaptContentDes,
             width: this.isMobile ? "92vw" : "520px",
+            height: "75vh",
             content: `
-            <div class="fn__flex-column" style="height: 100%">
+            <div class="fn__flex-column" style="height:100%; overflow: auto; box-sizing: border-box;">
 
-                <div class="b3-label file-tree config-keymap" id="keymapList" style="height:50vh;">
+                <div class="b3-label file-tree config-keymap" id="keymapList" style="height:100%;">
                     <div class="fn__flex config__item">
                         <a href="https://github.com/HowcanoeWang/siyuan-plugin-background-cover/discussion">${this.i18n.themeAdaptEditorShare}</a>
                     </div>
@@ -901,8 +902,7 @@ export default class SwitchBgCover extends Plugin {
                     <div class="fn__space"></div>
                     <button class="b3-button b3-button--text">${this.i18n.export}</button>
                 </div>
-            </div>
-            `
+            </div>`
         });
     };
 
@@ -1411,7 +1411,9 @@ export default class SwitchBgCover extends Plugin {
         const dialog = new Dialog({
             title: `${this.i18n.addTopBarIcon}(v${packageInfo.version}) ${this.i18n.settingLabel}`,
             width: this.isMobile ? "92vw" : "max(520px, 50vw)",
+            height: "max(520px, 90vh)",
             content: `
+            <div class="config__tab-container">
             <!--
             // info panel part
             -->
@@ -1592,7 +1594,7 @@ export default class SwitchBgCover extends Plugin {
                     value="${settings.get('inDev')}"
                 />
             </label>
-            `
+            </div>`
         });
 
         // image position slider

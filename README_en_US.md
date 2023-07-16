@@ -97,6 +97,10 @@ It is recommended for theme authors to follow the SourceNote theme template and 
 <details open>
 <summary><b>July 2023</b></summary>
 
+**23.07.16**
+
+- Add scroll bar adaptation for UI exceeding parts
+
 **23.07.07**
 
 - Change the settings UI, add a Transparent Mode toggle and compatibility theme.
