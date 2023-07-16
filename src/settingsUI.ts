@@ -1,9 +1,11 @@
 import packageInfo from '../plugin.json'
+import BgCoverPlugin from "./index"
 
 import { Dialog } from "siyuan";
 import { configs } from './configs';
+
 import * as cst from './constants';
-import BgCoverPlugin from "./index"
+import * as fileManagerUI from './fileManagerUI';
 
 import {
     error, warn, info, debug,
@@ -21,7 +23,7 @@ let cv2 = new CloseCV();
  */
 
 export function openSettingDialog(pluginInstance: BgCoverPlugin) {
-    const cacheImgNum = pluginInstance.getCacheImgNum();
+    const cacheImgNum = fileManagerUI.getCacheImgNum();
 
     const dialog = new Dialog({
         title: `${pluginInstance.i18n.addTopBarIcon}(v${packageInfo.version}) ${pluginInstance.i18n.settingLabel}`,

@@ -154,7 +154,7 @@ export default class BgCoverPlugin extends Plugin {
     };
 
     public async selectPictureRandom(manualPress: boolean = false) {
-        const cacheImgNum = this.getCacheImgNum()
+        const cacheImgNum = fileManagerUI.getCacheImgNum()
         if (cacheImgNum === 0) {
             // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
             this.useDefaultLiaoLiaoBg();
@@ -195,7 +195,7 @@ export default class BgCoverPlugin extends Plugin {
 
     public async addSingleLocalImageFile() {
 
-        const cacheImgNum = this.getCacheImgNum();
+        const cacheImgNum = fileManagerUI.getCacheImgNum();
 
         if (cacheImgNum >= cst.cacheMaxNum) {
             showMessage(this.i18n.addSingleImageExceed1 + cst.cacheMaxNum + this.i18n.addSingleImageExceed2, 7000, 'error');
@@ -229,7 +229,7 @@ export default class BgCoverPlugin extends Plugin {
     };
 
     public async addDirectory() {
-        const cacheImgNum = this.getCacheImgNum();
+        const cacheImgNum = fileManagerUI.getCacheImgNum();
 
         const directoryHandle = await window.showDirectoryPicker();
         const fileEntries = await directoryHandle.values();
@@ -783,7 +783,7 @@ export default class BgCoverPlugin extends Plugin {
         }
 
         // 缓存文件夹中没有图片 | 用户刚刚使用这个插件 | 用户刚刚重置了插件数据 | 当前文件404找不到
-        const cacheImgNum = this.getCacheImgNum()
+        const cacheImgNum = fileManagerUI.getCacheImgNum()
         debug(`[Func][applySettings] cacheImgNum= ${cacheImgNum}`)
         if (cacheImgNum === 0) {
             // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
@@ -817,17 +817,5 @@ export default class BgCoverPlugin extends Plugin {
         }
         
         settingsUI.updateSettingPanelElementStatus()
-    }
-
-    public getCacheImgNum() {
-        let cacheImgNum: number
-        let fileidx = configs.get('fileidx')
-        if (fileidx === null || fileidx == undefined) {
-            cacheImgNum = 0
-        } else {
-            cacheImgNum = Object.keys(configs.get('fileidx')).length
-        }
-
-        return cacheImgNum
     }
 }
