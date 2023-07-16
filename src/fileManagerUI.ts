@@ -22,6 +22,18 @@ let ka = new KernelApi();
 // File System Core //
 //////////////////////
 
+export function getCacheImgNum() {
+    let cacheImgNum: number
+    let fileidx = configs.get('fileidx')
+    if (fileidx === null || fileidx == undefined) {
+        cacheImgNum = 0
+    } else {
+        cacheImgNum = Object.keys(configs.get('fileidx')).length
+    }
+
+    return cacheImgNum
+}
+
 export async function checkCacheDirctory(pluginInstance: BgCoverPlugin) {
     // check verion and remove old cache directory
     if ((window as any).siyuan.config.system.kernelVersion >= '2.9.3') {
@@ -173,7 +185,7 @@ export async function clearCacheFolder(pluginInstance: BgCoverPlugin, mode: cst.
         // todo
     }
 
-    const cacheImgNum = pluginInstance.getCacheImgNum();
+    const cacheImgNum = getCacheImgNum();
     if (cacheImgNum === 0) {
         // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
         pluginInstance.useDefaultLiaoLiaoBg();
@@ -462,7 +474,7 @@ export function generateCacheImgList(pluginInstance: BgCoverPlugin){
             ka.removeFile(`data/${bgObj.path}`);
         
             // 检查当前文件数量是否为空，如果为空则设置为默认了了图
-            const cacheImgNum = pluginInstance.getCacheImgNum();
+            const cacheImgNum = getCacheImgNum();
             if (cacheImgNum === 0) {
                 // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
                 pluginInstance.useDefaultLiaoLiaoBg();
