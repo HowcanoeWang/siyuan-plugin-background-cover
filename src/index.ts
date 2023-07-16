@@ -19,8 +19,10 @@ import {
     CloseCV, MD5, OS, Numpy,
     getThemeInfo
 } from './utils';
-import * as cst from './constants'
-import * as adp from './themeAdapt'
+import * as cst from './constants';
+import * as adp from './themeAdapt';
+import * as topbarUI from "./topbarUI";
+import * as noticeUI from "./noticeUI";
 
 import packageInfo from '../plugin.json'
 import "./index.scss";
@@ -31,15 +33,15 @@ let ka = new KernelApi();
 let cv2 = new CloseCV();
 let np = new Numpy();
 
-export default class SwitchBgCover extends Plugin {
+export default class BgCoverPlugin extends Plugin {
 
-    private isMobile: boolean;
+    public isMobile: boolean;
 
-    private htmlThemeNode = document.getElementsByTagName('html')[0];
+    public htmlThemeNode = document.getElementsByTagName('html')[0];
 
-    private bgLayer = document.createElement('canvas');
+    public bgLayer = document.createElement('canvas');
 
-    private cssThemeStyle: cst.cssThemeOldStyle = {};
+    public cssThemeStyle: cst.cssThemeOldStyle = {};
 
     async onload() {
         const frontEnd = getFrontend();
@@ -51,28 +53,7 @@ export default class SwitchBgCover extends Plugin {
         settings.setPlugin(this);
         //初始化数据
         await settings.load();
-
-        const topBarElement = this.addTopBar({
-            icon: "iconLogo",
-            title: this.i18n.addTopBarIcon,
-            position: "right",
-            callback: () => {
-                if (this.isMobile) {
-                    this.showMobileTodo();
-                    // this.addMenu();
-                } else {
-                    let rect = topBarElement.getBoundingClientRect();
-                    // 如果被隐藏，则使用更多按钮
-                    if (rect.width === 0) {
-                        rect = document.querySelector("#barMore").getBoundingClientRect();
-                    }
-                    if (rect.width === 0) {
-                        rect = document.querySelector("#barPlugins").getBoundingClientRect();
-                    }
-                    this.addMenu(rect);
-                }
-            }
-        });
+        await topbarUI.initTopbar(this)
 
         // 绑定快捷键
         this.addCommand({
@@ -264,7 +245,7 @@ export default class SwitchBgCover extends Plugin {
         // let live2dFiles = await os.listdir(cst.pluginLive2DataDir)
     }
 
-    private async pluginOnOff() {
+    public async pluginOnOff() {
         settings.set('activate', !settings.get('activate'))
         settings.save();
         this.applySettings();
@@ -422,7 +403,7 @@ export default class SwitchBgCover extends Plugin {
         return listHtml
     }
 
-    private async selectPictureByHand() {
+    public async selectPictureByHand() {
         const cacheManagerDialog = new Dialog({
             title: this.i18n.selectPictureManagerTitle,
             width: this.isMobile ? "92vw" : "520px",
@@ -516,7 +497,7 @@ export default class SwitchBgCover extends Plugin {
 
     }
 
-    private async selectPictureRandom(manualPress: boolean = false) {
+    public async selectPictureRandom(manualPress: boolean = false) {
         const cacheImgNum = this.getCacheImgNum()
         if (cacheImgNum === 0) {
             // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
@@ -652,7 +633,7 @@ export default class SwitchBgCover extends Plugin {
         }
     }
 
-    private async addSingleLocalImageFile() {
+    public async addSingleLocalImageFile() {
 
         const cacheImgNum = this.getCacheImgNum();
 
@@ -687,7 +668,7 @@ export default class SwitchBgCover extends Plugin {
         };
     };
 
-    private async addDirectory() {
+    public async addDirectory() {
         const cacheImgNum = this.getCacheImgNum();
 
         const directoryHandle = await window.showDirectoryPicker();
@@ -760,7 +741,7 @@ export default class SwitchBgCover extends Plugin {
             debug(`[Func][changeBackgroundContent] 替换当前背景图片为${background}`)
             this.bgLayer.style.setProperty('background-image', `url('${background}')`);
         } else if (mode == cst.bgMode.live2d) {
-            this.showIndev();
+            noticeUI.showIndev();
         } else {
             showMessage(`[${this.i18n.addTopBarIcon} Plugin][Error] Background type [${mode}] is not supported, `, 7000, "error");
         }
@@ -1761,19 +1742,7 @@ export default class SwitchBgCover extends Plugin {
     ////////////////////
     // Plugin UI init //
     ////////////////////
-    private showMobileTodo() {
-        showMessage(`${this.i18n.mobileNotSupported}`, 1000, "info")
-    }
-
-    private showIndev(msg: string = '') {
-        const dialog = new Dialog({
-            title: `${this.i18n.inDevTitle}`,
-            content: `<div class="b3-dialog__content">${this.i18n.inDev}<span>${msg}</span></div>`,
-            width: this.isMobile ? "92vw" : "520px",
-        });
-    }
-
-    private bugReportFunction() {
+    public bugReportFunction() {
         const dialog = new Dialog({
             title: `${this.i18n.bugReportLabel}`,
             content: `
@@ -1799,89 +1768,5 @@ export default class SwitchBgCover extends Plugin {
             window.open('https://github.com/HowcanoeWang/siyuan-plugin-background-cover/issues', '_blank');
             dialog.destroy();
         });
-    }
-
-    private addMenu(rect?: DOMRect) {
-        const menu = new Menu("topBarSample", () => { });
-        menu.addItem({
-            icon: "iconIndent",
-            label: `${this.i18n.selectPictureLabel}`,
-            type: "submenu",
-            submenu: [
-                {
-                    icon: "iconHand",
-                    label: `${this.i18n.selectPictureManualLabel}`,
-                    accelerator: this.commands[0].customHotkey,
-                    click: () => {
-                        this.selectPictureByHand();
-                    }
-                }, 
-                {
-                    icon: "iconMark",
-                    label: `${this.i18n.selectPictureRandomLabel}`,
-                    accelerator: this.commands[1].customHotkey,
-                    click: () => {
-                        this.selectPictureRandom(true);
-                    }
-                },
-            ]
-        });
-        menu.addItem({
-            icon: "iconAdd",
-            label: `${this.i18n.addImageLabel}`,
-            type: "submenu",
-            submenu: [
-                {
-                    icon: "iconImage",
-                    label: `${this.i18n.addSingleImageLabel}`,
-                    click: () => {
-                        this.addSingleLocalImageFile();
-                    }
-                },
-                {
-                    icon: "iconFolder",
-                    label: `${this.i18n.addDirectoryLabel}`,
-                    click: () => {
-                        this.addDirectory();
-                    }
-                },
-            ]
-        });
-        menu.addItem({
-            id: 'pluginOnOffMenu',
-            icon: `${settings.get('activate') ? 'iconClose' : 'iconSelect'}`,
-            label: `${settings.get('activate') ? this.i18n.closeBackgroundLabel : this.i18n.openBackgroundLabel}`,
-            accelerator: this.commands[2].customHotkey,
-            click: () => {
-                this.pluginOnOff();
-            }
-        });
-
-        menu.addSeparator();
-
-        menu.addItem({
-            icon: "iconGithub",
-            label: `${this.i18n.bugReportLabel}`,
-            click: () => {
-                this.bugReportFunction()
-            }
-        });
-        menu.addItem({
-            icon: "iconSettings",
-            label: `${this.i18n.settingLabel}`,
-            click: () => {
-                this.openSetting();
-            }
-        });
-
-        if (this.isMobile) {
-            menu.fullscreen();
-        } else {
-            menu.open({
-                x: rect.right,
-                y: rect.bottom,
-                isLeft: true,
-            });
-        }
     }
 }
