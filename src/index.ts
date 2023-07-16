@@ -1737,36 +1737,4 @@ export default class BgCoverPlugin extends Plugin {
         //     dialog.destroy();
         // });
     }
-
-
-    ////////////////////
-    // Plugin UI init //
-    ////////////////////
-    public bugReportFunction() {
-        const dialog = new Dialog({
-            title: `${this.i18n.bugReportLabel}`,
-            content: `
-            <div class="b3-dialog__content">${this.i18n.bugReportConfirmText}</div>
-            <div class="b3-dialog__action">
-                <button class="b3-button b3-button--cancel">${this.i18n.cancel}</button><div class="fn__space"></div>
-                <button class="b3-button b3-button--text">${this.i18n.confirm}</button>
-            </div>
-            <div class="b3-dialog__action">
-            `,
-            width: this.isMobile ? "92vw" : `520px`,
-        });
-
-        const btnsElement = dialog.element.querySelectorAll(".b3-button");
-
-        // cancel button
-        btnsElement[0].addEventListener("click", () => {
-            dialog.destroy();
-        });
-
-        // still report
-        btnsElement[1].addEventListener("click", () => {
-            window.open('https://github.com/HowcanoeWang/siyuan-plugin-background-cover/issues', '_blank');
-            dialog.destroy();
-        });
-    }
 }

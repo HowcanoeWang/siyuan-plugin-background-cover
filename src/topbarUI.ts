@@ -21,6 +21,7 @@ import {
 import BgCoverPlugin from "./index"
 import { settings } from './configs';
 import * as noticeUI from "./noticeUI";
+import * as bugreportUI from "./bugreportUI";
 
 /**
  * 顶栏按钮UI
@@ -111,7 +112,7 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                 icon: "iconGithub",
                 label: `${pluginInstance.i18n.bugReportLabel}`,
                 click: () => {
-                    pluginInstance.bugReportFunction()
+                    bugreportUI.bugReportDialog(pluginInstance);
                 }
             });
             menu.addItem({
