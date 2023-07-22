@@ -2,10 +2,12 @@ import packageInfo from '../plugin.json'
 import BgCoverPlugin from "./index"
 
 import { Dialog } from "siyuan";
-import { configs } from './configs';
+import { configs } from "./configs";
 
-import * as cst from './constants';
-import * as fileManagerUI from './fileManagerUI';
+import * as cst from "./constants";
+import * as fileManagerUI from "./fileManagerUI";
+import * as topbarUI from "./topbarUI";
+import * as bgRender from "./bgRender";
 
 import {
     error, warn, info, debug,
@@ -227,7 +229,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         // 拖动的时候，修改图片的位置
         elementsArray[i].addEventListener("input", () => {
             debug(elementsArray, cxElement.value, cyElement.value)
-            pluginInstance.changeBgPosition(cxElement.value, cyElement.value)
+            bgRender.changeBgPosition(cxElement.value, cyElement.value)
         })
         // 停止拖动的时候，保存图片的位置
         elementsArray[i].addEventListener("change", () => {
@@ -257,7 +259,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     const cacheManagerElement = document.getElementById('cacheManagerBtn') as HTMLButtonElement;
     cacheManagerElement.addEventListener("click", async () => {
         dialog.destroy();
-        pluginInstance.selectPictureByHand();
+        topbarUI.selectPictureByHand(pluginInstance);
     })
 
     // plugin onoff switch
@@ -268,7 +270,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         configs.set('activate', !configs.get('activate'));
         activateElement.value = configs.get('activate');
         configs.save();
-        pluginInstance.applySettings();
+        bgRender.applySettings(pluginInstance);
     })
 
     // the Auto refresh switch
@@ -286,7 +288,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     opacityElement.addEventListener("change", () => {
         configs.set('opacity', parseFloat(opacityElement.value));
         if (configs.get('activate')) {
-            pluginInstance.changeOpacity(configs.get('opacity'), configs.get('transMode'), configs.get('adaptMode'));
+            bgRender.changeOpacity(pluginInstance, configs.get('opacity'), configs.get('transMode'), configs.get('adaptMode'));
         }
         configs.save();
     })
@@ -300,7 +302,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     blurElement.addEventListener("change", () => {
         configs.set('blur', parseFloat(blurElement.value));
         if (configs.get('activate')) {
-            pluginInstance.changeBlur(configs.get('blur'));
+            bgRender.changeBlur(configs.get('blur'));
         }
         configs.save();
     })
@@ -316,7 +318,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
     transModeElement.addEventListener('change', () => {
         configs.set('transMode', transModeElement.value);
-        pluginInstance.changeOpacity(configs.get('opacity'), configs.get('transMode'), configs.get('adaptMode'));
+        bgRender.changeOpacity(pluginInstance, configs.get('opacity'), configs.get('transMode'), configs.get('adaptMode'));
         configs.save();
     });
 
@@ -332,7 +334,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     themeAdaptElement.addEventListener("click", () => {
         configs.set('adaptMode', !configs.get('adaptMode'));
         themeAdaptElement.value = `${configs.get('adaptMode')}`;
-        pluginInstance.changeOpacity(configs.get('opacity'),  configs.get('transMode'), configs.get('adaptMode'));
+        bgRender.changeOpacity(pluginInstance, configs.get('opacity'),  configs.get('transMode'), configs.get('adaptMode'));
         configs.save();
     });
 
@@ -342,7 +344,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         os.rmtree(cst.pluginImgDataDir);
         configs.reset();
         await configs.save();
-        await pluginInstance.applySettings();
+        await bgRender.applySettings(pluginInstance);
     })
 
     // the dev mode settings
