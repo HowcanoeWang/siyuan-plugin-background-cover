@@ -4,7 +4,7 @@ import BgCoverPlugin from "./index"
 import { Dialog, showMessage } from "siyuan";
 import { configs } from "./configs";
 
-import * as adp from './themeAdapt';
+import * as adp from './themeAdapterUI';
 import * as cst from "./constants";
 import * as fileManagerUI from "./fileManagerUI";
 import * as noticeUI from "./noticeUI";

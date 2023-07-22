@@ -8,6 +8,7 @@ import * as cst from "./constants";
 import * as fileManagerUI from "./fileManagerUI";
 import * as topbarUI from "./topbarUI";
 import * as bgRender from "./bgRender";
+import * as themeAdapterUI from "./themeAdapterUI";
 
 import {
     error, warn, info, debug,
@@ -324,7 +325,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
     const configEditorURL = document.getElementById('adaptConfigEditorURL') as HTMLLinkElement
     configEditorURL.addEventListener('click', () => {
-        pluginInstance.adaptConfigEditor();
+        themeAdapterUI.adaptConfigEditor(pluginInstance);
     });
 
     // the theme adapt switches
