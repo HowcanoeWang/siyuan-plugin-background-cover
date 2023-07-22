@@ -1,11 +1,13 @@
+import BgCoverPlugin from "./index"
 import packageInfo from '../plugin.json'
 
 import { Dialog, showMessage } from "siyuan";
 import { KernelApi } from "./siyuanAPI";
-import { configs } from './configs';
-import * as cst from './constants';
+import { configs } from "./configs";
+import * as cst from "./constants";
 import * as settingsUI from "./settingsUI";
-import BgCoverPlugin from "./index"
+import * as bgRender from "./bgRender";
+import * as topbarUI from "./topbarUI";
 
 import {
     error, warn, info, debug,
@@ -188,7 +190,7 @@ export async function clearCacheFolder(pluginInstance: BgCoverPlugin, mode: cst.
     const cacheImgNum = getCacheImgNum();
     if (cacheImgNum === 0) {
         // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
-        pluginInstance.useDefaultLiaoLiaoBg();
+        bgRender.useDefaultLiaoLiaoBg();
     };
 
     await configs.save();
@@ -291,7 +293,7 @@ export async function batchUploadImages(
 
         if (applySetting){
             debug('[Func][batchUploadImages] 在应用设置的判断内', bgObj)
-            pluginInstance.changeBackgroundContent(bgObj.path, bgObj.mode);
+            bgRender.changeBackgroundContent(bgObj.path, bgObj.mode);
             settingsUI.updateSettingPanelElementStatus();
         }
     }
@@ -441,7 +443,7 @@ export function generateCacheImgList(pluginInstance: BgCoverPlugin){
          * 绑定设定当前图片为背景图
          */
         setBgBtn.addEventListener('click', () => {
-            pluginInstance.changeBackgroundContent(bgObj.path, bgObj.mode);
+            bgRender.changeBackgroundContent(bgObj.path, bgObj.mode);
             configs.set('bgObj', bgObj);
         
             configs.save();
@@ -464,7 +466,7 @@ export function generateCacheImgList(pluginInstance: BgCoverPlugin){
             displayDivElement.innerHTML = null;
         
             // 移除fileidx中的项目
-            pluginInstance.selectPictureRandom();
+            topbarUI.selectPictureRandom(pluginInstance);
             let fileidx = configs.get('fileidx');
             delete fileidx[bgObj.hash];
             configs.set('fileidx', fileidx);
@@ -477,7 +479,7 @@ export function generateCacheImgList(pluginInstance: BgCoverPlugin){
             const cacheImgNum = getCacheImgNum();
             if (cacheImgNum === 0) {
                 // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
-                pluginInstance.useDefaultLiaoLiaoBg();
+                bgRender.useDefaultLiaoLiaoBg();
             };
         
             configs.save();
