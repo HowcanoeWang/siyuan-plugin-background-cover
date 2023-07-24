@@ -2,13 +2,33 @@ import packageInfo from '../plugin.json'
 
 export enum bgMode {
     image = 0,
-    live2d = 1,
+    video = 1,
+    live2d = 2,
 }
 
 export interface bgObj {
     name:string, path:string, hash:string, 
     mode: bgMode, offx: number, offy: number,
     height: number, width: number
+}
+
+export interface fileIndex {
+    [key: string]: bgObj;
+}
+
+// 需要针对下面的主题进行适配
+export interface toAdaptThemes {
+    [key: string]: {
+        [key: string]: string[]
+    }
+}
+
+export interface themeAdaptObject {
+    [key: string]: string[]
+}
+
+export interface cssThemeOldStyle {
+    [key:string]: string
 }
 
 export const pluginAssetsDir = `/data/public/${packageInfo.name}/assets`
@@ -24,27 +44,20 @@ if ((window as any).siyuan.config.system.os === 'windows'){
     pluginAssetsDirOS = `${dataDir}${pluginAssetsDir}`
 }
 
-// 需要针对下面的主题进行适配
-export interface toAdaptThemes {
-    [key: string]: {
-        [key: string]: string[]
-    }
-}
-
 export const cacheMaxNum = 198;
 
 export const supportedImageSuffix = [".png", ".jpeg", ".jpg", ".jiff", ".jfif"]
 
-export const SettingFile = 'bg-cover-setting.json';
+export const configFile = 'bg-cover-setting.json';
 
-export type SettingKey = (
+export type configKey = (
     'autoRefresh' |'opacity' | 'blur' | 'activate' | 'bgObj' |
-    'version' | 'prevTheme' | 'fileidx' | 'inDev' | 'themeAdapt'
+    'version' | 'prevTheme' | 'fileidx' | 'inDev' | 'adaptMode' | 'transMode' 
 );
 
 export const demoImgURL = 'https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover/static/FyBE0bUakAELfeF.jpg'
 
-export const defaultSettings = {
+export var defaultConfigs = {
     // 启动时随机更改图片
     'autoRefresh': true as boolean,
     // 当前配置的背景图路径
@@ -55,10 +68,11 @@ export const defaultSettings = {
     // 图片类型 1:本地文件，2：https
     'activate': true as boolean,
     'prevTheme': '' as string,
-    'fileidx': {} as object,
+    'fileidx': {} as fileIndex,
     'version': packageInfo.version as string,
     'inDev': false as boolean,
-    'themeAdapt': true as boolean
+    'adaptMode': false as boolean,
+    'transMode': 0 as number,
 };
 
 export const diyIcon = {
