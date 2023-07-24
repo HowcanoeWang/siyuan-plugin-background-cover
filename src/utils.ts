@@ -120,7 +120,7 @@ export class CloseCV {
         }else if (colorString.slice(0,4) === 'var(') {  // e.g.  var(--b3-theme-background)
             let cssvar_name = colorString.slice(4,-1);
             let originalColor = cssVarColors.getPropertyValue(cssvar_name);
-            debug(`[Func][CV2.changeColorOpacity] input colorStr = ${colorString}, extract css variable ${cssvar_name} and obtained value as ${originalColor}`)
+            debug(`[utils][CV2.changeColorOpacity] input colorStr = ${colorString}, extract css variable ${cssvar_name} and obtained value as ${originalColor}`)
             changedColor = this.changeColorOpacity(originalColor, alpha)
         // --> 如果当前元素为正常的rgb开头
         }else if (colorString.slice(0,4) === 'rgb(') {

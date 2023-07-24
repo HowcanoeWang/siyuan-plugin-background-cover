@@ -43,7 +43,7 @@ export async function checkCacheDirctory(pluginInstance: BgCoverPlugin) {
 
         let imgFiles = await os.listdir(oldpluginAssetsDir);
         if (imgFiles !== null && imgFiles.length > 0) {
-            showMessage(pluginInstance.i18n.cacheDirectoryMove, 7000, "info");
+            showMessage(window.bgCoverPlugin.i18n.cacheDirectoryMove, 7000, "info");
             await os.rmtree(oldpluginAssetsDir);
         }
     }
@@ -68,7 +68,7 @@ export async function checkCacheDirctory(pluginInstance: BgCoverPlugin) {
             continue
         } else {
             // 背景图片
-            debug(`[Func][checkCacheDirectory] Check ${item.name} in cached dir`)
+            debug(`[fileManagerUI][checkCacheDirectory] Check ${item.name} in cached dir`)
             if (item.name.slice(0, 5) === 'hash-') {
                 const [hash_name, suffix] = os.splitext(item.name.split('-')[1])
 
@@ -103,8 +103,25 @@ export async function checkCacheDirctory(pluginInstance: BgCoverPlugin) {
                     }
                 } else {
                     // 在缓存文件夹中，但图片并不在fileidx中（图片多余了）
+                    // 更新版本：把多余的图片添加到缓存中而不是删除
                     extraCacheImgs.push(item.name)
-                    ka.removeFile(`${cst.pluginImgDataDir}/${item.name}`)
+                    //ka.removeFile(`${cst.pluginImgDataDir}/${item.name}`)
+                    // slice(5) to remove '/data' prefix
+                    const imgPath = `${cst.pluginImgDataDir.slice(5)}/${item.name}`
+                    const imageSize = await cv2.getImageSize(imgPath)
+
+                    let bgObj: cst.bgObj = {
+                        name: item.name,
+                        path: imgPath,
+                        hash: item.name.slice(0, 5),
+                        mode: cst.bgMode.image,
+                        offx: 50,
+                        offy: 50,
+                        height: imageSize.height,
+                        width: imageSize.width
+                    }
+
+                    fileidx[hash_name] = bgObj
                 }
             } else {
                 // 非法缓存图片
@@ -126,19 +143,19 @@ export async function checkCacheDirctory(pluginInstance: BgCoverPlugin) {
 
     // raise warning to users
     if (notCorrectCacheImgs.length !== 0) {
-        let msgInfo = `${pluginInstance.i18n.cacheImgWrongName}<br>[${notCorrectCacheImgs}]<br>${pluginInstance.i18n.doNotOperateCacheFolder}`
+        let msgInfo = `${window.bgCoverPlugin.i18n.cacheImgWrongName}<br>[${notCorrectCacheImgs}]<br>${window.bgCoverPlugin.i18n.doNotOperateCacheFolder}`
         showMessage(msgInfo, 7000, "info")
         info(msgInfo)
     }
 
     if (extraCacheImgs.length !== 0) {
-        let msgInfo = `${pluginInstance.i18n.cacheImgExtra}<br>[${extraCacheImgs}]<br>${pluginInstance.i18n.doNotOperateCacheFolder}`
+        let msgInfo = `${window.bgCoverPlugin.i18n.cacheImgExtra}<br>[${extraCacheImgs}]<br>${window.bgCoverPlugin.i18n.doNotOperateCacheFolder}`
         showMessage(msgInfo, 7000, "info")
         info(msgInfo)
     }
 
     if (missingCacheImgs.length !== 0) {
-        let msgInfo = `${pluginInstance.i18n.cacheImgMissing}<br>[${missingCacheImgs}]<br>${pluginInstance.i18n.doNotOperateCacheFolder}`
+        let msgInfo = `${window.bgCoverPlugin.i18n.cacheImgMissing}<br>[${missingCacheImgs}]<br>${window.bgCoverPlugin.i18n.doNotOperateCacheFolder}`
         showMessage(msgInfo, 7000, "info")
         info(msgInfo)
     }
@@ -204,12 +221,12 @@ export function imgExistsInCache(
     if (fileidx !== undefined && md5 in fileidx) {
         if (notice) {
             const dialog = new Dialog({
-                title: `${pluginInstance.i18n.inDevTitle}`,
-                content: `<div class="b3-dialog__content">${pluginInstance.i18n.imageFileExist}</div>`,
+                title: `${window.bgCoverPlugin.i18n.inDevTitle}`,
+                content: `<div class="b3-dialog__content">${window.bgCoverPlugin.i18n.imageFileExist}</div>`,
                 width: pluginInstance.isMobile ? "92vw" : "520px",
             });
         }else{
-            debug(`[Func][imgIsInCache] 当前图片${file.name}已存在`)
+            debug(`[fileManagerUI][imgIsInCache] 当前图片${file.name}已存在`)
         }
         return 'exists'
     } else {
@@ -220,7 +237,7 @@ export function imgExistsInCache(
 export async function uploadOneImage(pluginInstance: BgCoverPlugin, file: File) {
     let fileSizeMB: number = (file.size / 1024 / 1024);
 
-    showMessage(`${file.name}-${fileSizeMB.toFixed(2)}MB<br>${pluginInstance.i18n.addSingleImageUploadNotice}`, 3000, "info");
+    showMessage(`${file.name}-${fileSizeMB.toFixed(2)}MB<br>${window.bgCoverPlugin.i18n.addSingleImageUploadNotice}`, 3000, "info");
 
     let md5 = imgExistsInCache(pluginInstance, file);
 
@@ -258,7 +275,7 @@ export async function uploadOneImage(pluginInstance: BgCoverPlugin, file: File) 
             configs.set('bgObj', bgObj);
             configs.set('fileidx', fileidx);
 
-            debug(`[func][addSingleLocalImageFile]: fileidx ${fileidx}`);
+            debug(`[fileManagerUI][addSingleLocalImageFile]: fileidx ${fileidx}`);
 
             return bgObj
         } else {
@@ -276,23 +293,23 @@ export async function batchUploadImages(
 {
     let bgObj:cst.bgObj;
 
-    debug('[Func][batchUploadImages] fileArray', fileArray)
+    debug('[fileManagerUI][batchUploadImages] fileArray', fileArray)
 
     if (fileArray.length === 0) {
-        debug('[Func][batchUploadImages] fileArray为空，不存在需要上传的图片')
+        debug('[fileManagerUI][batchUploadImages] fileArray为空，不存在需要上传的图片')
     }else{
         for (let i in fileArray) {
             let file = fileArray[i];
 
             bgObj = await uploadOneImage(pluginInstance, file);
 
-            debug('[Func][batchUploadImages] 在上传的循环内', bgObj)
+            debug('[fileManagerUI][batchUploadImages] 在上传的循环内', bgObj)
         };
 
         await configs.save();
 
         if (applySetting){
-            debug('[Func][batchUploadImages] 在应用设置的判断内', bgObj)
+            debug('[fileManagerUI][batchUploadImages] 在应用设置的判断内', bgObj)
             bgRender.changeBackgroundContent(bgObj.path, bgObj.mode);
             settingsUI.updateSettingPanelElementStatus();
         }
@@ -305,7 +322,7 @@ export async function batchUploadImages(
 
 export async function selectPictureDialog(pluginInstance: BgCoverPlugin) {
     const cacheManagerDialog = new Dialog({
-        title: pluginInstance.i18n.selectPictureManagerTitle,
+        title: window.bgCoverPlugin.i18n.selectPictureManagerTitle,
         width: pluginInstance.isMobile ? "92vw" : "520px",
         height: "92vh",
         content: `
@@ -315,14 +332,14 @@ export async function selectPictureDialog(pluginInstance: BgCoverPlugin) {
                 <!-- tab 1 title -->
                 <div class="item item--full item--focus" data-type="remove">
                     <span class="fn__flex-1"></span>
-                    <span class="item__text">${pluginInstance.i18n.selectPictureManagerTab1}</span>
+                    <span class="item__text">${window.bgCoverPlugin.i18n.selectPictureManagerTab1}</span>
                     <span class="fn__flex-1"></span>
                 </div>
 
                 <!-- tab 2 title -->
                 <!--div class="item item--full" data-type="missing">
                     <span class="fn__flex-1"></span>
-                    <span class="item__text">${pluginInstance.i18n.selectPictureManagerTab2}</span>
+                    <span class="item__text">${window.bgCoverPlugin.i18n.selectPictureManagerTab2}</span>
                     <span class="fn__flex-1"></span>
                 </div-->
             </div>
@@ -336,7 +353,7 @@ export async function selectPictureDialog(pluginInstance: BgCoverPlugin) {
                     <label class="fn__flex" style="justify-content: flex-end;">
                         <button id="removeAllImgs" class="b3-button b3-button--outline fn__flex-center fn__size200">
                             <svg class="svg"><use xlink:href="#iconTrashcan"></use></svg>
-                            ${pluginInstance.i18n.deleteAll}
+                            ${window.bgCoverPlugin.i18n.deleteAll}
                         </button>
                         <div class="fn__space"></div>
                     </label>
@@ -349,10 +366,10 @@ export async function selectPictureDialog(pluginInstance: BgCoverPlugin) {
                             <span class="b3-list-item__text">
                                 20230609230328-7vp057x.png
                             </span>
-                            <span data-type="open" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${pluginInstance.i18n.setAsBg}">
+                            <span data-type="open" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${window.bgCoverPlugin.i18n.setAsBg}">
                                 <svg><use xlink:href="#iconHideDock"></use></svg>
                             </span>
-                            <span data-type="clear" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${pluginInstance.i18n.delete}">
+                            <span data-type="clear" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${window.bgCoverPlugin.i18n.delete}">
                                 <svg><use xlink:href="#iconTrashcan"></use></svg>
                             </span>
                         </li>
@@ -390,7 +407,7 @@ export async function selectPictureDialog(pluginInstance: BgCoverPlugin) {
         cacheImgListElement.appendChild(element);
       }
 
-    debug('[Func][selectPictureByHand]', listHtmlArray, cacheImgListElement);
+    debug('[fileManagerUI][selectPictureByHand]', listHtmlArray, cacheImgListElement);
 
     let deleteAllImgBtn = document.getElementById('removeAllImgs');
     deleteAllImgBtn.addEventListener('click', clearCacheFolder.bind(pluginInstance, cst.bgMode.image));
@@ -425,10 +442,10 @@ export function generateCacheImgList(pluginInstance: BgCoverPlugin){
             <span class="b3-list-item__text">
                 ${bgObj.name}
             </span>
-            <span data-type="open" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${pluginInstance.i18n.setAsBg}">
+            <span data-type="open" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${window.bgCoverPlugin.i18n.setAsBg}">
                 <svg><use xlink:href="#iconHideDock"></use></svg>
             </span>
-            <span data-type="clear" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${pluginInstance.i18n.delete}">
+            <span data-type="clear" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${window.bgCoverPlugin.i18n.delete}">
                 <svg><use xlink:href="#iconTrashcan"></use></svg>
             </span>
         </li>
@@ -472,7 +489,7 @@ export function generateCacheImgList(pluginInstance: BgCoverPlugin){
             configs.set('fileidx', fileidx);
         
             // 调用os来移除本地文件夹中的缓存文件
-            debug(`[Func][_rmBg] 移除下列路径的图片：${cst.pluginImgDataDir}/${bgObj.name}`);
+            debug(`[fileManagerUI][_rmBg] 移除下列路径的图片：${cst.pluginImgDataDir}/${bgObj.name}`);
             ka.removeFile(`data/${bgObj.path}`);
         
             // 检查当前文件数量是否为空，如果为空则设置为默认了了图

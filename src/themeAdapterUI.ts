@@ -142,7 +142,7 @@ export async function adaptConfigEditor(pluginInstance: BgCoverPlugin) {
     const [themeMode, themeName] = getThemeInfo();
 
     const configEditor = new Dialog({
-        title: pluginInstance.i18n.themeAdaptContentDes,
+        title: window.bgCoverPlugin.i18n.themeAdaptContentDes,
         width: pluginInstance.isMobile ? "92vw" : "520px",
         height: "75vh",
         content: `
@@ -150,13 +150,13 @@ export async function adaptConfigEditor(pluginInstance: BgCoverPlugin) {
 
             <div class="b3-label file-tree config-keymap" id="keymapList" style="height:100%;">
                 <div class="fn__flex config__item">
-                    <a href="https://github.com/HowcanoeWang/siyuan-plugin-background-cover/discussion">${pluginInstance.i18n.themeAdaptEditorShare}</a>
+                    <a href="https://github.com/HowcanoeWang/siyuan-plugin-background-cover/discussion">${window.bgCoverPlugin.i18n.themeAdaptEditorShare}</a>
                 </div>
 
                 <div class="fn__hr"></div>
 
                 <div class="fn__flex config__item">
-                    <span>${pluginInstance.i18n.themeAdaptEditorDes1}</span>
+                    <span>${window.bgCoverPlugin.i18n.themeAdaptEditorDes1}</span>
 
                     <span class="fn__space"></span>
                     
@@ -164,17 +164,17 @@ export async function adaptConfigEditor(pluginInstance: BgCoverPlugin) {
 
                     <span class="fn__space"></span>
 
-                    <span>${pluginInstance.i18n.themeAdaptEditorDes2}</span>
+                    <span>${window.bgCoverPlugin.i18n.themeAdaptEditorDes2}</span>
                     
                     <span class="fn__space"></span>
                     
-                    <code style="color:red;">${themeMode === 0 ? pluginInstance.i18n.themeAdaptEditorMode0 : pluginInstance.i18n.themeAdaptEditorMode1}</code>
+                    <code style="color:red;">${themeMode === 0 ? window.bgCoverPlugin.i18n.themeAdaptEditorMode0 : window.bgCoverPlugin.i18n.themeAdaptEditorMode1}</code>
                 </div>
                 
                 <div class="fn__hr"></div>
 
                 <div class="fn__flex config__item">
-                    <span>${pluginInstance.i18n.themeAdaptEditorDes3}</span>
+                    <span>${window.bgCoverPlugin.i18n.themeAdaptEditorDes3}</span>
                 </div>
 
                 <div class="fn__hr"></div>
@@ -187,8 +187,8 @@ export async function adaptConfigEditor(pluginInstance: BgCoverPlugin) {
                         <span class="b3-list-item__toggle b3-list-item__toggle--hl">
                             <svg class="b3-list-item__arrow b3-list-item__arrow--open"><use xlink:href="#iconRight"></use></svg>
                         </span>
-                        <span class="b3-list-item__text ft__on-surface">${pluginInstance.i18n.transparentModeOpacity}</span>
-                        <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="${pluginInstance.i18n.addElement}">
+                        <span class="b3-list-item__text ft__on-surface">${window.bgCoverPlugin.i18n.transparentModeOpacity}</span>
+                        <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="${window.bgCoverPlugin.i18n.addElement}">
                             <svg>
                                 <use xlink:href="#iconAdd"></use>
                             </svg>
@@ -203,12 +203,12 @@ export async function adaptConfigEditor(pluginInstance: BgCoverPlugin) {
                                 <svg class="b3-list-item__arrow b3-list-item__arrow--open"><use xlink:href="#iconRight"></use></svg>
                             </span>
                             <span class="b3-list-item__text ft__on-surface">$toolbar</span>
-                            <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="${pluginInstance.i18n.addStyle}">
+                            <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="${window.bgCoverPlugin.i18n.addStyle}">
                                 <svg>
                                     <use xlink:href="#iconAdd"></use>
                                 </svg>
                             </span>
-                            <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="${pluginInstance.i18n.delete}">
+                            <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="${window.bgCoverPlugin.i18n.delete}">
                                 <svg>
                                     <use xlink:href="#iconTrashcan"></use>
                                 </svg>
@@ -220,7 +220,7 @@ export async function adaptConfigEditor(pluginInstance: BgCoverPlugin) {
                             <!-- 第三级菜单 start -->
                             <label class="b3-list-item b3-list-item--narrow b3-list-item--hide-action">
                                 <span class="b3-list-item__text"><code>background-color</code></span>
-                                <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="${pluginInstance.i18n.delete}">
+                                <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="${window.bgCoverPlugin.i18n.delete}">
                                     <svg>
                                         <use xlink:href="#iconTrashcan"></use>
                                     </svg>
@@ -246,8 +246,8 @@ export async function adaptConfigEditor(pluginInstance: BgCoverPlugin) {
                         <span class="b3-list-item__toggle b3-list-item__toggle--hl">
                             <svg class="b3-list-item__arrow"><use xlink:href="#iconRight"></use></svg>
                         </span>
-                        <span class="b3-list-item__text ft__on-surface">${pluginInstance.i18n.transparentModeCss}</span>
-                        <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="${pluginInstance.i18n.addElement}">
+                        <span class="b3-list-item__text ft__on-surface">${window.bgCoverPlugin.i18n.transparentModeCss}</span>
+                        <span data-type="clear" class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="${window.bgCoverPlugin.i18n.addElement}">
                         <svg>
                             <use xlink:href="#iconAdd"></use>
                         </svg>
@@ -261,18 +261,18 @@ export async function adaptConfigEditor(pluginInstance: BgCoverPlugin) {
 
             <!--label class="b3-label fn__flex">
                 <div class="fn__flex-1">
-                    <a href="https://github.com/HowcanoeWang/siyuan-plugin-background-cover/discussion">${pluginInstance.i18n.themeAdaptEditorShare}</a>
+                    <a href="https://github.com/HowcanoeWang/siyuan-plugin-background-cover/discussion">${window.bgCoverPlugin.i18n.themeAdaptEditorShare}</a>
                 </div>
             </label-->
 
             <div class="b3-dialog__action">
-                <button class="b3-button b3-button--cancel">${pluginInstance.i18n.cancel}</button>
+                <button class="b3-button b3-button--cancel">${window.bgCoverPlugin.i18n.cancel}</button>
                 <div class="fn__space"></div>
-                <button class="b3-button b3-button--text">${pluginInstance.i18n.import}</button>
+                <button class="b3-button b3-button--text">${window.bgCoverPlugin.i18n.import}</button>
                 <div class="fn__space"></div>
-                <button class="b3-button b3-button--text">${pluginInstance.i18n.save}</button>
+                <button class="b3-button b3-button--text">${window.bgCoverPlugin.i18n.save}</button>
                 <div class="fn__space"></div>
-                <button class="b3-button b3-button--text">${pluginInstance.i18n.export}</button>
+                <button class="b3-button b3-button--text">${window.bgCoverPlugin.i18n.export}</button>
             </div>
         </div>`
     });

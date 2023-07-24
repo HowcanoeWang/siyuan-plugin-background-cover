@@ -49,6 +49,11 @@ export default class BgCoverPlugin extends Plugin {
         const frontEnd = getFrontend();
         this.isMobile = frontEnd === "mobile" || frontEnd === "browser-mobile";
 
+        window.bgCoverPlugin = {
+            i18n: this.i18n,
+            isMobile: this.isMobile,
+        }
+
         // 图标的制作参见帮助文档
         this.addIcons(cst.diyIcon.iconLogo);
 
@@ -107,7 +112,7 @@ export default class BgCoverPlugin extends Plugin {
         debug(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
 
         // 临时debug用，不用每次都打开
-        themeAdapterUI.adaptConfigEditor(this);
+        // themeAdapterUI.adaptConfigEditor(this);
     }
 
     onunload() {
