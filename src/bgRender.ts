@@ -16,6 +16,7 @@ import {
     CloseCV, MD5, OS, Numpy,
     getThemeInfo
 } from './utils';
+import { type } from 'os';
 
 let np = new Numpy();
 let cv2 = new CloseCV();
@@ -32,7 +33,7 @@ export function createBgLayer() {
 }
 
 export function useDefaultLiaoLiaoBg() {
-    debug(`[Func][applySettings] 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图`)
+    debug(`[bgRender][applySettings] 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图`)
     changeBackgroundContent(cst.demoImgURL, cst.bgMode.image)
     configs.set('bgObj', undefined);
 }
@@ -41,7 +42,7 @@ export function changeBackgroundContent(background: string, mode: cst.bgMode) {
     var bgLayer = document.getElementById('bglayer');
 
     if (mode === cst.bgMode.image) {
-        debug(`[Func][changeBackgroundContent] 替换当前背景图片为${background}`)
+        debug(`[bgRender][changeBackgroundContent] 替换当前背景图片为${background}`)
         bgLayer.style.setProperty('background-image', `url('${background}')`);
     } else if (mode == cst.bgMode.video) {
         noticeUI.showIndev();
@@ -52,10 +53,14 @@ export function changeBackgroundContent(background: string, mode: cst.bgMode) {
     }
 };
 
-export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, tranMode: number, adaptMode: boolean) {
+export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, transMode: number, adaptMode: boolean) {
     // opacity mode: fully transparent (adaptMode=False)
     // css mode: only background transparent (adaptMode=True)
     let opacity = 0.99 - 0.25 * alpha;
+
+    if (typeof transMode == 'string'){
+        transMode = parseInt(transMode);
+    };
 
     const [themeMode, themeName] = getThemeInfo();
 
@@ -110,7 +115,8 @@ export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, tran
     let themeAdaptObject: cst.themeAdaptObject;
     let themeAdaptElement: string[] = [];
 
-    if (themeName in adp.toAdaptThemes) { // 如果当前的主题在主题适配列表中
+    if (themeName in adp.toAdaptThemes && adaptMode) { 
+        // 如果当前的主题在主题适配列表中且启用兼容模式
         // 获取constance.ts的配置中，所有需要适配主题对应的element id和对应的css值
         themeAdaptObject = adp.toAdaptThemes[themeName];
         // >>> "Savor": {...}
@@ -122,7 +128,7 @@ export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, tran
             const itemName = themeAdaptElement[i];
 
             // 如果是".xxxx"开头，说明这边要改的是css的样式
-            debug(`[Func][chageOpacity] 添加主题适配列表内容${itemName}.slice(0,1) === '.'`, itemName.slice(0,1) === '.')
+            debug(`[bgRender][chageOpacity] 添加主题适配列表内容${itemName}.slice(0,1) === '.'`, itemName.slice(0,1) === '.')
             if (itemName.slice(0,1) === '.') {
                 // 如果不含有当前的元素，则添加
                 if (!operateElement.css.operateCssStyle.includes(itemName)) {
@@ -136,7 +142,7 @@ export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, tran
         }
     }
 
-    debug(`[Func][changeOpacity] operateElement: `, operateElement)
+    debug(`[bgRender][changeOpacity] operateElement: `, operateElement)
 
     /**
      * 用户打开图片背景
@@ -152,7 +158,10 @@ export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, tran
         let rmElementStyle: string[];
         let restoreCssStyle: string[];
 
-        if (adaptMode) { // 开启css的透明模式
+        debug(`${transMode}, ${typeof transMode}`)
+
+        if (transMode === 1 ) { // 开启css的透明模式（部分透明）
+            debug(`[bgRender][changeOpacity] 检测到tranMode为${transMode} - 部分透明模式`)
             addOpacityElement = operateElement.css.operateOpacityElement;
             zIndexValue = operateElement.css.zIndexValue;
             addElementStyle = operateElement.css.operateElementStyle;
@@ -161,7 +170,8 @@ export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, tran
             rmOpacityElement = operateElement.opacity.operateOpacityElement;
             rmElementStyle = operateElement.opacity.operateElementStyle;
             restoreCssStyle = operateElement.opacity.operateCssStyle;
-        } else {  // 开启 opacity 透明模式
+        } else {  // 开启 opacity 透明模式 (全局透明)
+            debug(`[bgRender][changeOpacity] 检测到tranMode为${transMode} - 全局透明模式`)
             addOpacityElement = operateElement.opacity.operateOpacityElement;
             zIndexValue = operateElement.opacity.zIndexValue;
             addElementStyle = operateElement.opacity.operateElementStyle;
@@ -195,7 +205,7 @@ export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, tran
                 var themeAdaptColor: string;
                 var adaptColor: string;
 
-                debug(`[Func][changeOpacity] 修改元素ID为${elementid}的元素alpha值`);
+                debug(`[bgRender][changeOpacity] 修改元素ID为${elementid}的元素alpha值`);
 
                 if (themeAdaptElement.includes(elementid)) {
                     // 如果当前元素的css在主题适配列表中，直接获取适配列表中的配置
@@ -207,7 +217,7 @@ export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, tran
                     adaptColor = cv2.changeColorOpacity(themeAdaptColor, opacity);
                 }
 
-                debug(`[Func][changeOpacity] ${elementid} originalColor: ${themeAdaptColor}, adaptColor: ${adaptColor}`);
+                debug(`[bgRender][changeOpacity] ${elementid} originalColor: ${themeAdaptColor}, adaptColor: ${adaptColor}`);
 
                 changeItem.style.setProperty('background-color', adaptColor, 'important');
                 changeItem.style.setProperty('background-blend-mode', `lighten`);
@@ -224,16 +234,16 @@ export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, tran
         }
 
         // 遍历修改css自身的值
-        if (adaptMode) {
+        if (transMode === 1) {
             var sheets = document.styleSheets;
             if (editCssStyle.length + restoreCssStyle.length > 0) {
                 // 遍历所有的css style，找到指定的css
                 for (var i in sheets) {
-                    debug(`[Func][changeOpacity] 当前遍历到的CSS Style文件为：`, sheets[i].href)
+                    debug(`[bgRender][changeOpacity] 当前遍历到的CSS Style文件为：`, sheets[i].href)
                     try {
                         var rules = sheets[i].cssRules;
                     } catch (err) {
-                        const errorMessage = `[${pluginInstance.i18n.addTopBarIcon} Plugin] ${pluginInstance.i18n.themeCssReadDOMError}<br>ErrorFile: <code>${sheets[i].href}</code> when calling <code> document.styleSheets[${i}].cssRules;</code>`
+                        const errorMessage = `[${window.bgCoverPlugin.i18n.addTopBarIcon} Plugin] ${window.bgCoverPlugin.i18n.themeCssReadDOMError}<br>ErrorFile: <code>${sheets[i].href}</code> when calling <code> document.styleSheets[${i}].cssRules;</code>`
                         // showMessage(errorMessage, 0, 'error');
 
                         error(errorMessage, err);
@@ -268,7 +278,7 @@ export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, tran
                             }
                             
                             rule.style.setProperty('background-color', transparentColor, 'important');
-                            debug(`[Func][changeOpacity]修改css属性表${csstext},从${cssColor}修改为透明色${transparentColor}`, rule.style);
+                            debug(`[bgRender][changeOpacity]修改css属性表${csstext},从${cssColor}修改为透明色${transparentColor}`, rule.style);
                         }
 
                         // 需要恢复的css属性
@@ -281,7 +291,7 @@ export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, tran
                                 rule.style.removeProperty('background-color')
                             }
                             
-                            debug(`[Func][changeOpacity]恢复css属性表${csstext}为主题默认色${pluginInstance.cssThemeStyle[csstext]}`, rule.style);
+                            debug(`[bgRender][changeOpacity]恢复css属性表${csstext}为主题默认色${pluginInstance.cssThemeStyle[csstext]}`, rule.style);
                         }
                     }
                 }
@@ -298,7 +308,7 @@ export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, tran
             operateElement.opacity.operateOpacityElement,
             operateElement.css.operateOpacityElement,
         )
-        debug(`[Func][changeOpacity] 移除下列元素的opacity和z-index值:`, removeOpacityElement)
+        debug(`[bgRender][changeOpacity] 移除下列元素的opacity和z-index值:`, removeOpacityElement)
         for (let eid in removeOpacityElement) {
             const elementid: string = removeOpacityElement[eid]
             var changeItem = document.getElementById(elementid)
@@ -310,7 +320,7 @@ export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, tran
             operateElement.opacity.operateElementStyle,
             operateElement.css.operateElementStyle,
         );
-        debug(`[Func][changeOpacity] 移除下列元素的background-color和blend-mode值:`, removeCssElement);
+        debug(`[bgRender][changeOpacity] 移除下列元素的background-color和blend-mode值:`, removeCssElement);
         for (let eid in removeCssElement) {
             const elementid: string = removeCssElement[eid];
             var changeItem = document.getElementById(elementid);
@@ -328,11 +338,11 @@ export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, tran
         if (removeCssStyle.length > 0 && adaptMode) {
             // 遍历所有的css style，找到指定的css
             for (var i in sheets) {
-                debug(`[Func][changeOpacity] 当前遍历到的CSS Style文件为：`, sheets[i])
+                debug(`[bgRender][changeOpacity] 当前遍历到的CSS Style文件为：`, sheets[i])
                 try {
                     var rules = sheets[i].cssRules;
                 } catch (err) {
-                    const errorMessage = `[${pluginInstance.i18n.addTopBarIcon} Plugin] ${pluginInstance.i18n.themeCssReadDOMError}<br>ErrorFile: <code>${sheets[i].href}</code> when calling <code> document.styleSheets[${i}].cssRules;</code>`
+                    const errorMessage = `[${window.bgCoverPlugin.i18n.addTopBarIcon} Plugin] ${window.bgCoverPlugin.i18n.themeCssReadDOMError}<br>ErrorFile: <code>${sheets[i].href}</code> when calling <code> document.styleSheets[${i}].cssRules;</code>`
                     // showMessage(errorMessage, 0, 'error');
 
                     error(errorMessage, err);
@@ -375,10 +385,10 @@ export function changeBgPosition(x: string, y: string) {
     var bgLayer = document.getElementById('bglayer');
 
     if (x == null || x == undefined) {
-        debug(`[Func][changeBgPosition] xy未定义，不进行改变`)
+        debug(`[bgRender][changeBgPosition] xy未定义，不进行改变`)
         bgLayer.style.setProperty('background-position', `center`);
     } else {
-        debug(`[Func][changeBgPosition] 修改background-position为${x}% ${y}%`)
+        debug(`[bgRender][changeBgPosition] 修改background-position为${x}% ${y}%`)
         bgLayer.style.setProperty('background-position', `${x}% ${y}%`);
     }
 }
@@ -395,26 +405,26 @@ export async function applySettings(pluginInstance: BgCoverPlugin) {
 
     // 缓存文件夹中没有图片 | 用户刚刚使用这个插件 | 用户刚刚重置了插件数据 | 当前文件404找不到
     const cacheImgNum = fileManagerUI.getCacheImgNum()
-    debug(`[Func][applySettings] cacheImgNum= ${cacheImgNum}`)
+    debug(`[bgRender][applySettings] cacheImgNum= ${cacheImgNum}`)
     if (cacheImgNum === 0) {
         // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
         useDefaultLiaoLiaoBg();
     } else if (configs.get('bgObj') === undefined) {
         // 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张
-        debug(`[Func][applySettings] 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张`)
+        debug(`[bgRender][applySettings] 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张`)
         await topbarUI.selectPictureRandom(pluginInstance);
     } else {
         // 缓存中有1张以上的图片，bjObj也有内容且图片存在
-        debug(`[Func][applySettings] 缓存中有1张以上的图片，bjObj也有内容且图片存在`)
+        debug(`[bgRender][applySettings] 缓存中有1张以上的图片，bjObj也有内容且图片存在`)
         let bgObj = configs.get('bgObj')
         let fileidx = configs.get('fileidx')
         // 没有开启启动自动更换图片，则直接显示该图片
         if (bgObj.hash in fileidx && !configs.get('autoRefresh')) {
-            debug(`[Func][applySettings] 没有开启启动自动更换图片，则直接显示当前图片`)
+            debug(`[bgRender][applySettings] 没有开启启动自动更换图片，则直接显示当前图片`)
             changeBackgroundContent(bgObj.path, bgObj.mode)
         } else {
             // 当bjObj找不到404 | 用户选择随机图片，则随机调一张作为bjObj
-            debug(`[Func][applySettings] 用户选择随机图片，则随机调一张作为bjObj`)
+            debug(`[bgRender][applySettings] 用户选择随机图片，则随机调一张作为bjObj`)
             await topbarUI.selectPictureRandom(pluginInstance);
         }
     }

@@ -38,10 +38,10 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
 
     const topBarElement = pluginInstance.addTopBar({
         icon: "iconLogo",
-        title: pluginInstance.i18n.addTopBarIcon,
+        title: window.bgCoverPlugin.i18n.addTopBarIcon,
         position: "right",
         callback: () => {
-            debug(`[topbarUI.ts][initTopbar] click and open toolbar`);
+            debug(`[topbarUI][initTopbar] click and open toolbar`);
         }
     });
 
@@ -62,12 +62,12 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
             const menu = new Menu("topBarSample", () => { });
             menu.addItem({
                 icon: "iconIndent",
-                label: `${pluginInstance.i18n.selectPictureLabel}`,
+                label: `${window.bgCoverPlugin.i18n.selectPictureLabel}`,
                 type: "submenu",
                 submenu: [
                     {
                         icon: "iconHand",
-                        label: `${pluginInstance.i18n.selectPictureManualLabel}`,
+                        label: `${window.bgCoverPlugin.i18n.selectPictureManualLabel}`,
                         accelerator: pluginInstance.commands[0].customHotkey,
                         click: () => {
                             selectPictureByHand(pluginInstance);
@@ -75,7 +75,7 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                     }, 
                     {
                         icon: "iconMark",
-                        label: `${pluginInstance.i18n.selectPictureRandomLabel}`,
+                        label: `${window.bgCoverPlugin.i18n.selectPictureRandomLabel}`,
                         accelerator: pluginInstance.commands[1].customHotkey,
                         click: () => {
                             selectPictureRandom(pluginInstance, true);
@@ -85,19 +85,19 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
             });
             menu.addItem({
                 icon: "iconAdd",
-                label: `${pluginInstance.i18n.addImageLabel}`,
+                label: `${window.bgCoverPlugin.i18n.addImageLabel}`,
                 type: "submenu",
                 submenu: [
                     {
                         icon: "iconImage",
-                        label: `${pluginInstance.i18n.addSingleImageLabel}`,
+                        label: `${window.bgCoverPlugin.i18n.addSingleImageLabel}`,
                         click: () => {
                             addSingleLocalImageFile(pluginInstance);
                         }
                     },
                     {
                         icon: "iconFolder",
-                        label: `${pluginInstance.i18n.addDirectoryLabel}`,
+                        label: `${window.bgCoverPlugin.i18n.addDirectoryLabel}`,
                         click: () => {
                             addDirectory(pluginInstance);
                         }
@@ -107,7 +107,7 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
             menu.addItem({
                 id: 'pluginOnOffMenu',
                 icon: `${configs.get('activate') ? 'iconClose' : 'iconSelect'}`,
-                label: `${configs.get('activate') ? pluginInstance.i18n.closeBackgroundLabel : pluginInstance.i18n.openBackgroundLabel}`,
+                label: `${configs.get('activate') ? window.bgCoverPlugin.i18n.closeBackgroundLabel : window.bgCoverPlugin.i18n.openBackgroundLabel}`,
                 accelerator: pluginInstance.commands[2].customHotkey,
                 click: () => {
                     topbarUI.pluginOnOff(pluginInstance);
@@ -118,14 +118,14 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
     
             menu.addItem({
                 icon: "iconGithub",
-                label: `${pluginInstance.i18n.bugReportLabel}`,
+                label: `${window.bgCoverPlugin.i18n.bugReportLabel}`,
                 click: () => {
                     bugreportUI.bugReportDialog(pluginInstance);
                 }
             });
             menu.addItem({
                 icon: "iconSettings",
-                label: `${pluginInstance.i18n.settingLabel}`,
+                label: `${window.bgCoverPlugin.i18n.settingLabel}`,
                 click: () => {
                     settingsUI.openSettingDialog(pluginInstance);
                 }
@@ -159,11 +159,11 @@ export async function selectPictureRandom(pluginInstance: BgCoverPlugin, manualP
     if (cacheImgNum === 0) {
         // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
         bgRender.useDefaultLiaoLiaoBg();
-        showMessage(`${pluginInstance.i18n.noCachedImg4random}`, 3000, "info")
+        showMessage(`${window.bgCoverPlugin.i18n.noCachedImg4random}`, 3000, "info")
     } else if (cacheImgNum === 1) {
         // 只有一张图，无法进行随机抽选(无变化)
         if (manualPress) {
-            showMessage(`${pluginInstance.i18n.selectPictureRandomNotice}`, 3000, "info")
+            showMessage(`${window.bgCoverPlugin.i18n.selectPictureRandomNotice}`, 3000, "info")
         }
         let belayerElement = document.getElementById('bglayer')
         if (belayerElement.style.getPropertyValue('background-image') === '') {
@@ -179,14 +179,14 @@ export async function selectPictureRandom(pluginInstance: BgCoverPlugin, manualP
         while (true) {
             let r = Math.floor(Math.random() * cacheImgNum)
             r_hash = Object.keys(fileidx)[r]
-            debug(`[Func][selectPictureRandom] 随机抽一张，之前：${crt_hash}，随机到：${r_hash}`)
+            debug(`[topbarUI][selectPictureRandom] 随机抽一张，之前：${crt_hash}，随机到：${r_hash}`)
             if (r_hash !== crt_hash) {
                 // 确保随机到另一张图而不是当前的图片
-                debug(`[Func][selectPictureRandom] 已抽到不同的背景图${r_hash}，进行替换`)
+                debug(`[topbarUI][selectPictureRandom] 已抽到不同的背景图${r_hash}，进行替换`)
                 break
             }
         }
-        debug('[Func][selectPictureRandom] 跳出抽卡死循环,前景图为：', fileidx[r_hash])
+        debug('[topbarUI][selectPictureRandom] 跳出抽卡死循环,前景图为：', fileidx[r_hash])
         bgRender.changeBackgroundContent(fileidx[r_hash].path, fileidx[r_hash].mode)
         configs.set('bgObj', fileidx[r_hash])
     }
@@ -199,7 +199,7 @@ export async function addSingleLocalImageFile(pluginInstance: BgCoverPlugin) {
     const cacheImgNum = fileManagerUI.getCacheImgNum();
 
     if (cacheImgNum >= cst.cacheMaxNum) {
-        showMessage(pluginInstance.i18n.addSingleImageExceed1 + cst.cacheMaxNum + pluginInstance.i18n.addSingleImageExceed2, 7000, 'error');
+        showMessage(window.bgCoverPlugin.i18n.addSingleImageExceed1 + cst.cacheMaxNum + window.bgCoverPlugin.i18n.addSingleImageExceed2, 7000, 'error');
     }else{
         const pickerOpts = {
             types: [
@@ -247,7 +247,7 @@ export async function addDirectory(pluginInstance: BgCoverPlugin) {
 
             const [prefix, suffix] = os.splitext(fileName)
             // suffix = 'jpg'
-            debug(`[Func][addDirectory] 当前图片${fileName}后缀为${suffix}, 存在于允许的图片后缀(${cst.supportedImageSuffix})中：${cst.supportedImageSuffix.includes(`.${suffix}`)}`)
+            debug(`[topbarUI][addDirectory] 当前图片${fileName}后缀为${suffix}, 存在于允许的图片后缀(${cst.supportedImageSuffix})中：${cst.supportedImageSuffix.includes(`.${suffix}`)}`)
             if (cst.supportedImageSuffix.includes(`.${suffix}`)) {
 
                 let md5 = fileManagerUI.imgExistsInCache(pluginInstance, file, false);
@@ -255,23 +255,23 @@ export async function addDirectory(pluginInstance: BgCoverPlugin) {
                 if (md5 !== 'exists') {
                     fileContainer.push(file)
                 }else{
-                    debug(`[Func][addDirectory] 当前图片${fileName}md5为${md5}, 存在于缓存中`)
+                    debug(`[topbarUI][addDirectory] 当前图片${fileName}md5为${md5}, 存在于缓存中`)
                 }
             }
 
-            debug(`[Func][addDirectory] fileContainer`, fileContainer)
+            debug(`[topbarUI][addDirectory] fileContainer`, fileContainer)
         }
 
         if (fileContainer.length >= cst.cacheMaxNum - cacheImgNum) {
-            showMessage(pluginInstance.i18n.addDirectoryLabelError1 + cst.cacheMaxNum + pluginInstance.i18n.addDirectoryLabelError2, 7000, 'error')
+            showMessage(window.bgCoverPlugin.i18n.addDirectoryLabelError1 + cst.cacheMaxNum + window.bgCoverPlugin.i18n.addDirectoryLabelError2, 7000, 'error')
             break
         }
     }
 
     if (fileContainer.length >= 30) {
         confirm(
-            pluginInstance.i18n.addDirectoryLabelConfirmTitle,
-            `${pluginInstance.i18n.addDirectoryLabelConfirm1} ${fileContainer.length} ${pluginInstance.i18n.addDirectoryLabelConfirm2}`,
+            window.bgCoverPlugin.i18n.addDirectoryLabelConfirmTitle,
+            `${window.bgCoverPlugin.i18n.addDirectoryLabelConfirm1} ${fileContainer.length} ${window.bgCoverPlugin.i18n.addDirectoryLabelConfirm2}`,
             async () => {
                 // 同意上传，则开始批量上传
                 await fileManagerUI.batchUploadImages(pluginInstance, fileContainer, true);

@@ -97,6 +97,12 @@ It is recommended for theme authors to follow the SourceNote theme template and 
 <details open>
 <summary><b>July 2023</b></summary>
 
+**23.07.25**
+
+* Change from deleting images to adding them to configs.json when redundant images are found in the cache but meet the hash criteria, in order to handle cross-device synchronization.
+* Fix the bug where the UI settings for transparent mode and compatibility mode are not effective.
+* Modify the prefix prompt in the output logs of developer mode.
+
 **23.07.22**
 
 - Refactor project structure.

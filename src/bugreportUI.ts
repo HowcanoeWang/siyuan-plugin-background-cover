@@ -3,12 +3,12 @@ import BgCoverPlugin from "./index"
 
 export function bugReportDialog(pluginInstance: BgCoverPlugin) {
     const dialog = new Dialog({
-        title: `${pluginInstance.i18n.bugReportLabel}`,
+        title: `${window.bgCoverPlugin.i18n.bugReportLabel}`,
         content: `
-        <div class="b3-dialog__content">${pluginInstance.i18n.bugReportConfirmText}</div>
+        <div class="b3-dialog__content">${window.bgCoverPlugin.i18n.bugReportConfirmText}</div>
         <div class="b3-dialog__action">
-            <button class="b3-button b3-button--cancel">${pluginInstance.i18n.cancel}</button><div class="fn__space"></div>
-            <button class="b3-button b3-button--text">${pluginInstance.i18n.confirm}</button>
+            <button class="b3-button b3-button--cancel">${window.bgCoverPlugin.i18n.cancel}</button><div class="fn__space"></div>
+            <button class="b3-button b3-button--text">${window.bgCoverPlugin.i18n.confirm}</button>
         </div>
         <div class="b3-dialog__action">
         `,

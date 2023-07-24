@@ -9,6 +9,7 @@ import * as fileManagerUI from "./fileManagerUI";
 import * as topbarUI from "./topbarUI";
 import * as bgRender from "./bgRender";
 import * as themeAdapterUI from "./themeAdapterUI";
+import * as noticeUI from "./noticeUI"
 
 import {
     error, warn, info, debug,
@@ -29,7 +30,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     const cacheImgNum = fileManagerUI.getCacheImgNum();
 
     const dialog = new Dialog({
-        title: `${pluginInstance.i18n.addTopBarIcon}(v${packageInfo.version}) ${pluginInstance.i18n.settingLabel}`,
+        title: `${window.bgCoverPlugin.i18n.addTopBarIcon}(v${packageInfo.version}) ${window.bgCoverPlugin.i18n.settingLabel}`,
         width: pluginInstance.isMobile ? "92vw" : "max(520px, 50vw)",
         height: "max(520px, 90vh)",
         content: `
@@ -39,7 +40,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         -->
         <label class="fn__flex b3-label">
             <div class="fn__flex-1">
-                ${pluginInstance.i18n.imgPathLabel}
+                ${window.bgCoverPlugin.i18n.imgPathLabel}
                 <div class="b3-label__text">
                     <code id="crtImgName" class="fn__code">${configs.get('bgObj') === undefined ? cst.demoImgURL : configs.get('bgObj').name}</code>
                 </div>
@@ -58,9 +59,9 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         <label class="fn__flex b3-label">
             <div class="fn__flex-1">
                 <div class="fn__flex">
-                    ${pluginInstance.i18n.cacheDirectoryLabel}
+                    ${window.bgCoverPlugin.i18n.cacheDirectoryLabel}
                     <span class="fn__space"></span>
-                    <span style="color: var(--b3-theme-on-surface)">${pluginInstance.i18n.cacheDirectoryDes}</span>
+                    <span style="color: var(--b3-theme-on-surface)">${window.bgCoverPlugin.i18n.cacheDirectoryDes}</span>
                     <span id="cacheImgNumElement" class="selected" style="color: rgb(255,0,0)">
                         [ ${cacheImgNum} ]
                     </span>
@@ -72,7 +73,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
             <span class="fn__space"></span>
             <button id="cacheManagerBtn" class="b3-button b3-button--outline fn__flex-center fn__size100" id="appearanceRefresh">
                 <svg><use xlink:href="#iconDatabase"></use></svg>
-                ${pluginInstance.i18n.cacheManager}
+                ${window.bgCoverPlugin.i18n.cacheManager}
             </button>
         </label>
 
@@ -82,9 +83,9 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
         <label class="fn__flex b3-label">
             <div class="fn__flex-1">
-                ${pluginInstance.i18n.openBackgroundLabel}
+                ${window.bgCoverPlugin.i18n.openBackgroundLabel}
                 <div class="b3-label__text">
-                    ${pluginInstance.i18n.openBackgroundLabelDes}
+                    ${window.bgCoverPlugin.i18n.openBackgroundLabelDes}
                 </div>
             </div>
             <span class="fn__flex-center" />
@@ -97,9 +98,9 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         </label>
         <label class="fn__flex b3-label">
             <div class="fn__flex-1">
-                ${pluginInstance.i18n.autoRefreshLabel}
+                ${window.bgCoverPlugin.i18n.autoRefreshLabel}
                 <div class="b3-label__text">
-                    ${pluginInstance.i18n.autoRefreshDes}
+                    ${window.bgCoverPlugin.i18n.autoRefreshDes}
                 </div>
             </div>
             <span class="fn__flex-center" />
@@ -117,9 +118,9 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
         <label class="fn__flex b3-label config__item">
             <div class="fn__flex-1">
-                ${pluginInstance.i18n.opacityLabel}
+                ${window.bgCoverPlugin.i18n.opacityLabel}
                 <div class="b3-label__text">
-                    ${pluginInstance.i18n.opacityDes}
+                    ${window.bgCoverPlugin.i18n.opacityDes}
                 </div>
             </div>
             <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${configs.get('opacity')}">   
@@ -128,9 +129,9 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         </label>
         <label class="fn__flex b3-label config__item">
             <div class="fn__flex-1">
-                ${pluginInstance.i18n.blurLabel}
+                ${window.bgCoverPlugin.i18n.blurLabel}
                 <div class="b3-label__text">
-                    ${pluginInstance.i18n.blurDes}
+                    ${window.bgCoverPlugin.i18n.blurDes}
                 </div>
             </div>
             <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${configs.get('blur')}">   
@@ -144,26 +145,26 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
         <label class="fn__flex b3-label config__item">
             <div class="fn__flex-1">
-                ${pluginInstance.i18n.transparentMode}
-                <div class="b3-label__text">${pluginInstance.i18n.transparentModeDes}</div>
+                ${window.bgCoverPlugin.i18n.transparentMode}
+                <div class="b3-label__text">${window.bgCoverPlugin.i18n.transparentModeDes}</div>
             </div>
             <span class="fn__space"></span>
             <select id="transModeSelect" class="b3-select fn__flex-center fn__size200">
-                <option value="0" selected="">${pluginInstance.i18n.transparentModeOpacity}</option>
-                <option value="1">${pluginInstance.i18n.transparentModeCss}</option>
+                <option value="0" selected="">${window.bgCoverPlugin.i18n.transparentModeOpacity}</option>
+                <option value="1">${window.bgCoverPlugin.i18n.transparentModeCss}</option>
             </select>
         </label>
 
         <label class="fn__flex b3-label config__item">
             <div class="fn__flex-1">
                 <div class="fn__flex">
-                    ${pluginInstance.i18n.themeAdaptLabel}
+                    ${window.bgCoverPlugin.i18n.themeAdaptLabel}
                     <span class="fn__space"></span>
-                    <a id="adaptConfigEditorURL">${pluginInstance.i18n.themeAdaptContentDes}</a>
+                    <a id="adaptConfigEditorURL">${window.bgCoverPlugin.i18n.themeAdaptContentDes}</a>
                 </div>
                 
                 <div id="themeAdaptDes" class="b3-label__text">
-                    ${pluginInstance.i18n.themeAdaptDes}
+                    ${window.bgCoverPlugin.i18n.themeAdaptDes}
                 </div>
             </div>
 
@@ -182,16 +183,16 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
         <label class="b3-label config__item fn__flex">
             <div class="fn__flex-1">
-            ${pluginInstance.i18n.resetConfigLabel}
+            ${window.bgCoverPlugin.i18n.resetConfigLabel}
                 <div class="b3-label__text">
-                    ${pluginInstance.i18n.resetConfigDes}<span class="selected" style="color:rgb(255,0,0)">${pluginInstance.i18n.resetConfigDes2}
+                    ${window.bgCoverPlugin.i18n.resetConfigDes}<span class="selected" style="color:rgb(255,0,0)">${window.bgCoverPlugin.i18n.resetConfigDes2}
                     </span>
                 </div>
             </div>
             <span class="fn__space"></span>
             <button id="resetBtn" class="b3-button b3-button--outline fn__flex-center fn__size100" id="appearanceRefresh">
                 <svg><use xlink:href="#iconRefresh"></use></svg>
-                ${pluginInstance.i18n.reset}
+                ${window.bgCoverPlugin.i18n.reset}
             </button>
         </label>
 
@@ -201,9 +202,9 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
         <label class="fn__flex b3-label config__item">
             <div class="fn__flex-1">
-                ${pluginInstance.i18n.inDevModeLabel}
+                ${window.bgCoverPlugin.i18n.inDevModeLabel}
                 <div class="b3-label__text">
-                    ${pluginInstance.i18n.inDevModeDes}
+                    ${window.bgCoverPlugin.i18n.inDevModeDes}
                 </div>
             </div>
             <span class="fn__flex-center" />
@@ -289,7 +290,12 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     opacityElement.addEventListener("change", () => {
         configs.set('opacity', parseFloat(opacityElement.value));
         if (configs.get('activate')) {
-            bgRender.changeOpacity(pluginInstance, configs.get('opacity'), configs.get('transMode'), configs.get('adaptMode'));
+            bgRender.changeOpacity(
+                pluginInstance, 
+                configs.get('opacity'), 
+                configs.get('transMode'), 
+                configs.get('adaptMode')
+            );
         }
         configs.save();
     })
@@ -319,13 +325,19 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
     transModeElement.addEventListener('change', () => {
         configs.set('transMode', transModeElement.value);
-        bgRender.changeOpacity(pluginInstance, configs.get('opacity'), configs.get('transMode'), configs.get('adaptMode'));
+        bgRender.changeOpacity(
+            pluginInstance, 
+            configs.get('opacity'), 
+            configs.get('transMode'), 
+            configs.get('adaptMode')
+        );
         configs.save();
     });
 
     const configEditorURL = document.getElementById('adaptConfigEditorURL') as HTMLLinkElement
     configEditorURL.addEventListener('click', () => {
-        themeAdapterUI.adaptConfigEditor(pluginInstance);
+        // themeAdapterUI.adaptConfigEditor(pluginInstance);
+        noticeUI.showIndev();
     });
 
     // the theme adapt switches
@@ -335,7 +347,11 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     themeAdaptElement.addEventListener("click", () => {
         configs.set('adaptMode', !configs.get('adaptMode'));
         themeAdaptElement.value = `${configs.get('adaptMode')}`;
-        bgRender.changeOpacity(pluginInstance, configs.get('opacity'),  configs.get('transMode'), configs.get('adaptMode'));
+        bgRender.changeOpacity(
+            pluginInstance, 
+            parseFloat(configs.get('opacity')), 
+            parseInt(configs.get('transMode')), 
+            configs.get('adaptMode'));
         configs.save();
     });
 

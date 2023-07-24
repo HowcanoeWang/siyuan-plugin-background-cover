@@ -1,5 +1,9 @@
 import packageInfo from '../plugin.json'
 
+declare global {
+    interface Window { bgCoverPlugin : any; }
+}
+
 export enum bgMode {
     image = 0,
     video = 1,

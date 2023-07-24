@@ -14,13 +14,13 @@ import {
 
 
 export function showMobileTodo() {
-    showMessage(`${this.i18n.mobileNotSupported}`, 1000, "info")
+    showMessage(`${window.bgCoverPlugin.i18n.mobileNotSupported}`, 1000, "info")
 }
 
 export function showIndev(msg: string = '') {
     const dialog = new Dialog({
-        title: `${this.i18n.inDevTitle}`,
-        content: `<div class="b3-dialog__content">${this.i18n.inDev}<span>${msg}</span></div>`,
-        width: this.isMobile ? "92vw" : "520px",
+        title: `${window.bgCoverPlugin.i18n.inDevTitle}`,
+        content: `<div class="b3-dialog__content">${window.bgCoverPlugin.i18n.inDev}<span>${msg}</span></div>`,
+        width: window.bgCoverPlugin.i18nisMobile ? "92vw" : "520px",
     });
 }

@@ -44,7 +44,7 @@
   "cacheImgMissing": "Find the following images missing in the cache folder:",
   "cacheImgExtra": "Find the following images not in the cache index:",
   "cacheManager": "Manage",
-  "doNotOperateCacheFolder": "No worries, but please do not operate the cache directory in the file explorer manually",
+  "doNotOperateCacheFolder": "No worries and has been updated, may caused by cross-device sync",
   "confirm": "Still reporting",
   "reset": "Reset",
   "cancel": "Cancel",
