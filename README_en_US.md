@@ -95,32 +95,50 @@ It is recommended for theme authors to follow the SourceNote theme template and 
 ## ChangeLogs
 
 <details open>
+<summary><b>July 2023</b></summary>
+
+**23.07.22**
+
+- Refactor project structure.
+
+**23.07.16**
+
+- Add scroll bar adaptation for UI exceeding parts
+
+**23.07.07**
+
+- Change the settings UI, add a Transparent Mode toggle and compatibility theme.
+- Initialize compatibility settings UI.
+
+</details>
+
+<details>
 <summary><b>June 2023</b></summary>
 
-**v23.06.30**
+**23.06.30**
 
 - Make popup dialog for cache manager
 - Redesign the shortcut key mapping
 
-**v23.06.28**
+**23.06.28**
 
 * For the 2.9.3 version of Joplin, modify the cache directory `/data/plugins/{name}/` to `/data/public/{name}/`.
 * Support batch image upload mode (limited to 50 images).
 * Support random non-repetitive image selection for the current image.
 * Fix UI interaction bugs in the settings interface.
 
-**v23.06.27**
+**23.06.27**
 
 - Fixing bugs related to UI interactions in the settings panel.
 - Refactoring the logic of the opacity mode to modify the parent component of `dockLeft`, `dockRight`, and `layouts` instead of modifying them individually. The parent component is `<div class="fn__flex-1 fn__flex ...>` and it will be assigned a custom ID by the plugin: `dockPanel`.
 - Adding all natively supported themes to the whitelist for compatibility purposes.
 
-**v23.06.26**
+**23.06.26**
 
 - Add image offset settings
 - Add theme adaptation whitelist, which not support theme adaptation switch
 
-**v23.06.24**
+**23.06.24**
 
 - Change the transparency scheme to: toolbar, dockLeft, dockRight, dockBottom and status bar modifying alpha value of colors, and editor (layouts) modifying the opacity property.
 - When changing the theme, force-reload the note interface.
@@ -128,7 +146,7 @@ It is recommended for theme authors to follow the SourceNote theme template and 
 - Add a compatibility mode button that can switch between overall opacity mode and CSS opacity mode.
 - Optimize file hash method to speed up calculation speed.
 
-**v23.06.23**
+**23.06.23**
 
 - Reduce the length of the image hash file to 15 characters.
 - Implement startup cache folders and index calibration and prompt function.
@@ -138,7 +156,7 @@ It is recommended for theme authors to follow the SourceNote theme template and 
 - Implement the random selection function on launching
 - Check the compatitivity on theme again
 
-**v23.06.22**
+**23.06.22**
 
 - Adapt to 3 more themes
 - remove the hash code of the current image in setting
@@ -148,7 +166,7 @@ It is recommended for theme authors to follow the SourceNote theme template and 
 - Modify the layouts of the setting Panel UI
 - Temporarily remove the buttons of unsupported functions
 
-**v23.06.21**
+**23.06.21**
 
 - Implementation theme adaptation on theme change
 - Support upload single local images into the cache folder
@@ -156,31 +174,31 @@ It is recommended for theme authors to follow the SourceNote theme template and 
 - Update the data structure for recording the cached images
 - Add developer debug switch button
 
-**v23.06.20**
+**23.06.20**
 
 - Implement the image upload dialog
 - Implemented the selection of an image upload and saved it to the cache path using the Source API.
 - After turning on and off the plugin, realize color optimization for specific themes (such as the `toolbar` of the Savor theme).
 - By using DOM monitoring to detect theme changes (not yet implemented in conjunction with the above optimization).
 
-**v23.06.18**
+**23.06.18**
 
 - Support user config IO
 - Modify the layouts of Bug report and setting Panel UI
 
-**v23.06.17**
+**23.06.17**
 
 - Achieve image transparency by modifying the `opacity` of `<body>` element, abandoning the modification of the alpha value of `background-color` in the CSS style.
 - support the setting interactions of checkbox and slider
 - support the plugin on button in menu
 - Dialog for Bug report
 
-**v23.06.16**
+**23.06.16**
 
 - Onload when starting SiYuan
 - implement the image replacement and transparency
 
-**v23.06.14**
+**23.06.14**
 
 - initialize the project
 

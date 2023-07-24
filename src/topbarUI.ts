@@ -1,0 +1,284 @@
+import {
+    Plugin,
+    showMessage,
+    confirm,
+    Dialog,
+    Menu,
+    // openTab,
+    // adaptHotkey,
+    getFrontend,
+    getBackend,
+    // IModel,
+    // Setting, fetchPost
+} from "siyuan";
+
+import {
+    error, warn, info, debug,
+    CloseCV, MD5, OS, Numpy,
+    getThemeInfo
+} from './utils';
+
+import BgCoverPlugin from "./index"
+import { configs } from './configs';
+import * as cst from './constants';
+import * as noticeUI from "./noticeUI";
+import * as bugreportUI from "./bugreportUI";
+import * as settingsUI from "./settingsUI";
+import * as fileManagerUI from "./fileManagerUI";
+import * as bgRender from "./bgRender";
+import * as topbarUI from "./topbarUI";
+
+let os = new OS();
+
+
+/**
+ * 顶栏按钮UI
+ */
+export async function initTopbar(pluginInstance: BgCoverPlugin) {
+
+    const topBarElement = pluginInstance.addTopBar({
+        icon: "iconLogo",
+        title: pluginInstance.i18n.addTopBarIcon,
+        position: "right",
+        callback: () => {
+            debug(`[topbarUI.ts][initTopbar] click and open toolbar`);
+        }
+    });
+
+    topBarElement.addEventListener("click", async () => {
+        if (pluginInstance.isMobile) {
+            noticeUI.showMobileTodo();
+            // pluginInstance.addMenu();
+        } else {
+            let rect = topBarElement.getBoundingClientRect();
+            // 如果被隐藏，则使用更多按钮
+            if (rect.width === 0) {
+                rect = document.querySelector("#barMore").getBoundingClientRect();
+            }
+            if (rect.width === 0) {
+                rect = document.querySelector("#barPlugins").getBoundingClientRect();
+            }
+
+            const menu = new Menu("topBarSample", () => { });
+            menu.addItem({
+                icon: "iconIndent",
+                label: `${pluginInstance.i18n.selectPictureLabel}`,
+                type: "submenu",
+                submenu: [
+                    {
+                        icon: "iconHand",
+                        label: `${pluginInstance.i18n.selectPictureManualLabel}`,
+                        accelerator: pluginInstance.commands[0].customHotkey,
+                        click: () => {
+                            selectPictureByHand(pluginInstance);
+                        }
+                    }, 
+                    {
+                        icon: "iconMark",
+                        label: `${pluginInstance.i18n.selectPictureRandomLabel}`,
+                        accelerator: pluginInstance.commands[1].customHotkey,
+                        click: () => {
+                            selectPictureRandom(pluginInstance, true);
+                        }
+                    },
+                ]
+            });
+            menu.addItem({
+                icon: "iconAdd",
+                label: `${pluginInstance.i18n.addImageLabel}`,
+                type: "submenu",
+                submenu: [
+                    {
+                        icon: "iconImage",
+                        label: `${pluginInstance.i18n.addSingleImageLabel}`,
+                        click: () => {
+                            addSingleLocalImageFile(pluginInstance);
+                        }
+                    },
+                    {
+                        icon: "iconFolder",
+                        label: `${pluginInstance.i18n.addDirectoryLabel}`,
+                        click: () => {
+                            addDirectory(pluginInstance);
+                        }
+                    },
+                ]
+            });
+            menu.addItem({
+                id: 'pluginOnOffMenu',
+                icon: `${configs.get('activate') ? 'iconClose' : 'iconSelect'}`,
+                label: `${configs.get('activate') ? pluginInstance.i18n.closeBackgroundLabel : pluginInstance.i18n.openBackgroundLabel}`,
+                accelerator: pluginInstance.commands[2].customHotkey,
+                click: () => {
+                    topbarUI.pluginOnOff(pluginInstance);
+                }
+            });
+    
+            menu.addSeparator();
+    
+            menu.addItem({
+                icon: "iconGithub",
+                label: `${pluginInstance.i18n.bugReportLabel}`,
+                click: () => {
+                    bugreportUI.bugReportDialog(pluginInstance);
+                }
+            });
+            menu.addItem({
+                icon: "iconSettings",
+                label: `${pluginInstance.i18n.settingLabel}`,
+                click: () => {
+                    settingsUI.openSettingDialog(pluginInstance);
+                }
+            });
+    
+            if (pluginInstance.isMobile) {
+                menu.fullscreen();
+            } else {
+                menu.open({
+                    x: rect.right,
+                    y: rect.bottom,
+                    isLeft: true,
+                });
+            };
+        };
+    });
+};
+
+export async function pluginOnOff(pluginInstance: BgCoverPlugin) {
+    configs.set('activate', !configs.get('activate'))
+    configs.save();
+    bgRender.applySettings(pluginInstance);
+}
+
+export async function selectPictureByHand(pluginInstance: BgCoverPlugin) {
+    await fileManagerUI.selectPictureDialog(pluginInstance);
+};
+
+export async function selectPictureRandom(pluginInstance: BgCoverPlugin, manualPress: boolean = false) {
+    const cacheImgNum = fileManagerUI.getCacheImgNum()
+    if (cacheImgNum === 0) {
+        // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
+        bgRender.useDefaultLiaoLiaoBg();
+        showMessage(`${pluginInstance.i18n.noCachedImg4random}`, 3000, "info")
+    } else if (cacheImgNum === 1) {
+        // 只有一张图，无法进行随机抽选(无变化)
+        if (manualPress) {
+            showMessage(`${pluginInstance.i18n.selectPictureRandomNotice}`, 3000, "info")
+        }
+        let belayerElement = document.getElementById('bglayer')
+        if (belayerElement.style.getPropertyValue('background-image') === '') {
+            // 如果当前背景不存在任何图片
+            let bgObj = configs.get('bgObj')
+            bgRender.changeBackgroundContent(bgObj.path, bgObj.mode)
+        }
+    } else {
+        // 随机选择一张图
+        let fileidx = configs.get('fileidx')
+        let crt_hash = configs.get('bgObj').hash
+        let r_hash = ''
+        while (true) {
+            let r = Math.floor(Math.random() * cacheImgNum)
+            r_hash = Object.keys(fileidx)[r]
+            debug(`[Func][selectPictureRandom] 随机抽一张，之前：${crt_hash}，随机到：${r_hash}`)
+            if (r_hash !== crt_hash) {
+                // 确保随机到另一张图而不是当前的图片
+                debug(`[Func][selectPictureRandom] 已抽到不同的背景图${r_hash}，进行替换`)
+                break
+            }
+        }
+        debug('[Func][selectPictureRandom] 跳出抽卡死循环,前景图为：', fileidx[r_hash])
+        bgRender.changeBackgroundContent(fileidx[r_hash].path, fileidx[r_hash].mode)
+        configs.set('bgObj', fileidx[r_hash])
+    }
+    await configs.save()
+    settingsUI.updateSettingPanelElementStatus()
+}
+
+export async function addSingleLocalImageFile(pluginInstance: BgCoverPlugin) {
+
+    const cacheImgNum = fileManagerUI.getCacheImgNum();
+
+    if (cacheImgNum >= cst.cacheMaxNum) {
+        showMessage(pluginInstance.i18n.addSingleImageExceed1 + cst.cacheMaxNum + pluginInstance.i18n.addSingleImageExceed2, 7000, 'error');
+    }else{
+        const pickerOpts = {
+            types: [
+                {
+                    description: "Images",
+                    accept: {
+                        "image/*": cst.supportedImageSuffix,
+                    },
+                },
+            ],
+            excludeAcceptAllOption: true,
+            multiple: false,
+        };
+
+        // return an Array
+        const fileHandle = await window.showOpenFilePicker(pickerOpts);
+        let file = await fileHandle[0].getFile();
+
+        let bgObj = await fileManagerUI.uploadOneImage(pluginInstance, file);
+
+        // 文件不重复且上传成功
+        if (bgObj !== undefined) {
+            await configs.save();
+            bgRender.changeBackgroundContent(bgObj.path, bgObj.mode);
+            settingsUI.updateSettingPanelElementStatus();
+        };
+    };
+};
+
+export async function addDirectory(pluginInstance: BgCoverPlugin) {
+    const cacheImgNum = fileManagerUI.getCacheImgNum();
+
+    const directoryHandle = await window.showDirectoryPicker();
+    const fileEntries = await directoryHandle.values();
+
+
+    let fileContainer:Array<File> = []
+
+    // 遍历文件夹中的每个文件
+    for await (const fileEntry of fileEntries) {
+        // 检查文件类型是否为文件，排除文件夹
+        if (fileEntry.kind === 'file') {
+            const file = await fileEntry.getFile();
+            const fileName = file.name;
+
+            const [prefix, suffix] = os.splitext(fileName)
+            // suffix = 'jpg'
+            debug(`[Func][addDirectory] 当前图片${fileName}后缀为${suffix}, 存在于允许的图片后缀(${cst.supportedImageSuffix})中：${cst.supportedImageSuffix.includes(`.${suffix}`)}`)
+            if (cst.supportedImageSuffix.includes(`.${suffix}`)) {
+
+                let md5 = fileManagerUI.imgExistsInCache(pluginInstance, file, false);
+
+                if (md5 !== 'exists') {
+                    fileContainer.push(file)
+                }else{
+                    debug(`[Func][addDirectory] 当前图片${fileName}md5为${md5}, 存在于缓存中`)
+                }
+            }
+
+            debug(`[Func][addDirectory] fileContainer`, fileContainer)
+        }
+
+        if (fileContainer.length >= cst.cacheMaxNum - cacheImgNum) {
+            showMessage(pluginInstance.i18n.addDirectoryLabelError1 + cst.cacheMaxNum + pluginInstance.i18n.addDirectoryLabelError2, 7000, 'error')
+            break
+        }
+    }
+
+    if (fileContainer.length >= 30) {
+        confirm(
+            pluginInstance.i18n.addDirectoryLabelConfirmTitle,
+            `${pluginInstance.i18n.addDirectoryLabelConfirm1} ${fileContainer.length} ${pluginInstance.i18n.addDirectoryLabelConfirm2}`,
+            async () => {
+                // 同意上传，则开始批量上传
+                await fileManagerUI.batchUploadImages(pluginInstance, fileContainer, true);
+            }
+        )
+    }else{
+         // 要上传的数量比较少，直接开始批量上传
+        await fileManagerUI.batchUploadImages(pluginInstance, fileContainer, true);
+    }
+}

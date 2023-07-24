@@ -8,16 +8,16 @@ import { info, debug, error } from './utils'
 import * as cst from './constants'
 import packageInfo from '../plugin.json'
 
-class SettingManager {
+class configManager {
     plugin: Plugin;
 
-    settings: any = structuredClone(cst.defaultSettings);
+    settings: any = structuredClone(cst.defaultConfigs);
 
     setPlugin(plugin: Plugin) {
         this.plugin = plugin;
     }
 
-    get(key: cst.SettingKey) {
+    get(key: cst.configKey) {
         return this.settings?.[key];
     }
 
@@ -32,7 +32,7 @@ class SettingManager {
     }
 
     async reset() {
-        this.settings = structuredClone(cst.defaultSettings);
+        this.settings = structuredClone(cst.defaultConfigs);
         this.save();
     }
 
@@ -40,14 +40,14 @@ class SettingManager {
      * 导入的时候，需要先加载设置；如果没有设置，则使用默认设置
      */
     async load() {
-        let loaded = await this.plugin.loadData(cst.SettingFile);
+        let loaded = await this.plugin.loadData(cst.configFile);
         if (loaded == null || loaded == undefined || loaded == '') {
             //如果没有配置文件，则使用默认配置，并保存
             debug(`没有配置文件，使用默认配置`)
             this.save();
         } else {
             //如果有配置文件，则使用配置文件
-            debug(`读入配置文件: ${cst.SettingFile}`)
+            debug(`读入配置文件: ${cst.configFile}`)
             //Docker 和  Windows 不知为何行为不一致, 一个读入字符串，一个读入对象
             //为了兼容，这里做一下判断
             if (typeof loaded === 'string') {
@@ -64,7 +64,7 @@ class SettingManager {
                     if (key === 'version'){
                         continue
                     }
-                    if (key in cst.defaultSettings) {
+                    if (key in cst.defaultConfigs) {
                         this.set(key, loaded[key]);
                     }
                 }
@@ -80,8 +80,8 @@ class SettingManager {
     async save() {
         let json = JSON.stringify(this.settings);
         debug(`写入配置文件:`, json);
-        this.plugin.saveData(cst.SettingFile, json);
+        this.plugin.saveData(cst.configFile, json);
     }
 }
 
-export const settings: SettingManager = new SettingManager();
+export const configs: configManager = new configManager();

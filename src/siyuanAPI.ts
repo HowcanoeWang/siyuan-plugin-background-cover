@@ -24,7 +24,7 @@
  */
 
 import { info, debug, error } from './utils'
-import { settings } from './configs'
+import { configs } from './configs'
 import { fetchPost } from "siyuan"
 
 const siyuanApiUrl = ""

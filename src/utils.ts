@@ -1,5 +1,5 @@
-import { KernelApi } from './api';
-import { settings } from './configs'
+import { KernelApi } from './siyuanAPI';
+import { configs } from './configs'
 
 // simple logging functions
 export function info(...msg: any[]): void {
@@ -7,7 +7,7 @@ export function info(...msg: any[]): void {
 }
 
 export function debug(...msg: any[]): void {
-    if (settings.get('inDev')) {
+    if (configs.get('inDev')) {
         console.log(`[BgCover Plugin][DEBUG]`, ...msg);
     }
 }
@@ -62,13 +62,51 @@ export class CloseCV {
         var r = parseInt(hex.length == 3 ? hex.slice(0, 1).repeat(2) : hex.slice(0, 2), 16);
         var g = parseInt(hex.length == 3 ? hex.slice(1, 2).repeat(2) : hex.slice(2, 4), 16);
         var b = parseInt(hex.length == 3 ? hex.slice(2, 3).repeat(2) : hex.slice(4, 6), 16);
-        if ( alpha > 0 ) {
+        if ( alpha >= 0 ) {
            return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')';
         }
         else {
            return 'rgb(' + r + ', ' + g + ', ' + b + ')';
         }
     }
+
+    public hsl2rgb(hsl:string) {
+
+        function hueToRgb(p:number, q:number, t:number) {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1 / 6) return p + (q - p) * 6 * t;
+            if (t < 1 / 2) return q;
+            if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+            return p;
+        }
+
+        // 去除 HSL 字符串中的空格并拆分为数组
+        var hslArray = hsl.replace(/ /g, '').split(',');
+      
+        // 提取 H、S、L 值
+        var h = parseFloat(hslArray[0]);
+        var s = parseFloat(hslArray[1].slice(0, -1)) / 100;
+        var l = parseFloat(hslArray[2].slice(0, -1)) / 100;
+      
+        // 将 H 值转换为 0-1 范围
+        h = (h % 360) / 360;
+      
+        // 根据 HSL-to-RGB 转换公式计算 RGB 值
+        var r, g, b;
+        if (s === 0) {
+          r = g = b = l; // HSL 是灰色
+        } else {
+          var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+          var p = 2 * l - q;
+          r = hueToRgb(p, q, h + 1 / 3);
+          g = hueToRgb(p, q, h);
+          b = hueToRgb(p, q, h - 1 / 3);
+        }
+      
+        // 将 RGB 值转换为 0-255 范围并返回字符串
+        return 'rgb(' + Math.round(r * 255) + ', ' + Math.round(g * 255) + ', ' + Math.round(b * 255) + ')';
+      }
 
     public changeColorOpacity(colorString:string, alpha:number) {
         let changedColor = '';
@@ -82,6 +120,7 @@ export class CloseCV {
         }else if (colorString.slice(0,4) === 'var(') {  // e.g.  var(--b3-theme-background)
             let cssvar_name = colorString.slice(4,-1);
             let originalColor = cssVarColors.getPropertyValue(cssvar_name);
+            debug(`[Func][CV2.changeColorOpacity] input colorStr = ${colorString}, extract css variable ${cssvar_name} and obtained value as ${originalColor}`)
             changedColor = this.changeColorOpacity(originalColor, alpha)
         // --> 如果当前元素为正常的rgb开头
         }else if (colorString.slice(0,4) === 'rgb(') {
@@ -90,8 +129,13 @@ export class CloseCV {
         }else if (colorString.slice(0,4) === 'rgba') {
             // 若透明度不为0，则修改透明度
             changedColor = this.editAlpha(colorString, alpha); 
+        }else if (colorString === 'transparent'){
+            changedColor = `rgba(0,0,0,0)`
+        }else if (colorString.slice(0,4) === 'hsl('){
+            let rgbColor = this.hsl2rgb(colorString);
+            changedColor = this.addAlpha(rgbColor, alpha);
         }else{
-            console.log(`Unable to parse the color string [${colorString}}], not 'var(--xxx)', 'rgb(xxx)', 'rgba(xxx)', '#hex'`)
+            error(`Unable to parse the color string [${colorString}], not 'var(--xxx)', 'rgb(xxx)', 'rgba(xxx)', '#hex'`)
         }
         return changedColor;
     }
