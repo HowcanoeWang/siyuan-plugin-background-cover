@@ -312,7 +312,9 @@ export class OS {
             }
         
             const fileSize = parseInt(headResponse.headers.get('Content-Length'), 10);
-            const lastModifiedDate = headResponse.headers.get('Last-Modified');
+            // const lastModifiedDate = headResponse.headers.get('Last-Modified');
+
+            debug(`[utils][getFileHash] fileSize: ${fileSize}`)
 
             var data: ArrayBuffer;
         
@@ -335,7 +337,7 @@ export class OS {
             const textDecoder = new TextDecoder();
             let data_text = textDecoder.decode(data);
 
-            var md5 = MD5(`${data_text}${fileSize}${lastModifiedDate}`).slice(0, 15);
+            var md5 = MD5(`${data_text}${fileSize}`).slice(0, 15);
 
             return md5;
         } catch (error) {
