@@ -61,9 +61,10 @@ class configManager {
             // }
             try {
                 for (let key in loaded) {
-                    if (key === 'version'){
-                        continue
-                    }
+                    // always load the old version info
+                    // if (key === 'version'){
+                    //     continue
+                    // }
                     if (key in cst.defaultConfigs) {
                         this.set(key, loaded[key]);
                     }

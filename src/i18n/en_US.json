@@ -78,5 +78,6 @@
   "themeAdaptEditorShare": "Welcome to share your compatiable configs in Github Discussion",
   "themeCssReadDOMError": "DOM read css style file failed, this may cause style modification error. Recommend to use global transparency mode or contact theme author for adaptation.",
   "inDevModeLabel": "Developer mode",
-  "inDevModeDes": "Show more logs when open"
+  "inDevModeDes": "Show more logs when open",
+  "updateHashNotice": "The background plugin version 0.3.2 updated the file hash logic, please re-add the background covers"
 }
