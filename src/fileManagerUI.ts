@@ -48,6 +48,13 @@ export async function checkCacheDirctory() {
         }
     }
 
+    // if config version < 0.3.2, need to the clear cache to update new hash logic
+    if (configs.get('version') < '0.3.2' ) {
+        showMessage(window.bgCoverPlugin.i18n.updateHashNotice, 7000, 'info');
+        await clearCacheFolder(cst.bgMode.image);
+        configs.set('version', packageInfo.version);
+    }
+
     // check image files
     let imgFiles = await os.listdir(cst.pluginImgDataDir)
 
@@ -207,10 +214,15 @@ export async function clearCacheFolder(mode: cst.bgMode){
 
         // 清除缓存控制面板中的列表项和图片缓存
         let ulContainerElement = document.getElementById('cacheImgList');
-        ulContainerElement.innerHTML = null;
-
+        if (ulContainerElement) {
+            ulContainerElement.innerHTML = null;
+        }
+        
         let displayDivElement = document.getElementById("displayCanvas");
-        displayDivElement.innerHTML = null;
+        if (displayDivElement) {
+            displayDivElement.innerHTML = null;
+        }
+        
 
     // live2d 模式
     } else if (mode == cst.bgMode.live2d) {

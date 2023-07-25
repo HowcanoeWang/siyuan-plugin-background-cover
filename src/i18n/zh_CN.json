@@ -78,5 +78,6 @@
   "themeAdaptEditorShare": "欢迎在项目Discussion板块中分享当前主题的适配方案",
   "themeCssReadDOMError": "DOM读取CSS样式文件失败，可能存在样式修改异常，推荐使用全透明模式或联系主题作者尝试适配",
   "inDevModeLabel": "开发者模式",
-  "inDevModeDes": "开启后将显示更多日志输出"
+  "inDevModeDes": "开启后将显示更多日志输出",
+  "updateHashNotice": "背景插件0.3.2版本更新了文件哈希逻辑，请重新添加背景图"
 }
