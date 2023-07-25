@@ -43,8 +43,6 @@ export default class BgCoverPlugin extends Plugin {
 
     public htmlThemeNode = document.getElementsByTagName('html')[0];
 
-    public cssThemeStyle: cst.cssThemeOldStyle = {};
-
     async onload() {
         const frontEnd = getFrontend();
         this.isMobile = frontEnd === "mobile" || frontEnd === "browser-mobile";
@@ -52,8 +50,9 @@ export default class BgCoverPlugin extends Plugin {
         window.bgCoverPlugin = {
             i18n: this.i18n,
             isMobile: this.isMobile,
-        }
-
+            cssThemeStyle: {}
+        };
+        
         // 图标的制作参见帮助文档
         this.addIcons(cst.diyIcon.iconLogo);
 
@@ -67,21 +66,21 @@ export default class BgCoverPlugin extends Plugin {
             langKey: "selectPictureManualLabel",
             hotkey: "⇧⌘F6",
             callback: () => {
-                topbarUI.selectPictureByHand(this);
+                topbarUI.selectPictureByHand();
             }
         });
         this.addCommand({
             langKey: "selectPictureRandomLabel",
             hotkey: "⇧⌘F7",
             callback: () => {
-                topbarUI.selectPictureRandom(this, true);
+                topbarUI.selectPictureRandom(true);
             }
         });
         this.addCommand({
             langKey: "openBackgroundLabel",
             hotkey: "⇧⌘F4",
             callback: () => {
-                topbarUI.pluginOnOff(this);
+                topbarUI.pluginOnOff();
             }
         });
 
@@ -92,7 +91,7 @@ export default class BgCoverPlugin extends Plugin {
     }
 
     async onLayoutReady() {
-        this.cssThemeStyle = {}
+
 
         bgRender.createBgLayer();
 
@@ -100,14 +99,14 @@ export default class BgCoverPlugin extends Plugin {
         let dockPanelElement = document.getElementById('layouts').parentElement
         dockPanelElement.id = 'dockPanel'
 
-        await fileManagerUI.checkCacheDirctory(this);
+        await fileManagerUI.checkCacheDirctory();
 
         // load the user setting data
         const [themeMode, themeName] = getThemeInfo();
         configs.set('prevTheme', themeName);
 
         // this.changeOpacity(0.85);
-        await bgRender.applySettings(this);
+        await bgRender.applySettings();
 
         debug(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
 

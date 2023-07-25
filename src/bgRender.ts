@@ -53,7 +53,7 @@ export function changeBackgroundContent(background: string, mode: cst.bgMode) {
     }
 };
 
-export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, transMode: number, adaptMode: boolean) {
+export function changeOpacity(alpha: number, transMode: number, adaptMode: boolean) {
     // opacity mode: fully transparent (adaptMode=False)
     // css mode: only background transparent (adaptMode=True)
     let opacity = 0.99 - 0.25 * alpha;
@@ -258,9 +258,9 @@ export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, tran
                             let cssColor = rule.style.getPropertyValue('background-color');
                             if (!cssColor) {  // 当前样式不存在颜色值，就赋一个白色
                                 cssColor = 'rgb(255,255,255)';
-                                pluginInstance.cssThemeStyle[csstext] = 'null';
+                                window.bgCoverPlugin.cssThemeStyle[csstext] = 'null';
                             }else{
-                                pluginInstance.cssThemeStyle[csstext] = cssColor;
+                                window.bgCoverPlugin.cssThemeStyle[csstext] = cssColor;
                             }
                             
                             let transparentColor: string
@@ -283,7 +283,7 @@ export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, tran
 
                         // 需要恢复的css属性
                         if (restoreCssStyle.includes(csstext)) {
-                            let originalColor = pluginInstance.cssThemeStyle[csstext]
+                            let originalColor = window.bgCoverPlugin.cssThemeStyle[csstext]
                             // 主题中该项css样式为空，则直接删除这个项
                             if (originalColor !== 'null') {
                                 rule.style.setProperty('background-color', originalColor);
@@ -291,13 +291,13 @@ export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, tran
                                 rule.style.removeProperty('background-color')
                             }
                             
-                            debug(`[bgRender][changeOpacity]恢复css属性表${csstext}为主题默认色${pluginInstance.cssThemeStyle[csstext]}`, rule.style);
+                            debug(`[bgRender][changeOpacity]恢复css属性表${csstext}为主题默认色${window.bgCoverPlugin.cssThemeStyle[csstext]}`, rule.style);
                         }
                     }
                 }
             }
         }
-        debug('cssThemeStyle Value:', pluginInstance.cssThemeStyle);
+        debug('cssThemeStyle Value:', window.bgCoverPlugin.cssThemeStyle);
         
     /**
      * 用户关闭图片背景
@@ -362,7 +362,7 @@ export function changeOpacity(pluginInstance: BgCoverPlugin, alpha: number, tran
     
                     // 需要修改的css属性
                     if (removeCssStyle.includes(csstext)) {
-                        let originalColor = pluginInstance.cssThemeStyle[csstext]
+                        let originalColor = window.bgCoverPlugin.cssThemeStyle[csstext]
                         // 主题中该项css样式为空，则直接删除这个项
                         if (originalColor !== 'null') {
                             rule.style.setProperty('background-color', originalColor);
@@ -393,7 +393,7 @@ export function changeBgPosition(x: string, y: string) {
     }
 }
 
-export async function applySettings(pluginInstance: BgCoverPlugin) {
+export async function applySettings() {
     var bgLayer = document.getElementById('bglayer');
     debug(bgLayer);
 
@@ -412,7 +412,7 @@ export async function applySettings(pluginInstance: BgCoverPlugin) {
     } else if (configs.get('bgObj') === undefined) {
         // 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张
         debug(`[bgRender][applySettings] 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张`)
-        await topbarUI.selectPictureRandom(pluginInstance);
+        await topbarUI.selectPictureRandom();
     } else {
         // 缓存中有1张以上的图片，bjObj也有内容且图片存在
         debug(`[bgRender][applySettings] 缓存中有1张以上的图片，bjObj也有内容且图片存在`)
@@ -425,11 +425,11 @@ export async function applySettings(pluginInstance: BgCoverPlugin) {
         } else {
             // 当bjObj找不到404 | 用户选择随机图片，则随机调一张作为bjObj
             debug(`[bgRender][applySettings] 用户选择随机图片，则随机调一张作为bjObj`)
-            await topbarUI.selectPictureRandom(pluginInstance);
+            await topbarUI.selectPictureRandom();
         }
     }
 
-    changeOpacity(pluginInstance, configs.get('opacity'), configs.get('transMode'), configs.get('adaptMode'))
+    changeOpacity(configs.get('opacity'), configs.get('transMode'), configs.get('adaptMode'))
     changeBlur(configs.get('blur'))
     if (configs.get('bgObj') === undefined){
         changeBgPosition(null, null)

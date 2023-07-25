@@ -1,7 +1,12 @@
+import { IObject } from 'siyuan';
 import packageInfo from '../plugin.json'
 
 declare global {
-    interface Window { bgCoverPlugin : any; }
+    interface Window { bgCoverPlugin : {
+        i18n: IObject,
+        isMobile: boolean,
+        cssThemeStyle: cssThemeOldStyle,
+    } }
 }
 
 export enum bgMode {

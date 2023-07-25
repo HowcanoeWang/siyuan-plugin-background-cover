@@ -143,7 +143,7 @@ export async function adaptConfigEditor(pluginInstance: BgCoverPlugin) {
 
     const configEditor = new Dialog({
         title: window.bgCoverPlugin.i18n.themeAdaptContentDes,
-        width: pluginInstance.isMobile ? "92vw" : "520px",
+        width: window.bgCoverPlugin.isMobile ? "92vw" : "520px",
         height: "75vh",
         content: `
         <div class="fn__flex-column" style="height:100%; overflow: auto; box-sizing: border-box;">

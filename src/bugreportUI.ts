@@ -1,7 +1,7 @@
 import { Dialog } from "siyuan";
 import BgCoverPlugin from "./index"
 
-export function bugReportDialog(pluginInstance: BgCoverPlugin) {
+export function bugReportDialog() {
     const dialog = new Dialog({
         title: `${window.bgCoverPlugin.i18n.bugReportLabel}`,
         content: `
@@ -12,7 +12,7 @@ export function bugReportDialog(pluginInstance: BgCoverPlugin) {
         </div>
         <div class="b3-dialog__action">
         `,
-        width: pluginInstance.isMobile ? "92vw" : `520px`,
+        width: window.bgCoverPlugin.isMobile ? "92vw" : `520px`,
     });
 
     const btnsElement = dialog.element.querySelectorAll(".b3-button");

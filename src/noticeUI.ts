@@ -21,6 +21,6 @@ export function showIndev(msg: string = '') {
     const dialog = new Dialog({
         title: `${window.bgCoverPlugin.i18n.inDevTitle}`,
         content: `<div class="b3-dialog__content">${window.bgCoverPlugin.i18n.inDev}<span>${msg}</span></div>`,
-        width: window.bgCoverPlugin.i18nisMobile ? "92vw" : "520px",
+        width: window.bgCoverPlugin.isMobile ? "92vw" : "520px",
     });
 }

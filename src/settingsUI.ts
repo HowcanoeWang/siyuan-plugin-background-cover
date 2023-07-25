@@ -31,7 +31,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
     const dialog = new Dialog({
         title: `${window.bgCoverPlugin.i18n.addTopBarIcon}(v${packageInfo.version}) ${window.bgCoverPlugin.i18n.settingLabel}`,
-        width: pluginInstance.isMobile ? "92vw" : "max(520px, 50vw)",
+        width: window.bgCoverPlugin.isMobile ? "92vw" : "max(520px, 50vw)",
         height: "max(520px, 90vh)",
         content: `
         <div class="config__tab-container">
@@ -261,7 +261,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     const cacheManagerElement = document.getElementById('cacheManagerBtn') as HTMLButtonElement;
     cacheManagerElement.addEventListener("click", async () => {
         dialog.destroy();
-        topbarUI.selectPictureByHand(pluginInstance);
+        topbarUI.selectPictureByHand();
     })
 
     // plugin onoff switch
@@ -272,7 +272,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         configs.set('activate', !configs.get('activate'));
         activateElement.value = configs.get('activate');
         configs.save();
-        bgRender.applySettings(pluginInstance);
+        bgRender.applySettings();
     })
 
     // the Auto refresh switch
@@ -291,7 +291,6 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         configs.set('opacity', parseFloat(opacityElement.value));
         if (configs.get('activate')) {
             bgRender.changeOpacity(
-                pluginInstance, 
                 configs.get('opacity'), 
                 configs.get('transMode'), 
                 configs.get('adaptMode')
@@ -326,7 +325,6 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     transModeElement.addEventListener('change', () => {
         configs.set('transMode', transModeElement.value);
         bgRender.changeOpacity(
-            pluginInstance, 
             configs.get('opacity'), 
             configs.get('transMode'), 
             configs.get('adaptMode')
@@ -348,7 +346,6 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         configs.set('adaptMode', !configs.get('adaptMode'));
         themeAdaptElement.value = `${configs.get('adaptMode')}`;
         bgRender.changeOpacity(
-            pluginInstance, 
             parseFloat(configs.get('opacity')), 
             parseInt(configs.get('transMode')), 
             configs.get('adaptMode'));
@@ -361,7 +358,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         os.rmtree(cst.pluginImgDataDir);
         configs.reset();
         await configs.save();
-        await bgRender.applySettings(pluginInstance);
+        await bgRender.applySettings();
     })
 
     // the dev mode settings
