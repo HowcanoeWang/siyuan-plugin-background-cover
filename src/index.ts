@@ -140,4 +140,8 @@ export default class BgCoverPlugin extends Plugin {
             window.location.reload()
         }
     }
+
+    public openSetting() {
+        settingsUI.openSettingDialog(this);
+    }
 }
