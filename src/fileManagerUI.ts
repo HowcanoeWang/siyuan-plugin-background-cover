@@ -246,10 +246,11 @@ export async function imgExistsInCache(file: File, notice: boolean = true): Prom
     var chunk_blob = blobSlice.call(file, 0, Math.min(file.size, cst.hashLength)); // 2mb header blob
 
     let file_content = await chunk_blob.text()
-
-    debug(`[fileManagerUI][imgExistsInCache] Blob content: [${file_content.slice(20,40)} ...] with length = ${file_content.length}`);
     
-    var md5 = MD5(`${file_content}${file.size}${file.lastModified}`).slice(0, 15);
+    var md5 = MD5(`${file_content}${file.size}`).slice(0, 15);
+
+    debug(`[fileManagerUI][imgExistsInCache] Blob content: [${file_content.slice(20,40)} ...] with length = ${file_content.length}file.size=${file.size}`);
+
     if (fileidx !== undefined && md5 in fileidx) {
         if (notice) {
             const dialog = new Dialog({
