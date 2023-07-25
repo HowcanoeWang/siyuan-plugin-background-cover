@@ -97,6 +97,12 @@ It is recommended for theme authors to follow the SourceNote theme template and 
 <details open>
 <summary><b>July 2023</b></summary>
 
+**23.07.26**
+
+* Optimize file hash logic
+* Fix the issue of the invisible setting button in the marketplace
+* Use global variables to simplify function parameters (remove some PluginInstance parameters)
+
 **23.07.25**
 
 * Change from deleting images to adding them to configs.json when redundant images are found in the cache but meet the hash criteria, in order to handle cross-device synchronization.
