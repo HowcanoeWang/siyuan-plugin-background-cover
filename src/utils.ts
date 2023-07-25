@@ -259,6 +259,91 @@ export class OS {
 
         return [prefix, suffix]
     }
+
+    /**
+     * The function to open a localhost file url to File object
+     * @param url 
+     * @param fileName 
+     * @param fileType 
+     * @returns File
+     * Example:
+     * >>> const url = 'https://example.com/path/to/file.txt'; // Replace with your desired URL
+     * >>> const fileName = 'file.txt'; // Replace with the desired file name
+     * >>> const fileType = 'text/plain'; // Replace with the desired file type
+     * 
+     * openFile(url, fileName, fileType)
+        .then((file) => {
+            if (file) {
+            // File-like object is created, you can now use it
+            console.log('File:', file);
+            } else {
+            console.log('File could not be fetched.');
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+     */
+    public async openFile(url:string, fileName:string, fileType:string) {
+        try {
+            const response = await fetch(url);
+            const data = await response.blob();
+        
+            // Create a File-like object
+            const file = new File([data], fileName, { type: fileType });
+        
+            return file;
+        } catch (error) {
+            console.error('Error fetching the file:', error);
+            return null;
+        }
+    }
+
+    public async getFileHash(url:string, length:number):Promise<string> {
+        const startByte = 0;
+        const endByte = length;
+
+        // generate by chatgpt
+        try {
+            // Get the file size using the HEAD method
+            const headResponse = await fetch(url, { method: 'HEAD' });
+            if (!headResponse.ok) {
+                throw new Error(`Failed to get file information (${headResponse.status} ${headResponse.statusText})`);
+            }
+        
+            const fileSize = parseInt(headResponse.headers.get('Content-Length'), 10);
+            const lastModifiedDate = headResponse.headers.get('Last-Modified');
+
+            var data: ArrayBuffer;
+        
+            // Check if endByte is within the valid range
+            if (endByte >= fileSize) {
+                warn('endByte exceeds file size. Fetching the entire file.');
+                const response = await fetch(url);
+                data = await response.arrayBuffer();
+            } else {
+                const headers = { Range: `bytes=${startByte}-${endByte}` };
+                const response = await fetch(url, { headers });
+            
+                if (!response.ok) {
+                    throw new Error(`Network response was not ok (${response.status} ${response.statusText})`);
+                }
+            
+                data = await response.arrayBuffer();
+            }
+
+            const textDecoder = new TextDecoder();
+            let data_text = textDecoder.decode(data);
+
+            var md5 = MD5(`${data_text}${fileSize}${lastModifiedDate}`).slice(0, 15);
+
+            return md5;
+        } catch (error) {
+            warn(`[utils][getFileHead] Data ${url} could not be fetched.`);
+            return null;
+        }
+
+    }
 }
 
 
