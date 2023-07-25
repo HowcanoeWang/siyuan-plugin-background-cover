@@ -72,7 +72,14 @@ export async function checkCacheDirctory(pluginInstance: BgCoverPlugin) {
             if (item.name.slice(0, 5) === 'hash-') {
                 const [hash_name, suffix] = os.splitext(item.name.split('-')[1])
 
-                debug(hash_name, fileidx_db, extraCacheImgs)
+                debug(`[fileManagerUI][checkCacheDirectory] hash_name: `, hash_name, fileidx_db, extraCacheImgs)
+
+                // window.fo = await os.openFile(
+                //     `${cst.pluginImgDataDir.slice(5)}/${item.name}`, 
+                //     item.name, 
+                //     "image/*"
+                // );
+                // debug(`[fileManagerUI][checkCacheDirectory] open file to File object`)
 
                 if (hash_name in fileidx_db) {
                     let bgObj_old = fileidx_db[hash_name]
@@ -110,10 +117,17 @@ export async function checkCacheDirctory(pluginInstance: BgCoverPlugin) {
                     const imgPath = `${cst.pluginImgDataDir.slice(5)}/${item.name}`
                     const imageSize = await cv2.getImageSize(imgPath)
 
+                    let md5 = await os.getFileHash(
+                        imgPath,
+                        cst.hashLength
+                    );
+
+                    debug(`[fileManagerUI][checkCacheDirtory] the cached local file ${item.name} has md5: ${md5}`)
+
                     let bgObj: cst.bgObj = {
                         name: item.name,
                         path: imgPath,
-                        hash: item.name.slice(0, 5),
+                        hash: md5,
                         mode: cst.bgMode.image,
                         offx: 50,
                         offy: 50,
@@ -164,7 +178,7 @@ export async function checkCacheDirctory(pluginInstance: BgCoverPlugin) {
     // let live2dFiles = await os.listdir(cst.pluginLive2DataDir)
 }
 
-export async function clearCacheFolder(pluginInstance: BgCoverPlugin, mode: cst.bgMode){
+export async function clearCacheFolder(mode: cst.bgMode){
     // 图片模式
     if (mode == cst.bgMode.image) {
         // 这里应该获取fileidx里面的列表，而不是文件夹内的文件，不然图片缺失的话，删除不掉
@@ -213,11 +227,19 @@ export async function clearCacheFolder(pluginInstance: BgCoverPlugin, mode: cst.
     await configs.save();
 }
 
-export function imgExistsInCache(
+export async function imgExistsInCache(
     pluginInstance: BgCoverPlugin, file: File, notice: boolean = true
-    ): string {
+    ): Promise<string> {
     let fileidx = configs.get('fileidx')
-    var md5 = MD5(`${file.name}${file.size}${file.lastModified}`.slice(0, 15));
+
+    const blobSlice = File.prototype.slice
+    var chunk_blob = blobSlice.call(file, 0, Math.min(file.size, cst.hashLength)); // 2mb header blob
+
+    let file_content = await chunk_blob.text()
+
+    debug(`[fileManagerUI][imgExistsInCache] Blob content: [${file_content.slice(20,40)} ...] with length = ${file_content.length}`);
+    
+    var md5 = MD5(`${file_content}${file.size}${file.lastModified}`).slice(0, 15);
     if (fileidx !== undefined && md5 in fileidx) {
         if (notice) {
             const dialog = new Dialog({
@@ -239,7 +261,7 @@ export async function uploadOneImage(pluginInstance: BgCoverPlugin, file: File) 
 
     showMessage(`${file.name}-${fileSizeMB.toFixed(2)}MB<br>${window.bgCoverPlugin.i18n.addSingleImageUploadNotice}`, 3000, "info");
 
-    let md5 = imgExistsInCache(pluginInstance, file);
+    let md5 = await imgExistsInCache(pluginInstance, file);
 
     let fileidx = configs.get('fileidx');
     if (fileidx === undefined || fileidx === null) {
@@ -410,8 +432,9 @@ export async function selectPictureDialog(pluginInstance: BgCoverPlugin) {
     debug('[fileManagerUI][selectPictureByHand]', listHtmlArray, cacheImgListElement);
 
     let deleteAllImgBtn = document.getElementById('removeAllImgs');
-    deleteAllImgBtn.addEventListener('click', clearCacheFolder.bind(pluginInstance, cst.bgMode.image));
-
+    deleteAllImgBtn.addEventListener('click', async () => {
+        await clearCacheFolder(cst.bgMode.image);
+    });
 }
 
 export function generateCacheImgList(pluginInstance: BgCoverPlugin){

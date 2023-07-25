@@ -35,6 +35,8 @@ export interface cssThemeOldStyle {
     [key:string]: string
 }
 
+export const hashLength = 2097152;
+
 export const pluginAssetsDir = `/data/public/${packageInfo.name}/assets`
 export const pluginImgDataDir = `${pluginAssetsDir}/images`.toString()
 export const pluginLive2DataDir = `${pluginAssetsDir}/live2d`.toString()

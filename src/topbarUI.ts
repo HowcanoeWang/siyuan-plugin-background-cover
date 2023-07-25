@@ -250,7 +250,7 @@ export async function addDirectory(pluginInstance: BgCoverPlugin) {
             debug(`[topbarUI][addDirectory] 当前图片${fileName}后缀为${suffix}, 存在于允许的图片后缀(${cst.supportedImageSuffix})中：${cst.supportedImageSuffix.includes(`.${suffix}`)}`)
             if (cst.supportedImageSuffix.includes(`.${suffix}`)) {
 
-                let md5 = fileManagerUI.imgExistsInCache(pluginInstance, file, false);
+                let md5 = await fileManagerUI.imgExistsInCache(pluginInstance, file, false);
 
                 if (md5 !== 'exists') {
                     fileContainer.push(file)
