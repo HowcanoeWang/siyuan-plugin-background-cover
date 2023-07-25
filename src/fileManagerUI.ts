@@ -36,7 +36,7 @@ export function getCacheImgNum() {
     return cacheImgNum
 }
 
-export async function checkCacheDirctory(pluginInstance: BgCoverPlugin) {
+export async function checkCacheDirctory() {
     // check verion and remove old cache directory
     if ((window as any).siyuan.config.system.kernelVersion >= '2.9.3') {
         let oldpluginAssetsDir = `/data/plugins/${packageInfo.name}/assets`;
@@ -227,9 +227,7 @@ export async function clearCacheFolder(mode: cst.bgMode){
     await configs.save();
 }
 
-export async function imgExistsInCache(
-    pluginInstance: BgCoverPlugin, file: File, notice: boolean = true
-    ): Promise<string> {
+export async function imgExistsInCache(file: File, notice: boolean = true): Promise<string> {
     let fileidx = configs.get('fileidx')
 
     const blobSlice = File.prototype.slice
@@ -245,7 +243,7 @@ export async function imgExistsInCache(
             const dialog = new Dialog({
                 title: `${window.bgCoverPlugin.i18n.inDevTitle}`,
                 content: `<div class="b3-dialog__content">${window.bgCoverPlugin.i18n.imageFileExist}</div>`,
-                width: pluginInstance.isMobile ? "92vw" : "520px",
+                width: window.bgCoverPlugin.isMobile ? "92vw" : "520px",
             });
         }else{
             debug(`[fileManagerUI][imgIsInCache] 当前图片${file.name}已存在`)
@@ -256,12 +254,12 @@ export async function imgExistsInCache(
     }
 }
 
-export async function uploadOneImage(pluginInstance: BgCoverPlugin, file: File) {
+export async function uploadOneImage(file: File) {
     let fileSizeMB: number = (file.size / 1024 / 1024);
 
     showMessage(`${file.name}-${fileSizeMB.toFixed(2)}MB<br>${window.bgCoverPlugin.i18n.addSingleImageUploadNotice}`, 3000, "info");
 
-    let md5 = await imgExistsInCache(pluginInstance, file);
+    let md5 = await imgExistsInCache(file);
 
     let fileidx = configs.get('fileidx');
     if (fileidx === undefined || fileidx === null) {
@@ -308,7 +306,6 @@ export async function uploadOneImage(pluginInstance: BgCoverPlugin, file: File) 
 }
 
 export async function batchUploadImages(
-    pluginInstance: BgCoverPlugin, 
     fileArray: Array<File>, 
     applySetting:boolean=false
     ) 
@@ -323,7 +320,7 @@ export async function batchUploadImages(
         for (let i in fileArray) {
             let file = fileArray[i];
 
-            bgObj = await uploadOneImage(pluginInstance, file);
+            bgObj = await uploadOneImage(file);
 
             debug('[fileManagerUI][batchUploadImages] 在上传的循环内', bgObj)
         };
@@ -342,10 +339,10 @@ export async function batchUploadImages(
 // Cache Manger UI //
 /////////////////////
 
-export async function selectPictureDialog(pluginInstance: BgCoverPlugin) {
+export async function selectPictureDialog() {
     const cacheManagerDialog = new Dialog({
         title: window.bgCoverPlugin.i18n.selectPictureManagerTitle,
-        width: pluginInstance.isMobile ? "92vw" : "520px",
+        width: window.bgCoverPlugin.isMobile ? "92vw" : "520px",
         height: "92vh",
         content: `
         <div class="fn__flex-column" style="height: 100%">
@@ -422,7 +419,7 @@ export async function selectPictureDialog(pluginInstance: BgCoverPlugin) {
     });
 
     // init the image list when open
-    let listHtmlArray = generateCacheImgList(pluginInstance);
+    let listHtmlArray = generateCacheImgList();
     const cacheImgListElement = document.getElementById('cacheImgList');
     cacheImgListElement.innerHTML = '';
     for (const element of listHtmlArray) {
@@ -437,7 +434,7 @@ export async function selectPictureDialog(pluginInstance: BgCoverPlugin) {
     });
 }
 
-export function generateCacheImgList(pluginInstance: BgCoverPlugin){
+export function generateCacheImgList(){
     // parent id :
     // template:
     // 
@@ -506,7 +503,7 @@ export function generateCacheImgList(pluginInstance: BgCoverPlugin){
             displayDivElement.innerHTML = null;
         
             // 移除fileidx中的项目
-            topbarUI.selectPictureRandom(pluginInstance);
+            topbarUI.selectPictureRandom();
             let fileidx = configs.get('fileidx');
             delete fileidx[bgObj.hash];
             configs.set('fileidx', fileidx);

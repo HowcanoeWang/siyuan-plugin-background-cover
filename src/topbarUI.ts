@@ -46,7 +46,7 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
     });
 
     topBarElement.addEventListener("click", async () => {
-        if (pluginInstance.isMobile) {
+        if (window.bgCoverPlugin.isMobile) {
             noticeUI.showMobileTodo();
             // pluginInstance.addMenu();
         } else {
@@ -70,7 +70,7 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                         label: `${window.bgCoverPlugin.i18n.selectPictureManualLabel}`,
                         accelerator: pluginInstance.commands[0].customHotkey,
                         click: () => {
-                            selectPictureByHand(pluginInstance);
+                            selectPictureByHand();
                         }
                     }, 
                     {
@@ -78,7 +78,7 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                         label: `${window.bgCoverPlugin.i18n.selectPictureRandomLabel}`,
                         accelerator: pluginInstance.commands[1].customHotkey,
                         click: () => {
-                            selectPictureRandom(pluginInstance, true);
+                            selectPictureRandom(true);
                         }
                     },
                 ]
@@ -92,14 +92,14 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                         icon: "iconImage",
                         label: `${window.bgCoverPlugin.i18n.addSingleImageLabel}`,
                         click: () => {
-                            addSingleLocalImageFile(pluginInstance);
+                            addSingleLocalImageFile();
                         }
                     },
                     {
                         icon: "iconFolder",
                         label: `${window.bgCoverPlugin.i18n.addDirectoryLabel}`,
                         click: () => {
-                            addDirectory(pluginInstance);
+                            addDirectory();
                         }
                     },
                 ]
@@ -110,7 +110,7 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                 label: `${configs.get('activate') ? window.bgCoverPlugin.i18n.closeBackgroundLabel : window.bgCoverPlugin.i18n.openBackgroundLabel}`,
                 accelerator: pluginInstance.commands[2].customHotkey,
                 click: () => {
-                    topbarUI.pluginOnOff(pluginInstance);
+                    topbarUI.pluginOnOff();
                 }
             });
     
@@ -120,7 +120,7 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                 icon: "iconGithub",
                 label: `${window.bgCoverPlugin.i18n.bugReportLabel}`,
                 click: () => {
-                    bugreportUI.bugReportDialog(pluginInstance);
+                    bugreportUI.bugReportDialog();
                 }
             });
             menu.addItem({
@@ -131,7 +131,7 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                 }
             });
     
-            if (pluginInstance.isMobile) {
+            if (window.bgCoverPlugin.isMobile) {
                 menu.fullscreen();
             } else {
                 menu.open({
@@ -144,17 +144,17 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
     });
 };
 
-export async function pluginOnOff(pluginInstance: BgCoverPlugin) {
+export async function pluginOnOff() {
     configs.set('activate', !configs.get('activate'))
     configs.save();
-    bgRender.applySettings(pluginInstance);
+    bgRender.applySettings();
 }
 
-export async function selectPictureByHand(pluginInstance: BgCoverPlugin) {
-    await fileManagerUI.selectPictureDialog(pluginInstance);
+export async function selectPictureByHand() {
+    await fileManagerUI.selectPictureDialog();
 };
 
-export async function selectPictureRandom(pluginInstance: BgCoverPlugin, manualPress: boolean = false) {
+export async function selectPictureRandom(manualPress: boolean = false) {
     const cacheImgNum = fileManagerUI.getCacheImgNum()
     if (cacheImgNum === 0) {
         // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
@@ -194,7 +194,7 @@ export async function selectPictureRandom(pluginInstance: BgCoverPlugin, manualP
     settingsUI.updateSettingPanelElementStatus()
 }
 
-export async function addSingleLocalImageFile(pluginInstance: BgCoverPlugin) {
+export async function addSingleLocalImageFile() {
 
     const cacheImgNum = fileManagerUI.getCacheImgNum();
 
@@ -218,7 +218,7 @@ export async function addSingleLocalImageFile(pluginInstance: BgCoverPlugin) {
         const fileHandle = await window.showOpenFilePicker(pickerOpts);
         let file = await fileHandle[0].getFile();
 
-        let bgObj = await fileManagerUI.uploadOneImage(pluginInstance, file);
+        let bgObj = await fileManagerUI.uploadOneImage(file);
 
         // 文件不重复且上传成功
         if (bgObj !== undefined) {
@@ -229,7 +229,7 @@ export async function addSingleLocalImageFile(pluginInstance: BgCoverPlugin) {
     };
 };
 
-export async function addDirectory(pluginInstance: BgCoverPlugin) {
+export async function addDirectory() {
     const cacheImgNum = fileManagerUI.getCacheImgNum();
 
     const directoryHandle = await window.showDirectoryPicker();
@@ -250,7 +250,7 @@ export async function addDirectory(pluginInstance: BgCoverPlugin) {
             debug(`[topbarUI][addDirectory] 当前图片${fileName}后缀为${suffix}, 存在于允许的图片后缀(${cst.supportedImageSuffix})中：${cst.supportedImageSuffix.includes(`.${suffix}`)}`)
             if (cst.supportedImageSuffix.includes(`.${suffix}`)) {
 
-                let md5 = await fileManagerUI.imgExistsInCache(pluginInstance, file, false);
+                let md5 = await fileManagerUI.imgExistsInCache(file, false);
 
                 if (md5 !== 'exists') {
                     fileContainer.push(file)
@@ -274,11 +274,11 @@ export async function addDirectory(pluginInstance: BgCoverPlugin) {
             `${window.bgCoverPlugin.i18n.addDirectoryLabelConfirm1} ${fileContainer.length} ${window.bgCoverPlugin.i18n.addDirectoryLabelConfirm2}`,
             async () => {
                 // 同意上传，则开始批量上传
-                await fileManagerUI.batchUploadImages(pluginInstance, fileContainer, true);
+                await fileManagerUI.batchUploadImages(fileContainer, true);
             }
         )
     }else{
          // 要上传的数量比较少，直接开始批量上传
-        await fileManagerUI.batchUploadImages(pluginInstance, fileContainer, true);
+        await fileManagerUI.batchUploadImages(fileContainer, true);
     }
 }
