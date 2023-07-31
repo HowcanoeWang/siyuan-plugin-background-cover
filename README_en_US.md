@@ -97,6 +97,10 @@ It is recommended for theme authors to follow the SourceNote theme template and 
 <details open>
 <summary><b>July 2023</b></summary>
 
+**23.07.31**
+
+* Solve stucking in an infinite loop of theme change and refresh
+
 **23.07.26**
 
 * Optimize file hash logic

@@ -91,8 +91,6 @@ export default class BgCoverPlugin extends Plugin {
     }
 
     async onLayoutReady() {
-
-
         bgRender.createBgLayer();
 
         // 给layouts, dockLeft, dockRight三个元素的父级面板，增加一个方便定位的ID值
@@ -109,6 +107,9 @@ export default class BgCoverPlugin extends Plugin {
         await bgRender.applySettings();
 
         debug(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
+
+        // 去除检测到主题变化的提示(因为此时已经刷新了)
+        noticeUI.removeThemeRefreshDialog();
 
         // 临时debug用，不用每次都打开
         // themeAdapterUI.adaptConfigEditor(this);
@@ -133,10 +134,11 @@ export default class BgCoverPlugin extends Plugin {
         debug(`Theme changed! from ${prevTheme} to ${themeMode} | ${themeName}`)
 
         if (prevTheme !== themeName) {
-            // 更换主题时，强制刷新笔记页面
+            // 更换主题时且没有重载时，提示需要刷新笔记页面
             configs.set('prevTheme', themeName);
             await configs.save()
-            window.location.reload()
+            noticeUI.themeRefreshDialog();
+            // 如果重载了，这个界面会在onLoadReady时被去掉
         }
     }
 
