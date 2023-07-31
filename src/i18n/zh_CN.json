@@ -28,7 +28,6 @@
   "closeBackgroundLabel": "关闭图片背景",
   "openBackgroundLabel": "打开图片背景",
   "openBackgroundLabelDes": "关闭后背景图片不显示(但背景元素还存在于html代码中)",
-  "bugReportLabel": "Bug反馈",
   "settingLabel": "设置",
   "autoRefreshLabel": "启动时自动更换背景",
   "autoRefreshDes": "勾选之后每次启动思源都会随机更换背景图，若要固定某一张图片请取消勾选",
@@ -45,7 +44,6 @@
   "cacheImgExtra": "发现下列图片未被缓存记录:",
   "cacheManager": "管理",
   "doNotOperateCacheFolder": "不要恐慌，可能由跨设备同步引起，已更新缓存",
-  "confirm": "仍然汇报",
   "reset": "重置",
   "cancel": "取消",
   "save": "保存",
@@ -56,7 +54,9 @@
   "addElement": "添加元素",
   "addStyle": "添加样式",
   "setAsBg": "设为背景",
+  "bugReportLabel": "Bug反馈",
   "bugReportConfirmText": "由于该背景插件是通过整体修改opacity实现的，如果开启插件后部分UI透明度/显示异常，请联系主题作者进行适配。",
+  "confirmBugReport": "仍然汇报",
   "resetConfigLabel": "重置设置",
   "resetConfigDes": "将所有设置恢复到插件初始值",
   "resetConfigDes2": "(包括所有缓存的图片！)",
@@ -79,5 +79,8 @@
   "themeCssReadDOMError": "DOM读取CSS样式文件失败，可能存在样式修改异常，推荐使用全透明模式或联系主题作者尝试适配",
   "inDevModeLabel": "开发者模式",
   "inDevModeDes": "开启后将显示更多日志输出",
-  "updateHashNotice": "背景插件0.3.2版本更新了文件哈希逻辑，请重新添加背景图"
+  "updateHashNotice": "背景插件0.3.2版本更新了文件哈希逻辑，请重新添加背景图",
+  "themeOnChangeTitle": "侦测到主题改变",
+  "themeOnChangeMsg": "建议刷新重载思源来使插件适配更改后的主题",
+  "themeRefresh": "刷新"
 }

@@ -22,7 +22,6 @@ import BgCoverPlugin from "./index"
 import { configs } from './configs';
 import * as cst from './constants';
 import * as noticeUI from "./noticeUI";
-import * as bugreportUI from "./bugreportUI";
 import * as settingsUI from "./settingsUI";
 import * as fileManagerUI from "./fileManagerUI";
 import * as bgRender from "./bgRender";
@@ -120,7 +119,7 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                 icon: "iconGithub",
                 label: `${window.bgCoverPlugin.i18n.bugReportLabel}`,
                 click: () => {
-                    bugreportUI.bugReportDialog();
+                    noticeUI.bugReportDialog();
                 }
             });
             menu.addItem({
