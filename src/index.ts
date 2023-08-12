@@ -92,10 +92,7 @@ export default class BgCoverPlugin extends Plugin {
 
     async onLayoutReady() {
         bgRender.createBgLayer();
-
-        // 给layouts, dockLeft, dockRight三个元素的父级面板，增加一个方便定位的ID值
-        let dockPanelElement = document.getElementById('layouts').parentElement
-        dockPanelElement.id = 'dockPanel'
+        bgRender.changeSiyuanOrder();
 
         await fileManagerUI.checkCacheDirctory();
 
@@ -119,8 +116,7 @@ export default class BgCoverPlugin extends Plugin {
         info(`${this.i18n.byePlugin}`);
         configs.save();
 
-        let dockPanelElement = document.getElementById('dockPanel');
-        dockPanelElement.id = null;
+        bgRender.recoverSiyuanOrder();
     }
 
     // private eventBusLog({detail}: any) {
