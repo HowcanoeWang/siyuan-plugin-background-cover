@@ -92,7 +92,7 @@ export default class BgCoverPlugin extends Plugin {
 
     async onLayoutReady() {
         bgRender.createBgLayer();
-        bgRender.changeSiyuanOrder();
+        bgRender.bindNotePanel();
 
         await fileManagerUI.checkCacheDirctory();
 
@@ -116,7 +116,7 @@ export default class BgCoverPlugin extends Plugin {
         info(`${this.i18n.byePlugin}`);
         configs.save();
 
-        bgRender.recoverSiyuanOrder();
+        bgRender.unbindNotePanel();
     }
 
     // private eventBusLog({detail}: any) {

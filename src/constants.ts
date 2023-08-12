@@ -32,6 +32,13 @@ export interface toAdaptThemes {
     }
 }
 
+export interface StyleInfo {
+    href: string;
+    selector: string;
+    backgroundColor: string;
+    rule: CSSStyleRule;
+  }
+
 export interface themeAdaptObject {
     [key: string]: string[]
 }

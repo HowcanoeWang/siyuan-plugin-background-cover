@@ -32,47 +32,15 @@ export function createBgLayer() {
     debug('[bgRender][createBgLayer] bgLayer created')
 }
 
-export function changeSiyuanOrder() {
+export function bindNotePanel() {
     // 给layouts, dockLeft, dockRight三个元素的父级面板，增加一个方便定位的ID值
     let dockPanelElement = document.getElementById('layouts').parentElement
     dockPanelElement.id = 'dockPanel'
 
-    var notePanel = document.createElement('div');
-    notePanel.id = "bgPluginChanges";
-
-    document.body.appendChild(notePanel);
-
-    let toolbar = document.getElementById('toolbar');
-    let dockPanel = document.getElementById('dockPanel');
-    let dockBottom = document.getElementById('dockBottom');
-    let status = document.getElementById('status');
-    let commonMenu = document.getElementById('commonMenu');
-    let message = document.getElementById('message');
-
-    notePanel.appendChild(toolbar);
-    notePanel.appendChild(dockPanel);
-    notePanel.appendChild(dockBottom);
-    notePanel.appendChild(status);
-    notePanel.appendChild(commonMenu);
-    notePanel.appendChild(message);
-
     debug('[bgRender][changeSiyuanOrder] moved elements')
 }
 
-export function recoverSiyuanOrder() {
-    let toolbar = document.getElementById('toolbar');
-    let dockPanel = document.getElementById('dockPanel');
-    let dockBottom = document.getElementById('dockBottom');
-    let status = document.getElementById('status');
-    let commonMenu = document.getElementById('commonMenu');
-    let message = document.getElementById('message');
-
-    document.body.appendChild(toolbar);
-    document.body.appendChild(dockPanel);
-    document.body.appendChild(dockBottom);
-    document.body.appendChild(status);
-    document.body.appendChild(commonMenu);
-    document.body.appendChild(message);
+export function unbindNotePanel() {
 
     let notePanel = document.getElementById('bgPluginChanges');
     document.body.removeChild(notePanel);
@@ -106,13 +74,84 @@ export function changeBackgroundContent(background: string, mode: cst.bgMode) {
 export function changeOpacity(alpha: number, transMode: number, adaptMode: boolean) {
     let opacity = 0.99 - 0.25 * alpha;
 
-    var bgPluginChanges = document.getElementById('bgPluginChanges');
-
     if (configs.get('activate')) {
-        bgPluginChanges.style.setProperty('opacity', opacity.toString());
-    }else {
-        bgPluginChanges.style.removeProperty('opacity')
+        // 遍历所有css style
+        var hasBgColorStyles = filterCssSheetWithBackgroundColor();
+        console.log(hasBgColorStyles)
+        window.hasBgColorStyles = hasBgColorStyles;
+    } else {
     }
+}
+
+function filterCssSheetWithBackgroundColor(){
+    var styles : cst.StyleInfo[] = [];
+    var sheets = document.styleSheets;
+    
+    // 遍历所有的css style，找到指定的css
+    for (var i = 0; i < sheets.length; i++) {
+        debug(`[bgRender][changeOpacity] 当前遍历到的CSS Style文件为：`, sheets[i].href)
+
+        // 保证当前的cssstyle可以访问
+        try {
+            var rules = sheets[i].cssRules;
+        } catch (err) {
+            const errorMessage = `[${window.bgCoverPlugin.i18n.addTopBarIcon} Plugin] ${window.bgCoverPlugin.i18n.themeCssReadDOMError}<br>ErrorFile: <code>${sheets[i].href}</code> when calling <code> document.styleSheets[${i}].cssRules;</code>`
+
+            error(errorMessage, err);
+            continue;
+        }
+
+        if (!rules) {
+            debug(`[bgRender][changeOpacity] 当前css rule非法格式: ${rules}`)
+            continue;
+        }
+
+        let s = parseRulesList(rules);
+        styles = [...styles, ...s]
+    }
+
+    return styles
+}
+
+function parseRulesList(rules:CSSRuleList){
+    var styles : cst.StyleInfo[] = [];
+
+    for (var j = 0; j < rules.length; j++) {
+        let rule = rules[j] as CSSStyleRule
+
+        /**
+         * 这边的CSSStyleRule会有两种情况，
+         * 第一种情况：正常的CSSStyle
+         * 第二种情况：为@import url(/appearance/.../toolbar.css);
+         * e.g. var sheets = document.styleSheets;
+         * sheets[5].rules >>>
+         *    ...
+         *    19: CSSImportRule {href: '/appearance/.../sidebar.css'}  // 第二种情况
+         *    ...
+         *    31: CSSStyleRule {selectorText: ':root', style: ...}  // 第一种情况
+         * 
+         * 第二种情况下，内部又有一个CSSStyleList, 需要重复上述步骤把style给扒出来
+         *    typeof(rule.styleSheet.cssRules typeof) >>> CSSRuleList
+         */
+        if (rule instanceof CSSImportRule) {
+            let imRuleList = rule.styleSheet.cssRules as CSSRuleList;
+
+            let s = parseRulesList(imRuleList);
+            styles = [...styles, ...s]
+        }else{
+            if (rule.style && rule.style.backgroundColor) {
+                let s: cst.StyleInfo = {
+                    href: rule.parentStyleSheet.href,
+                    selector: rule.selectorText,
+                    backgroundColor: rule.style.backgroundColor,
+                    rule: rule,
+                }
+                styles.push(s);
+            }
+        }
+    }
+
+    return styles
 }
 
 export function changeOpacityOld(alpha: number, transMode: number, adaptMode: boolean) {
