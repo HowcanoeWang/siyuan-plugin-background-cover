@@ -433,7 +433,7 @@ export function updateSettingPanelElementStatus() {
     if (cacheImgNumEle === null || cacheImgNumEle === undefined) {
         // debug(`Setting panel not open`) 
     } else {
-        const cacheImgNum = this.getCacheImgNum()
+        const cacheImgNum = fileManagerUI.getCacheImgNum()
         cacheImgNumEle.textContent = `[ ${cacheImgNum} ]`
     }
 
