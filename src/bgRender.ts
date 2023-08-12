@@ -76,15 +76,18 @@ export function changeOpacity(alpha: number, transMode: number, adaptMode: boole
 
     if (configs.get('activate')) {
         // 遍历所有css style
-        var hasBgColorStyles = filterCssSheetWithBackgroundColor();
-        console.log(hasBgColorStyles)
-        window.hasBgColorStyles = hasBgColorStyles;
+        var bgColorStyleList = filterCssSheetWithBackgroundColor();
+        console.log(bgColorStyleList)
+
+        let toolbar = document.getElementById('dockPanel');
+        var a = filterCssStyles(toolbar, bgColorStyleList);
+        console.log(a, bgColorStyleList[a[0]]);
     } else {
     }
 }
 
 function filterCssSheetWithBackgroundColor(){
-    var styles : cst.StyleInfo[] = [];
+    var styles : cst.BgStyleObj = {};
     var sheets = document.styleSheets;
     
     // 遍历所有的css style，找到指定的css
@@ -107,14 +110,14 @@ function filterCssSheetWithBackgroundColor(){
         }
 
         let s = parseRulesList(rules);
-        styles = [...styles, ...s]
+        Object.assign(styles, s)
     }
 
     return styles
 }
 
 function parseRulesList(rules:CSSRuleList){
-    var styles : cst.StyleInfo[] = [];
+    var styles : cst.BgStyleObj = {};
 
     for (var j = 0; j < rules.length; j++) {
         let rule = rules[j] as CSSStyleRule
@@ -137,7 +140,7 @@ function parseRulesList(rules:CSSRuleList){
             let imRuleList = rule.styleSheet.cssRules as CSSRuleList;
 
             let s = parseRulesList(imRuleList);
-            styles = [...styles, ...s]
+            Object.assign(styles, s)
         }else{
             if (rule.style && rule.style.backgroundColor) {
                 let s: cst.StyleInfo = {
@@ -146,12 +149,25 @@ function parseRulesList(rules:CSSRuleList){
                     backgroundColor: rule.style.backgroundColor,
                     rule: rule,
                 }
-                styles.push(s);
+                styles[rule.selectorText] = s;
             }
         }
     }
 
     return styles
+}
+
+function filterCssStyles(element: HTMLElement, styleList: cst.BgStyleObj){
+    const keys = Object.keys(styleList);
+    const styleKeys: string[] = [];
+
+    keys.forEach((key) => {
+        if (element.matches(key)) {
+            styleKeys.push(key);
+        };
+    });
+
+    return styleKeys;
 }
 
 export function changeOpacityOld(alpha: number, transMode: number, adaptMode: boolean) {

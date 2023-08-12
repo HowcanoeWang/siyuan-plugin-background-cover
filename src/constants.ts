@@ -32,6 +32,10 @@ export interface toAdaptThemes {
     }
 }
 
+export interface BgStyleObj {
+    [key: string]: StyleInfo
+}
+
 export interface StyleInfo {
     href: string;
     selector: string;
