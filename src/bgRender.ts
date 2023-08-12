@@ -32,6 +32,56 @@ export function createBgLayer() {
     debug('[bgRender][createBgLayer] bgLayer created')
 }
 
+export function changeSiyuanOrder() {
+    // 给layouts, dockLeft, dockRight三个元素的父级面板，增加一个方便定位的ID值
+    let dockPanelElement = document.getElementById('layouts').parentElement
+    dockPanelElement.id = 'dockPanel'
+
+    var notePanel = document.createElement('div');
+    notePanel.id = "bgPluginChanges";
+
+    document.body.appendChild(notePanel);
+
+    let toolbar = document.getElementById('toolbar');
+    let dockPanel = document.getElementById('dockPanel');
+    let dockBottom = document.getElementById('dockBottom');
+    let status = document.getElementById('status');
+    let commonMenu = document.getElementById('commonMenu');
+    let message = document.getElementById('message');
+
+    notePanel.appendChild(toolbar);
+    notePanel.appendChild(dockPanel);
+    notePanel.appendChild(dockBottom);
+    notePanel.appendChild(status);
+    notePanel.appendChild(commonMenu);
+    notePanel.appendChild(message);
+
+    debug('[bgRender][changeSiyuanOrder] moved elements')
+}
+
+export function recoverSiyuanOrder() {
+    let toolbar = document.getElementById('toolbar');
+    let dockPanel = document.getElementById('dockPanel');
+    let dockBottom = document.getElementById('dockBottom');
+    let status = document.getElementById('status');
+    let commonMenu = document.getElementById('commonMenu');
+    let message = document.getElementById('message');
+
+    document.body.appendChild(toolbar);
+    document.body.appendChild(dockPanel);
+    document.body.appendChild(dockBottom);
+    document.body.appendChild(status);
+    document.body.appendChild(commonMenu);
+    document.body.appendChild(message);
+
+    let notePanel = document.getElementById('bgPluginChanges');
+    document.body.removeChild(notePanel);
+
+    // 解除layouts, dockLeft, dockRight三个元素的父级面板，定位的ID值
+    let dockPanelElement = document.getElementById('dockPanel');
+    dockPanelElement.id = null;
+}
+
 export function useDefaultLiaoLiaoBg() {
     debug(`[bgRender][applySettings] 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图`)
     changeBackgroundContent(cst.demoImgURL, cst.bgMode.image)
@@ -54,6 +104,18 @@ export function changeBackgroundContent(background: string, mode: cst.bgMode) {
 };
 
 export function changeOpacity(alpha: number, transMode: number, adaptMode: boolean) {
+    let opacity = 0.99 - 0.25 * alpha;
+
+    var bgPluginChanges = document.getElementById('bgPluginChanges');
+
+    if (configs.get('activate')) {
+        bgPluginChanges.style.setProperty('opacity', opacity.toString());
+    }else {
+        bgPluginChanges.style.removeProperty('opacity')
+    }
+}
+
+export function changeOpacityOld(alpha: number, transMode: number, adaptMode: boolean) {
     // opacity mode: fully transparent (adaptMode=False)
     // css mode: only background transparent (adaptMode=True)
     let opacity = 0.99 - 0.25 * alpha;
