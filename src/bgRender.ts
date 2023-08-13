@@ -23,13 +23,68 @@ let cv2 = new CloseCV();
 
 export function createBgLayer() {
     var bgLayer = document.createElement('canvas');
-
     bgLayer.id = "bglayer";
     bgLayer.className = "bglayer";
 
     document.body.appendChild(bgLayer);
 
     debug('[bgRender][createBgLayer] bgLayer created')
+}
+
+export function createStyleLayer() {
+    const bgStyle = document.createElement('style');
+    bgStyle.id = "bgStyle";
+
+    document.body.appendChild(bgStyle);
+    debug('[bgRender][createStyleLayer] bg stylesheet created')
+
+    /**[Note]
+     * 添加元素的方法一：
+     *     bgStyle.appendChild(document.createTextNode(`
+     *          :root {
+     *              --b3-theme-background: rgba(255,255,255,0.85);
+     *              --b3-toolbar-background: rgba(255,255,255,0.85); 
+     *              --b3-dock-background: rgba(255,255,255,0.85);
+     *          }
+     *      `));
+     */
+
+    // add CSSStyleSheet to global windows
+    // 获取所有的样式表
+    const styleSheets = document.styleSheets;
+
+    // 遍历样式表
+    for (let i = 0; i < styleSheets.length; i++) {
+        const styleSheet = styleSheets[i];
+        // 检查样式表的 ownerNode 是否与目标节点匹配
+        if (styleSheet.ownerNode === bgStyle) {
+            // 找到了目标样式表
+            styleSheet.insertRule(':root {}', styleSheet.cssRules.length)
+
+            /**[Notes：]
+             * 设置:root属性 
+             * window.bgCoverPlugin.cssStyle.cssRules[0].style.setProperty(
+             *    '--primary-color', 'blue'
+             * )
+             * 
+             * 获取某个属性
+             * window.bgCoverPlugin.root.style.getPropertyValue('--b3-dock-background')
+             */
+            var root = styleSheet.cssRules[0] as CSSStyleRule
+
+            root.style.setProperty("--b3-theme-background", "rgba(255,255,255,0.85)");
+            root.style.setProperty("--b3-toolbar-background", "rgba(255,255,255,0.85)");
+            root.style.setProperty("--b3-dock-background", "rgba(255,255,255,0.85)");
+
+            window.bgCoverPlugin.cssStyle = styleSheet;
+            window.bgCoverPlugin.root = root;
+        }
+    }
+
+    /**[Note]
+     * 屏蔽stylesheet：
+     * bgStyle.disabled = true;
+     */
 }
 
 export function bindNotePanel() {
@@ -84,6 +139,21 @@ export function changeOpacity(alpha: number, transMode: number, adaptMode: boole
         console.log(a, bgColorStyleList[a[0]]);
     } else {
     }
+
+    // todo: dark -> rgb(0,0,0, opacity); light -> rgb(255,255,255,opacity)
+
+    /** 
+     * todo: handle body--blur
+     * body.body--blur .toolbar {
+     *    background: var(--b3-toolbar-blur-background)
+     * }
+     */
+
+    /**
+     * todo: dialog--open also need transparent (optional)
+     *  .b3-dialog__container
+     * 
+     */
 }
 
 function filterCssSheetWithBackgroundColor(){
@@ -142,15 +212,25 @@ function parseRulesList(rules:CSSRuleList){
             let s = parseRulesList(imRuleList);
             Object.assign(styles, s)
         }else{
-            if (rule.style && rule.style.backgroundColor) {
-                let s: cst.StyleInfo = {
-                    href: rule.parentStyleSheet.href,
-                    selector: rule.selectorText,
-                    backgroundColor: rule.style.backgroundColor,
-                    rule: rule,
-                }
-                styles[rule.selectorText] = s;
+            if (!rule.style) {
+                continue;
             }
+
+            let s: cst.StyleInfo = {
+                href: rule.parentStyleSheet.href,
+                selector: rule.selectorText,
+                rule: rule,
+            }
+
+            if (rule.style.backgroundColor) {
+                s.color = rule.style.backgroundColor;
+            } else if (rule.style.background) {
+                s.color = rule.style.background;
+            } else {
+                continue;
+            }
+
+            styles[rule.selectorText] = s;
         }
     }
 

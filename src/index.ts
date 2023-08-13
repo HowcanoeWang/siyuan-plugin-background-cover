@@ -50,7 +50,6 @@ export default class BgCoverPlugin extends Plugin {
         window.bgCoverPlugin = {
             i18n: this.i18n,
             isMobile: this.isMobile,
-            cssThemeStyle: {}
         };
         
         // 图标的制作参见帮助文档
@@ -92,6 +91,7 @@ export default class BgCoverPlugin extends Plugin {
 
     async onLayoutReady() {
         bgRender.createBgLayer();
+        bgRender.createStyleLayer();
         bgRender.bindNotePanel();
 
         await fileManagerUI.checkCacheDirctory();
