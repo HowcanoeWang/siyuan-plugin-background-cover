@@ -313,45 +313,6 @@ export class OS {
             return null;
         }
     }
-
-    public async getFileHash(url:string, length:number):Promise<string> {
-        const startByte = 0;
-        const endByte = length;
-
-        // generate by chatgpt
-        try {
-            // Get the file size using the HEAD method
-            const headResponse = await fetch(url, { method: 'HEAD' });
-            if (!headResponse.ok) {
-                throw new Error(`Failed to get file information (${headResponse.status} ${headResponse.statusText})`);
-            }
-        
-            const fileSize = parseInt(headResponse.headers.get('Content-Length'), 10);
-            // const lastModifiedDate = headResponse.headers.get('Last-Modified');
-
-            debug(`[utils][getFileHash] ${url} fileSize: ${headResponse.headers.get('Content-Length')} -> parseInt ${fileSize};`)
-
-            const headers = { Range: `bytes=${startByte}-${endByte}` };
-            const response = await fetch(url, { headers });
-        
-            if (!response.ok) {
-                throw new Error(`Network response was not ok (${response.status} ${response.statusText})`);
-            }
-        
-            const data = await response.arrayBuffer();
-
-            const textDecoder = new TextDecoder();
-            let data_text = textDecoder.decode(data);
-
-            var md5 = MD5(`${data_text}${fileSize}`).slice(0, 15);
-
-            return md5;
-        } catch (error) {
-            warn(`[utils][getFileHead] Data ${url} could not be fetched.`);
-            return null;
-        }
-
-    }
 }
 
 

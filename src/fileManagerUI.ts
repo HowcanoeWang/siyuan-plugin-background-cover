@@ -124,17 +124,12 @@ export async function checkCacheDirctory() {
                     const imgPath = `${cst.pluginImgDataDir.slice(5)}/${item.name}`
                     const imageSize = await cv2.getImageSize(imgPath)
 
-                    let md5 = await os.getFileHash(
-                        imgPath,
-                        cst.hashLength
-                    );
-
-                    debug(`[fileManagerUI][checkCacheDirtory] the cached local file ${item.name} has md5: ${md5}`)
+                    debug(`[fileManagerUI][checkCacheDirectory] the cached local file ${item.name} has md5: ${hash_name}`)
 
                     let bgObj: cst.bgObj = {
                         name: item.name,
                         path: imgPath,
-                        hash: md5,
+                        hash: hash_name,
                         mode: cst.bgMode.image,
                         offx: 50,
                         offy: 50,
@@ -270,9 +265,11 @@ export async function imgExistsInCache(file: File, notice: boolean = true): Prom
 export async function uploadOneImage(file: File) {
     let fileSizeMB: number = (file.size / 1024 / 1024);
 
-    showMessage(`${file.name}-${fileSizeMB.toFixed(2)}MB<br>${window.bgCoverPlugin.i18n.addSingleImageUploadNotice}`, 3000, "info");
-
     let md5 = await imgExistsInCache(file);
+
+    if (md5 !== 'exists') {
+        showMessage(`${file.name}-${fileSizeMB.toFixed(2)}MB<br>${window.bgCoverPlugin.i18n.addSingleImageUploadNotice}`, 3000, "info");
+    }
 
     let fileidx = configs.get('fileidx');
     if (fileidx === undefined || fileidx === null) {
