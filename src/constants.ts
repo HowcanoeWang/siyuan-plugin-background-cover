@@ -41,6 +41,7 @@ export interface BgStyleObj {
 export interface StyleInfo {
     href: string;
     selector: string;
+    key?: string;
     color?: string;
     rule: CSSStyleRule;
   }

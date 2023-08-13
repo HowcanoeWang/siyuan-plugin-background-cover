@@ -105,58 +105,29 @@ export function unbindNotePanel() {
     dockPanelElement.id = null;
 }
 
-export function useDefaultLiaoLiaoBg() {
-    debug(`[bgRender][applySettings] 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图`)
-    changeBackgroundContent(cst.demoImgURL, cst.bgMode.image)
-    configs.set('bgObj', undefined);
+export function initToChangeStyle() {
+    // 遍历所有css style
+    var bgColorStyleList = filterCssSheetWithBgColor();
+    debug(`[bgRender][initToChangeStyle] The filtered StyleList with background color`, bgColorStyleList);
+
+    let computedCSSVars = getComputedStyle(document.querySelector(':root'));
+    var toIterElement = ["toolbar", "dockPanel", "dockBottom", "status", "commonMenu"];
+    
+    /**demo: filter one div element */
+    // let toolbar = document.getElementById('dockPanel');
+    // var a = filterCssStyles(toolbar, bgColorStyleList);
+    // console.log(a, bgColorStyleList[a[0]]);
+    /** demo: end */
+
+    for (var i = 0; i < toIterElement.length; i++) {
+        debug(`[bgRender][initToChangeStyle] ===== start itering element [${toIterElement[i]}] =====`);
+        var cssNameList = iterChildElementWithBgColor(toIterElement[i], bgColorStyleList);
+        appendStyle2PluginStyle(cssNameList, bgColorStyleList, computedCSSVars);
+    }
+    
 }
 
-export function changeBackgroundContent(background: string, mode: cst.bgMode) {
-    var bgLayer = document.getElementById('bglayer');
-
-    if (mode === cst.bgMode.image) {
-        debug(`[bgRender][changeBackgroundContent] 替换当前背景图片为${background}`)
-        bgLayer.style.setProperty('background-image', `url('${background}')`);
-    } else if (mode == cst.bgMode.video) {
-        noticeUI.showIndev();
-    } else if (mode == cst.bgMode.live2d) {
-        noticeUI.showIndev();
-    } else {
-        error(`[SwitchBgCover Plugin][Error] Background type [${mode}] is not supported, `, 7000, "error");
-    }
-};
-
-export function changeOpacity(alpha: number, transMode: number, adaptMode: boolean) {
-    let opacity = 0.99 - 0.25 * alpha;
-
-    if (configs.get('activate')) {
-        // 遍历所有css style
-        var bgColorStyleList = filterCssSheetWithBackgroundColor();
-        console.log(bgColorStyleList)
-
-        let toolbar = document.getElementById('dockPanel');
-        var a = filterCssStyles(toolbar, bgColorStyleList);
-        console.log(a, bgColorStyleList[a[0]]);
-    } else {
-    }
-
-    // todo: dark -> rgb(0,0,0, opacity); light -> rgb(255,255,255,opacity)
-
-    /** 
-     * todo: handle body--blur
-     * body.body--blur .toolbar {
-     *    background: var(--b3-toolbar-blur-background)
-     * }
-     */
-
-    /**
-     * todo: dialog--open also need transparent (optional)
-     *  .b3-dialog__container
-     * 
-     */
-}
-
-function filterCssSheetWithBackgroundColor(){
+function filterCssSheetWithBgColor() {
     var styles : cst.BgStyleObj = {};
     var sheets = document.styleSheets;
     
@@ -186,6 +157,11 @@ function filterCssSheetWithBackgroundColor(){
     return styles
 }
 
+/**
+ * Subfunction of [filterCssSheetWithBgColor]
+ * @param rules 
+ * @returns 
+ */
 function parseRulesList(rules:CSSRuleList){
     var styles : cst.BgStyleObj = {};
 
@@ -224,8 +200,10 @@ function parseRulesList(rules:CSSRuleList){
 
             if (rule.style.backgroundColor) {
                 s.color = rule.style.backgroundColor;
+                s.key = 'background-color';
             } else if (rule.style.background) {
                 s.color = rule.style.background;
+                s.key = 'background'
             } else {
                 continue;
             }
@@ -237,6 +215,45 @@ function parseRulesList(rules:CSSRuleList){
     return styles
 }
 
+
+export function iterChildElementWithBgColor(elementid: string, bgColorStyleList: cst.BgStyleObj): string[] {
+    let ele = document.getElementById(elementid);
+
+    var pickedStylesWithBgColor = [];
+
+    // if (window.getComputedStyle(element).backgroundColor !== 'rgba(0, 0, 0, 0)') {
+    //     elementsWithBgColor.push(node);
+    // }
+
+    var childList = Array.from(ele.querySelectorAll('div'));
+    childList.unshift(ele as HTMLDivElement);  // 添加元素本身
+
+    childList
+
+    for (var i = 0; i < childList.length; i++) {
+        var child = childList[i];
+
+        var toChangeStyleNameList = filterCssStyles(child, bgColorStyleList);
+
+        if (toChangeStyleNameList.length === 0) {
+            continue
+        }
+        for (var j = 0; j < toChangeStyleNameList.length; j++) {
+            // debug(child, bgColorStyleList[toChangeStyleNameList[j]]);
+            var stl = toChangeStyleNameList[j]
+            pickedStylesWithBgColor.push(stl);
+        }
+    }
+
+    return [...new Set(pickedStylesWithBgColor)];
+}
+
+/**
+ * Subfunction of [iterChildElementWithBgColor]
+ * @param element 
+ * @param styleList 
+ * @returns 
+ */
 function filterCssStyles(element: HTMLElement, styleList: cst.BgStyleObj){
     const keys = Object.keys(styleList);
     const styleKeys: string[] = [];
@@ -248,6 +265,91 @@ function filterCssStyles(element: HTMLElement, styleList: cst.BgStyleObj){
     });
 
     return styleKeys;
+}
+
+/**
+ * Subfunction of [iterChildElementWithBgColor]
+ * @param cssNameList 
+ * @param bgColorStyleList 
+ * @param computedCSSVars 
+ */
+function appendStyle2PluginStyle(
+    cssNameList:string[], 
+    bgColorStyleList:cst.BgStyleObj,
+    computedCSSVars:CSSStyleDeclaration){
+    
+    for (var i=0; i < cssNameList.length; i++) {
+
+        var cssStyle = bgColorStyleList[ cssNameList[i] ]
+
+        debug(`    ${cssStyle.selector} {'${cssStyle.key}': ${cssStyle.color}}`);
+        const prefixString = '        '
+
+        if (cssStyle.color === 'rgba(0, 0, 0, 0)') {  
+            // 跳过已经是透明色的情况？
+            debug(`${prefixString} -> Skip the already transparent one`)
+        } else {
+            // 如果是var(开头，则只需要修改:root变量即可，先添加到表中，最后统一修改alpha值。
+            if (cssStyle.color.slice(0,4) === 'var('){
+                const cssVarName = cssStyle.color.slice(4,-1);
+                const originalVarColor = computedCSSVars.getPropertyValue(cssVarName);
+                window.bgCoverPlugin.root.style.setProperty(cssVarName, originalVarColor)
+                debug(`${prefixString} -> Plugin style ':root' += [${cssVarName}]`)
+
+            // 如果是rgb / hex / 等开头，则添加为新的CSSRule，然后再修改alpha值
+            }else{
+                window.bgCoverPlugin.cssStyle.insertRule(
+                    `${cssStyle.selector} {${cssStyle.key}: ${cssStyle.color}}`,
+                    window.bgCoverPlugin.cssStyle.cssRules.length
+                )
+                debug(`${prefixString} -> Plugin style += {${cssStyle.selector} {${cssStyle.key}: ${cssStyle.color}} }`)
+            }
+        }
+    }
+}
+
+export function useDefaultLiaoLiaoBg() {
+    debug(`[bgRender][applySettings] 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图`)
+    changeBackgroundContent(cst.demoImgURL, cst.bgMode.image)
+    configs.set('bgObj', undefined);
+}
+
+export function changeBackgroundContent(background: string, mode: cst.bgMode) {
+    var bgLayer = document.getElementById('bglayer');
+
+    if (mode === cst.bgMode.image) {
+        debug(`[bgRender][changeBackgroundContent] 替换当前背景图片为${background}`)
+        bgLayer.style.setProperty('background-image', `url('${background}')`);
+    } else if (mode == cst.bgMode.video) {
+        noticeUI.showIndev();
+    } else if (mode == cst.bgMode.live2d) {
+        noticeUI.showIndev();
+    } else {
+        error(`[SwitchBgCover Plugin][Error] Background type [${mode}] is not supported, `, 7000, "error");
+    }
+};
+
+export function changeOpacity(alpha: number, transMode: number, adaptMode: boolean) {
+    let opacity = 0.99 - 0.25 * alpha;
+
+    if (configs.get('activate')) {
+    } else {
+    }
+
+    // todo: dark -> rgb(0,0,0, opacity); light -> rgb(255,255,255,opacity)
+
+    /** 
+     * todo: handle body--blur
+     * body.body--blur .toolbar {
+     *    background: var(--b3-toolbar-blur-background)
+     * }
+     */
+
+    /**
+     * todo: dialog--open also need transparent (optional)
+     *  .b3-dialog__container
+     * 
+     */
 }
 
 export function changeOpacityOld(alpha: number, transMode: number, adaptMode: boolean) {
@@ -454,24 +556,24 @@ export function changeOpacityOld(alpha: number, transMode: number, adaptMode: bo
                         if (editCssStyle.includes(csstext)) {
                             let cssColor = rule.style.getPropertyValue('background-color');
                             if (!cssColor) {  // 当前样式不存在颜色值，就赋一个白色
-                                cssColor = 'rgb(255,255,255)';
-                                window.bgCoverPlugin.cssThemeStyle[csstext] = 'null';
+     cssColor = 'rgb(255,255,255)';
+     window.bgCoverPlugin.cssThemeStyle[csstext] = 'null';
                             }else{
-                                window.bgCoverPlugin.cssThemeStyle[csstext] = cssColor;
+     window.bgCoverPlugin.cssThemeStyle[csstext] = cssColor;
                             }
                             
                             let transparentColor: string
                             if (themeAdaptElement.includes(csstext)) {
-                                // 如果当前元素的css在主题适配列表中，直接获取适配列表中的配置
-                                themeAdaptColor = themeAdaptObject[csstext][themeMode];
-                                transparentColor = eval('`' + themeAdaptColor + '`'); // 有些配置涉及到运算
+     // 如果当前元素的css在主题适配列表中，直接获取适配列表中的配置
+     themeAdaptColor = themeAdaptObject[csstext][themeMode];
+     transparentColor = eval('`' + themeAdaptColor + '`'); // 有些配置涉及到运算
                             } else {
-                                // 不需要针对主题进行适配，直接计算当前元素的颜色alpha值
-                                if ([".protyle", ".protyle-breadcrumb", ".protyle-content"].includes(csstext)) {
-                                    transparentColor = cv2.changeColorOpacity(cssColor, 0);
-                                }else{
-                                    transparentColor = cv2.changeColorOpacity(cssColor, opacity);
-                                }
+     // 不需要针对主题进行适配，直接计算当前元素的颜色alpha值
+     if ([".protyle", ".protyle-breadcrumb", ".protyle-content"].includes(csstext)) {
+         transparentColor = cv2.changeColorOpacity(cssColor, 0);
+     }else{
+         transparentColor = cv2.changeColorOpacity(cssColor, opacity);
+     }
                             }
                             
                             rule.style.setProperty('background-color', transparentColor, 'important');
@@ -483,9 +585,9 @@ export function changeOpacityOld(alpha: number, transMode: number, adaptMode: bo
                             let originalColor = window.bgCoverPlugin.cssThemeStyle[csstext]
                             // 主题中该项css样式为空，则直接删除这个项
                             if (originalColor !== 'null') {
-                                rule.style.setProperty('background-color', originalColor);
+     rule.style.setProperty('background-color', originalColor);
                             }else{
-                                rule.style.removeProperty('background-color')
+     rule.style.removeProperty('background-color')
                             }
                             
                             debug(`[bgRender][changeOpacity]恢复css属性表${csstext}为主题默认色${window.bgCoverPlugin.cssThemeStyle[csstext]}`, rule.style);

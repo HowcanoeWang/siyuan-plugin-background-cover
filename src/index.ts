@@ -91,9 +91,11 @@ export default class BgCoverPlugin extends Plugin {
 
     async onLayoutReady() {
         bgRender.createBgLayer();
-        bgRender.createStyleLayer();
         bgRender.bindNotePanel();
 
+        bgRender.createStyleLayer();
+        bgRender.initToChangeStyle();
+        
         await fileManagerUI.checkCacheDirctory();
 
         // load the user setting data
