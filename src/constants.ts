@@ -5,7 +5,9 @@ declare global {
     interface Window { bgCoverPlugin : {
         i18n: IObject,
         isMobile: boolean,
-        cssThemeStyle: cssThemeOldStyle,
+        cssThemeStyle?: cssThemeOldStyle,  // [todo] deprecated
+        cssStyle?: CSSStyleSheet,
+        root?:CSSStyleRule
     } }
 }
 
@@ -39,7 +41,7 @@ export interface BgStyleObj {
 export interface StyleInfo {
     href: string;
     selector: string;
-    backgroundColor: string;
+    color?: string;
     rule: CSSStyleRule;
   }
 
