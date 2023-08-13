@@ -8,7 +8,6 @@ import * as cst from "./constants";
 import * as fileManagerUI from "./fileManagerUI";
 import * as topbarUI from "./topbarUI";
 import * as bgRender from "./bgRender";
-import * as themeAdapterUI from "./themeAdapterUI";
 import * as noticeUI from "./noticeUI"
 
 import {
@@ -140,44 +139,6 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         </label>
 
         <!--
-        // theme mode and adapt configs
-        -->
-
-        <label class="fn__flex b3-label config__item">
-            <div class="fn__flex-1">
-                ${window.bgCoverPlugin.i18n.transparentMode}
-                <div class="b3-label__text">${window.bgCoverPlugin.i18n.transparentModeDes}</div>
-            </div>
-            <span class="fn__space"></span>
-            <select id="transModeSelect" class="b3-select fn__flex-center fn__size200">
-                <option value="0" selected="">${window.bgCoverPlugin.i18n.transparentModeOpacity}</option>
-                <option value="1">${window.bgCoverPlugin.i18n.transparentModeCss}</option>
-            </select>
-        </label>
-
-        <label class="fn__flex b3-label config__item">
-            <div class="fn__flex-1">
-                <div class="fn__flex">
-                    ${window.bgCoverPlugin.i18n.themeAdaptLabel}
-                    <span class="fn__space"></span>
-                    <a id="adaptConfigEditorURL">${window.bgCoverPlugin.i18n.themeAdaptContentDes}</a>
-                </div>
-                
-                <div id="themeAdaptDes" class="b3-label__text">
-                    ${window.bgCoverPlugin.i18n.themeAdaptDes}
-                </div>
-            </div>
-
-            <span class="fn__space"></span>
-            <input
-                id="themeAdaptInput"
-                class="b3-switch fn__flex-center"
-                type="checkbox"
-                value="${configs.get('adaptMode')}"
-            />
-        </label>
-
-        <!--
         // reset panel part, Button[0]
         -->
 
@@ -290,11 +251,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     opacityElement.addEventListener("change", () => {
         configs.set('opacity', parseFloat(opacityElement.value));
         if (configs.get('activate')) {
-            bgRender.changeOpacity(
-                configs.get('opacity'), 
-                configs.get('transMode'), 
-                configs.get('adaptMode')
-            );
+            bgRender.changeOpacity(configs.get('opacity'));
         }
         configs.save();
     })
@@ -316,41 +273,6 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         // update the aira-label value
         blurElement.parentElement.setAttribute('aria-label', blurElement.value);
     })
-
-    // the transparent mode selection
-    const transModeElement = document.getElementById('transModeSelect') as HTMLSelectElement;
-
-    transModeElement.value = configs.get('transMode');
-
-    transModeElement.addEventListener('change', () => {
-        configs.set('transMode', transModeElement.value);
-        bgRender.changeOpacity(
-            configs.get('opacity'), 
-            configs.get('transMode'), 
-            configs.get('adaptMode')
-        );
-        configs.save();
-    });
-
-    const configEditorURL = document.getElementById('adaptConfigEditorURL') as HTMLLinkElement
-    configEditorURL.addEventListener('click', () => {
-        // themeAdapterUI.adaptConfigEditor(pluginInstance);
-        noticeUI.showIndev();
-    });
-
-    // the theme adapt switches
-    const themeAdaptElement = document.getElementById('themeAdaptInput') as HTMLInputElement;
-    updateCheckedElement('themeAdaptInput',  configs.get('adaptMode'));
-
-    themeAdaptElement.addEventListener("click", () => {
-        configs.set('adaptMode', !configs.get('adaptMode'));
-        themeAdaptElement.value = `${configs.get('adaptMode')}`;
-        bgRender.changeOpacity(
-            parseFloat(configs.get('opacity')), 
-            parseInt(configs.get('transMode')), 
-            configs.get('adaptMode'));
-        configs.save();
-    });
 
     // reset panel
     const resetSettingElement = document.getElementById('resetBtn') as HTMLButtonElement;
@@ -448,8 +370,6 @@ export function updateSettingPanelElementStatus() {
 
     // 更新blur滑动条
     updateSliderElement('blurInput', configs.get('blur'))
-
-    updateCheckedElement('themeAdaptInput', configs.get('adaptMode'))
 
     // 更新开发者模式按钮
     updateCheckedElement('devModeInput', configs.get('inDev'))

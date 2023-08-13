@@ -20,13 +20,11 @@ import {
     getThemeInfo
 } from './utils';
 import * as cst from './constants';
-import * as adp from './themeAdapterUI';
 import * as topbarUI from "./topbarUI";
 import * as noticeUI from "./noticeUI";
 import * as settingsUI from "./settingsUI";
 import * as fileManagerUI from "./fileManagerUI"
 import * as bgRender from "./bgRender"
-import * as themeAdapterUI from "./themeAdapterUI";
 
 import packageInfo from '../plugin.json'
 import "./index.scss";
@@ -91,9 +89,9 @@ export default class BgCoverPlugin extends Plugin {
 
     async onLayoutReady() {
         bgRender.createBgLayer();
-        bgRender.bindNotePanel();
+        // bgRender.bindNotePanel();
 
-        bgRender.createStyleLayer();
+        // bgRender.createStyleLayer();
         
         await fileManagerUI.checkCacheDirctory();
 
@@ -101,7 +99,7 @@ export default class BgCoverPlugin extends Plugin {
         const [themeMode, themeName] = getThemeInfo();
         configs.set('prevTheme', themeName);
 
-        bgRender.initToChangeStyle();
+        // bgRender.initToChangeStyle();
 
         // this.changeOpacity(0.85);
         await bgRender.applySettings();
@@ -119,7 +117,7 @@ export default class BgCoverPlugin extends Plugin {
         info(`${this.i18n.byePlugin}`);
         configs.save();
 
-        bgRender.unbindNotePanel();
+        // bgRender.unbindNotePanel();
     }
 
     // private eventBusLog({detail}: any) {
