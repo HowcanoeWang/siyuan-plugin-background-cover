@@ -59,15 +59,13 @@ export var defaultConfigs = {
     'bgObj': undefined as any,
     // 当前配置的背景图透明度
     'opacity': 0.5 as number,
-    'blur': 0 as number,
+    'blur': 5 as number,
     // 图片类型 1:本地文件，2：https
     'activate': true as boolean,
     'prevTheme': '' as string,
     'fileidx': {} as fileIndex,
     'version': packageInfo.version as string,
     'inDev': false as boolean,
-    'adaptMode': false as boolean,
-    'transMode': 0 as number,
 };
 
 export const diyIcon = {
