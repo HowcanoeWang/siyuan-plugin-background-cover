@@ -109,6 +109,8 @@ export class CloseCV {
       }
 
     public changeColorOpacity(colorString:string, alpha:number) {
+        colorString = colorString.replaceAll(' ', '');
+
         let changedColor = '';
         let cssVarColors = getComputedStyle(document.querySelector(':root'));
   
@@ -122,15 +124,30 @@ export class CloseCV {
             let originalColor = cssVarColors.getPropertyValue(cssvar_name);
             debug(`[utils][CV2.changeColorOpacity] input colorStr = ${colorString}, extract css variable ${cssvar_name} and obtained value as ${originalColor}`)
             changedColor = this.changeColorOpacity(originalColor, alpha)
+        // --> 透明色
+        }else if (colorString === 'transparent' || 
+                  colorString === 'rgb(0,0,0)' ||
+                  colorString === 'rgb(0,0,0,0)' ||
+                  colorString === 'rgba(0,0,0,0)'){
+            const [themeMode, themeName] = getThemeInfo();
+            if (themeMode === 'light') {
+                changedColor = `rgba(255,255,255,${alpha})`
+            }else{
+                changedColor = `rgba(0,0,0,${alpha})`
+            }
         // --> 如果当前元素为正常的rgb开头
-        }else if (colorString.slice(0,4) === 'rgb(') {
+        }else if (colorString.slice(0,4) === 'rgb(' && 
+                  colorString.split(',').length === 3) {
             changedColor = this.addAlpha(colorString, alpha);
-        // --> 如果当前元素为rgba开头
+        // --> 如果当前元素为正常的rgb开头，但rgb(0,0,0,0)有四位
+        }else if (colorString.slice(0,4) === 'rgb(' && 
+                  colorString.split(',').length === 4) {
+            colorString = colorString.replace('rgb(', 'rgba(')
+            changedColor = this.editAlpha(colorString, alpha);
+            // --> 如果当前元素为rgba开头
         }else if (colorString.slice(0,4) === 'rgba') {
             // 若透明度不为0，则修改透明度
             changedColor = this.editAlpha(colorString, alpha); 
-        }else if (colorString === 'transparent'){
-            changedColor = `rgba(0,0,0,0)`
         }else if (colorString.slice(0,4) === 'hsl('){
             let rgbColor = this.hsl2rgb(colorString);
             changedColor = this.addAlpha(rgbColor, alpha);
@@ -314,25 +331,16 @@ export class OS {
             const fileSize = parseInt(headResponse.headers.get('Content-Length'), 10);
             // const lastModifiedDate = headResponse.headers.get('Last-Modified');
 
-            debug(`[utils][getFileHash] fileSize: ${fileSize}`)
+            debug(`[utils][getFileHash] ${url} fileSize: ${headResponse.headers.get('Content-Length')} -> parseInt ${fileSize};`)
 
-            var data: ArrayBuffer;
+            const headers = { Range: `bytes=${startByte}-${endByte}` };
+            const response = await fetch(url, { headers });
         
-            // Check if endByte is within the valid range
-            if (endByte >= fileSize) {
-                warn('endByte exceeds file size. Fetching the entire file.');
-                const response = await fetch(url);
-                data = await response.arrayBuffer();
-            } else {
-                const headers = { Range: `bytes=${startByte}-${endByte}` };
-                const response = await fetch(url, { headers });
-            
-                if (!response.ok) {
-                    throw new Error(`Network response was not ok (${response.status} ${response.statusText})`);
-                }
-            
-                data = await response.arrayBuffer();
+            if (!response.ok) {
+                throw new Error(`Network response was not ok (${response.status} ${response.statusText})`);
             }
+        
+            const data = await response.arrayBuffer();
 
             const textDecoder = new TextDecoder();
             let data_text = textDecoder.decode(data);
