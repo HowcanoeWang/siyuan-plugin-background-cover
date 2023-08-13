@@ -229,10 +229,12 @@ export function iterChildElementWithBgColor(elementid: string, bgColorStyleList:
     //     elementsWithBgColor.push(node);
     // }
 
-    var childList = Array.from(ele.querySelectorAll('div'));
-    childList.unshift(ele as HTMLDivElement);  // 添加元素本身
 
-    childList
+    var childListDiv = Array.from(ele.querySelectorAll('div'));
+    var childListUL = Array.from(ele.querySelectorAll('ul'));
+    childListDiv.unshift(ele as HTMLDivElement);  // 添加元素本身
+
+    var childList = [...childListDiv, ...childListUL]
 
     for (var i = 0; i < childList.length; i++) {
         var child = childList[i];
@@ -293,20 +295,12 @@ function appendStyle2PluginStyle(
             // 跳过已经是透明色的情况？
             debug(`${prefixString} -> Skip the already transparent one`)
         } else {
-            // 如果是var(开头，则只需要修改:root变量即可，先添加到表中，最后统一修改alpha值。
-            if (cssStyle.color.slice(0,4) === 'var('){
-                const cssVarName = cssStyle.color.slice(4,-1);
-                saveOriginalVar2root(cssVarName, computedCSSVars)
-                debug(`${prefixString} -> Plugin style ':root' += [${cssVarName}]`)
-
-            // 如果是rgb / hex / 等开头，则添加为新的CSSRule，然后再修改alpha值
-            }else{
-                window.bgCoverPlugin.cssStyle.insertRule(
-                    `${cssStyle.selector} {${cssStyle.key}: ${cssStyle.color}}`,
-                    window.bgCoverPlugin.cssStyle.cssRules.length
-                )
-                debug(`${prefixString} -> Plugin style += {${cssStyle.selector} {${cssStyle.key}: ${cssStyle.color}} }`)
-            }
+            // 先添加到<style>表中，然后在ChangeOpacity函数中统一修改alpha值。
+            window.bgCoverPlugin.cssStyle.insertRule(
+                `${cssStyle.selector} {${cssStyle.key}: ${cssStyle.color}}`,
+                window.bgCoverPlugin.cssStyle.cssRules.length
+            )
+            debug(`${prefixString} -> Plugin style += {${cssStyle.selector} {${cssStyle.key}: ${cssStyle.color}} }`)
         }
     }
 }
@@ -350,11 +344,23 @@ export function changeOpacity(alpha: number, transMode: number, adaptMode: boole
             var varName = root.style[i];
             var oldColor = root.style.getPropertyValue(varName);
             var newColor = cv2.changeColorOpacity(oldColor, opacity);
+
             root.style.setProperty(varName, newColor);
             debug(`[bgRender][changeOpacity] change :root:${varName} color ${oldColor} -> ${newColor}`)
         }
 
         // iter other cssRules and add alpha/opacity
+        var styleList = window.bgCoverPlugin.cssStyle;
+        // i = 0 -> window.bgCoverPlugin.root, processed above
+        for (var i = 1; i < styleList.cssRules.length; i++) {
+            var rule = styleList.cssRules[i] as CSSStyleRule;
+            var key = rule.style[0];  // background-image || background
+            var oldColor = rule.style.getPropertyValue(key);
+            var newColor = cv2.changeColorOpacity(oldColor, opacity);
+
+            rule.style.setProperty(key, newColor);
+            debug(`[bgRender][changeOpacity] change ${rule.selectorText} color ${oldColor} -> ${newColor}`)
+        }
 
     } else {
         window.bgCoverPlugin.cssStyle.disabled = true;
