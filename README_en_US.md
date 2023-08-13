@@ -41,60 +41,26 @@ Default background cover artist ——
   - [X] Random select by manual action
   - [X] Choosing randomly on launch
 
-## Theme Compativity
-
-| Theme name             | Compativity    | Versions | Descrip                                                                       |
-| ---------------------- | -------------- | -------- | ----------------------------------------------------------------------------- |
-| `Daylight midnight`  | ✅Naturally    | 2.9.2    | 思源默认主题                                                                  |
-| `粉色小屋 pink-room` | ✅Naturally    | v0.7.9   |                                                                               |
-| `知乎 Zhihu`         | ✅Naturally    | v0.0.6   |                                                                               |
-| `VSCode Light`       | ✅Naturally    | v1.1.2   |                                                                               |
-| `Z-Acrylic`          | ✅Naturally    | v0.2.2   |                                                                               |
-| `紫夜 sy-darkpruple` | ✅Naturally    | v0.4.1   |                                                                               |
-| `玩具toy`            | ✅Naturally    | v1.1.8   |                                                                               |
-| `印刷品 P-Book`      | ✅Naturally    | v1.33    |                                                                               |
-| `積読 Tsundoku`      | ✅Naturally    | v1.7.6   |                                                                               |
-| `暗色+ Dark+`        | ✅Naturally    | v1.9.5   |                                                                               |
-| `Light/Dark-Blue`    | ✅In CSS Mode  | v1.1.0   | Compatible through modifying transparency of some components.                |
-| `任我行 Odyssey`     | ✅In CSS Mode  | v1.0.4   | Compatible through modifying transparency of some components.                |
-| `星辰 StarDust`      | ✅In CSS Mode  | v0.6.1   | Compatible through modifying transparency of some components.                |
-| `简化版 mini-vlook`  | ✅In CSS Mode  | v2.8.704 | Compatible through modifying transparency of some components.                |
-| `写未 Savor`         | ❌Slightly not | v3.4.6   | The bottom bar and some of the skin's CSS styles are abnormally incompatible. |
-| `瑞姆工艺 Rem Craft` | ❌Slightly not | v2.6.11  | The background style of the tool menu component is too complex to adapt.      |
 
 ## Implementation
 
-### 1. Adding Background Element
+Add a <canvas> element within the <HTML> element, at the same level as <head> and <body>. The <canvas> element should be tiled and centered, and placed at the bottom layer of the notebook to serve as the background for images. Then, add the style='opacity: xxx' attribute to the <body> element to achieve transparency for the notebook panel. This replaces the previous CSS transparency mode to avoid compatibility issues with all themes.
 
-Add a `<div>` element within the `<body>` element, tiled and centered, to serve as the container for the background image.
-
-### 2. Transparency of Foreground Panel
-
-The user-defined range for opacity is `[0.1, 1]`. However, to ensure the readability of the note content, a weighted logic `f(x) = 0.99 - 0.25x` is used, resulting in a weighted opacity range of `[0.74, 0.99]`. Since different themes have completely different color settings, the same opacity setting may not appear consistent across different themes.
-
-There are two modes for implementing foreground transparency:
-
-* Opacity Mode (default)
-
-  Modify the `opacity` property of the parent elements of the panel's top toolbar (`toolbar`), editor, left and right sidebars (`layouts`, `dockLeft`, `dockRight`), bottom sidebar (`dockBottom`), and status bar (`status`) to achieve the transparency effect of the foreground.
-
-  However, this approach may encounter compatibility issues with certain themes, primarily due to the following problems:
-
-  1. Some themes set the background color of the `<body>` and make the color of the top toolbar, sidebars, and status bar transparent to ensure consistent appearance. However, when this plugin is enabled, the background pattern will be fully visible through these transparent menus, resulting in poor readability of the text and icons.
-  2. After activating the plugin, some theme buttons may become unclickable. This is because modifying the overall opacity with `opacity` property will also affect the `z-index` ([refer to this article for an explanation](https://blog.csdn.net/weixin_51474815/article/details/121070612)), causing issues with the stacking order. Buttons may be obscured by other layers. Generally, there is no overlapping between the top bar, editor area, and bottom bar to avoid this problem. However, some themes have overlapping regions, such as placing tabs in the top bar, which can lead to this problem.
-* CSS Mode
-
-  In order to address the compatibility issues caused by the opacity mode, in this mode, opacity modification is abandoned, and the background color of rendered panel elements (with element IDs `toolbar`, `layouts`, `dockLeft`, `dockRight`, `dockBottom`, `status`) is read and the alpha value is modified to achieve a similar transparency effect.
-
-  However, this approach may still encounter compatibility issues with certain themes. Some themes have specific background colors for buttons or button groups, but the plugin does not recursively modify all elements within the panel, resulting in the panel being transparent while the buttons inside the panel remain opaque, which can lead to poor aesthetics.
-
-### 3. Compatibility Recommendations for Theme Developers
-
-It is recommended for theme authors to follow the SourceNote theme template and avoid achieving color consistency by setting the foreground as `transparent` to reveal the background color. Additionally, try to adhere to the layout structure of the theme template and avoid overlapping between different sections
+The range of transparency that can be set by the user is [0.1, 1]. However, to ensure readability of the notebook content, a weighted logic f(x) = 0.99 - 0.25x is used. The weighted transparency range is [0.74, 0.99]. Since different themes have completely different color settings, the same transparency setting may not appear consistent across different themes.
 
 ## ChangeLogs
 
 <details open>
+<summary><b>Augest 2023</b></summary>
+
+**23.08.13**
+
+* Fix the issue with the reset button throwing an error.
+* Deprecated the use of the CSS mode and switched to using the global opacity mode to address theme compatibility issues.
+
+</details>
+
+<details>
 <summary><b>July 2023</b></summary>
 
 **23.07.31**
