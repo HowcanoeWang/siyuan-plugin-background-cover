@@ -109,8 +109,6 @@ export class CloseCV {
       }
 
     public changeColorOpacity(colorString:string, alpha:number) {
-        colorString = colorString.replaceAll(' ', '');
-
         let changedColor = '';
         let cssVarColors = getComputedStyle(document.querySelector(':root'));
   
@@ -126,14 +124,14 @@ export class CloseCV {
             changedColor = this.changeColorOpacity(originalColor, alpha)
         // --> 透明色
         }else if (colorString === 'transparent' || 
-                  colorString === 'rgb(0,0,0)' ||
-                  colorString === 'rgb(0,0,0,0)' ||
-                  colorString === 'rgba(0,0,0,0)'){
+                  colorString.replaceAll(' ', '') === 'rgb(0,0,0)' ||
+                  colorString.replaceAll(' ', '') === 'rgb(0,0,0,0)' ||
+                  colorString.replaceAll(' ', '') === 'rgba(0,0,0,0)'){
             const [themeMode, themeName] = getThemeInfo();
             if (themeMode === 'light') {
-                changedColor = `rgba(255,255,255,${alpha})`
+                changedColor = `rgba(255, 255, 255, ${alpha})`
             }else{
-                changedColor = `rgba(0,0,0,${alpha})`
+                changedColor = `rgba(0, 0, 0, ${alpha})`
             }
         // --> 如果当前元素为正常的rgb开头
         }else if (colorString.slice(0,4) === 'rgb(' && 
