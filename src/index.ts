@@ -94,13 +94,14 @@ export default class BgCoverPlugin extends Plugin {
         bgRender.bindNotePanel();
 
         bgRender.createStyleLayer();
-        bgRender.initToChangeStyle();
         
         await fileManagerUI.checkCacheDirctory();
 
         // load the user setting data
         const [themeMode, themeName] = getThemeInfo();
         configs.set('prevTheme', themeName);
+
+        bgRender.initToChangeStyle();
 
         // this.changeOpacity(0.85);
         await bgRender.applySettings();

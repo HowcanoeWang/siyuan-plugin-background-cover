@@ -72,12 +72,16 @@ export function createStyleLayer() {
              */
             var root = styleSheet.cssRules[0] as CSSStyleRule
 
-            root.style.setProperty("--b3-theme-background", "rgba(255,255,255,0.85)");
-            root.style.setProperty("--b3-toolbar-background", "rgba(255,255,255,0.85)");
-            root.style.setProperty("--b3-dock-background", "rgba(255,255,255,0.85)");
-
             window.bgCoverPlugin.cssStyle = styleSheet;
             window.bgCoverPlugin.root = root;
+
+            // root.style.setProperty("--b3-theme-background", "rgba(255,255,255,0.85)");
+            // root.style.setProperty("--b3-toolbar-background", "rgba(255,255,255,0.85)");
+            // root.style.setProperty("--b3-dock-background", "rgba(255,255,255,0.85)");
+            let computedCSSVars = getComputedStyle(document.querySelector(':root'));
+            // saveOriginalVar2root('--b3-theme-background', computedCSSVars);
+            // body--blur style element:
+            saveOriginalVar2root('--b3-toolbar-blur-background', computedCSSVars);
         }
     }
 
@@ -292,8 +296,7 @@ function appendStyle2PluginStyle(
             // 如果是var(开头，则只需要修改:root变量即可，先添加到表中，最后统一修改alpha值。
             if (cssStyle.color.slice(0,4) === 'var('){
                 const cssVarName = cssStyle.color.slice(4,-1);
-                const originalVarColor = computedCSSVars.getPropertyValue(cssVarName);
-                window.bgCoverPlugin.root.style.setProperty(cssVarName, originalVarColor)
+                saveOriginalVar2root(cssVarName, computedCSSVars)
                 debug(`${prefixString} -> Plugin style ':root' += [${cssVarName}]`)
 
             // 如果是rgb / hex / 等开头，则添加为新的CSSRule，然后再修改alpha值
@@ -306,6 +309,11 @@ function appendStyle2PluginStyle(
             }
         }
     }
+}
+
+function saveOriginalVar2root(cssVarName:string, computedCSSVars:CSSStyleDeclaration){
+    const originalVarColor = computedCSSVars.getPropertyValue(cssVarName);
+    window.bgCoverPlugin.root.style.setProperty(cssVarName, originalVarColor)
 }
 
 export function useDefaultLiaoLiaoBg() {
@@ -333,7 +341,23 @@ export function changeOpacity(alpha: number, transMode: number, adaptMode: boole
     let opacity = 0.99 - 0.25 * alpha;
 
     if (configs.get('activate')) {
+        window.bgCoverPlugin.cssStyle.disabled = false;
+
+        // iter :root and add alpha/opacity
+        var root = window.bgCoverPlugin.root;
+
+        for (var i = 0; i < root.style.length; i++) {
+            var varName = root.style[i];
+            var oldColor = root.style.getPropertyValue(varName);
+            var newColor = cv2.changeColorOpacity(oldColor, opacity);
+            root.style.setProperty(varName, newColor);
+            debug(`[bgRender][changeOpacity] change :root:${varName} color ${oldColor} -> ${newColor}`)
+        }
+
+        // iter other cssRules and add alpha/opacity
+
     } else {
+        window.bgCoverPlugin.cssStyle.disabled = true;
     }
 
     // todo: dark -> rgb(0,0,0, opacity); light -> rgb(255,255,255,opacity)
