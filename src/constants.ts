@@ -4,10 +4,7 @@ import packageInfo from '../plugin.json'
 declare global {
     interface Window { bgCoverPlugin : {
         i18n: IObject,
-        isMobile: boolean,
-        cssThemeStyle?: cssThemeOldStyle,  // [todo] deprecated
-        cssStyle?: CSSStyleSheet,
-        root?:CSSStyleRule
+        isMobile: boolean
     } }
 }
 
@@ -25,33 +22,6 @@ export interface bgObj {
 
 export interface fileIndex {
     [key: string]: bgObj;
-}
-
-// 需要针对下面的主题进行适配
-export interface toAdaptThemes {
-    [key: string]: {
-        [key: string]: string[]
-    }
-}
-
-export interface BgStyleObj {
-    [key: string]: StyleInfo
-}
-
-export interface StyleInfo {
-    href: string;
-    selector: string;
-    key?: string;
-    color?: string;
-    rule: CSSStyleRule;
-  }
-
-export interface themeAdaptObject {
-    [key: string]: string[]
-}
-
-export interface cssThemeOldStyle {
-    [key:string]: string
 }
 
 export const hashLength = 2097152;
@@ -77,7 +47,7 @@ export const configFile = 'bg-cover-setting.json';
 
 export type configKey = (
     'autoRefresh' |'opacity' | 'blur' | 'activate' | 'bgObj' |
-    'version' | 'prevTheme' | 'fileidx' | 'inDev' | 'adaptMode' | 'transMode' 
+    'version' | 'prevTheme' | 'fileidx' | 'inDev'
 );
 
 export const demoImgURL = 'https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover/static/FyBE0bUakAELfeF.jpg'
