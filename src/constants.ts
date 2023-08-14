@@ -4,7 +4,8 @@ import packageInfo from '../plugin.json'
 declare global {
     interface Window { bgCoverPlugin : {
         i18n: IObject,
-        isMobile: boolean
+        isMobile: boolean,
+        installedThemeNames?: installedThemeNames
     } }
 }
 
@@ -22,6 +23,23 @@ export interface bgObj {
 
 export interface fileIndex {
     [key: string]: bgObj;
+}
+
+export interface installedThemeNames {
+    [key: string]: string;
+}
+
+export interface installedThemeReturn {
+    data : {
+        packages: [
+            {
+                name: string, 
+                displayName:{
+                    [key:string]: string
+                }
+            }
+        ]
+    }
 }
 
 export const hashLength = 2097152;

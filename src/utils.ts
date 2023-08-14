@@ -1,6 +1,8 @@
 import { KernelApi } from './siyuanAPI';
 import { configs } from './configs'
 
+import * as cst from './constants';
+
 // simple logging functions
 export function info(...msg: any[]): void {
     console.log(`[BgCover Plugin][INFO] ${msg}`);
@@ -18,6 +20,48 @@ export function error(...msg: any[]): void {
 
 export function warn(...msg: any[]): void {
     console.warn(`[BgCover][WARN] ${msg}`);
+}
+
+/**
+ * 获取当前主题名字和模式
+ */
+export function getThemeInfo() {
+    // 0 -> light, 1 -> dark
+    const themeMode = (window as any).siyuan.config.appearance.mode
+    let themeName = ''
+    
+    if (themeMode === 0 ) {
+        themeName = (window as any).siyuan.config.appearance.themeLight
+    }else{
+        themeName = (window as any).siyuan.config.appearance.themeDark
+    }
+
+    return [themeMode, themeName]
+}
+
+export async function getInstalledThemeName() {
+    // source code: https://github.com/frostime/sy-theme-change/blob/7792635b34c993f428a5e27bc8218bee9730550c/src/index.ts#L13-L43
+
+    let name2displayName: cst.installedThemeNames = {};
+
+    let ka = new KernelApi();
+
+    var istThemeRtn = await ka.getInstalledTheme() as unknown as cst.installedThemeReturn;
+
+    const Lang = (window as any).siyuan.config.lang;
+    let packages = istThemeRtn.data.packages;
+
+    for (let pkg of packages) {
+        let displayName = pkg.displayName[Lang];
+        if (displayName === undefined || displayName === null || displayName === '') {
+            displayName = pkg.displayName['default'];
+        }
+        name2displayName[pkg.name] = displayName;
+    }
+
+    console.log('aaaaaa', name2displayName)
+
+    return name2displayName;
 }
 
 // Array merging function
@@ -188,23 +232,6 @@ export class CloseCV {
         return fullside
     }
 
-}
-
-/**
- * 获取当前主题名字和模式
- */
-export function getThemeInfo() {
-    // 0 -> light, 1 -> dark
-    const themeMode = (window as any).siyuan.config.appearance.mode
-    let themeName = ''
-    
-    if (themeMode === 0 ) {
-        themeName = (window as any).siyuan.config.appearance.themeLight
-    }else{
-        themeName = (window as any).siyuan.config.appearance.themeDark
-    }
-
-    return [themeMode, themeName]
 }
 
 export class OS {

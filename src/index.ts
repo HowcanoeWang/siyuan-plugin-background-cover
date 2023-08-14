@@ -17,7 +17,7 @@ import { configs } from './configs';
 import {
     error, warn, info, debug,
     CloseCV, MD5, OS, Numpy,
-    getThemeInfo
+    getThemeInfo, getInstalledThemeName
 } from './utils';
 import * as cst from './constants';
 import * as topbarUI from "./topbarUI";
@@ -38,7 +38,6 @@ let np = new Numpy();
 export default class BgCoverPlugin extends Plugin {
 
     public isMobile: boolean;
-
     public htmlThemeNode = document.getElementsByTagName('html')[0];
 
     async onload() {
@@ -89,9 +88,6 @@ export default class BgCoverPlugin extends Plugin {
 
     async onLayoutReady() {
         bgRender.createBgLayer();
-        // bgRender.bindNotePanel();
-
-        // bgRender.createStyleLayer();
         
         await fileManagerUI.checkCacheDirctory();
 
@@ -99,9 +95,9 @@ export default class BgCoverPlugin extends Plugin {
         const [themeMode, themeName] = getThemeInfo();
         configs.set('prevTheme', themeName);
 
-        // bgRender.initToChangeStyle();
+        const istThemeRtn = await getInstalledThemeName();
+        window.bgCoverPlugin.installedThemeNames = istThemeRtn;
 
-        // this.changeOpacity(0.85);
         await bgRender.applySettings();
 
         debug(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
