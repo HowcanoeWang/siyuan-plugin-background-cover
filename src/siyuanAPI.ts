@@ -267,4 +267,8 @@ export class KernelApi extends BaseApi {
     //   }
     //   return await this.siyuanRequest("/api/import/importStdMd", params)
     // }
+
+    public async getInstalledTheme(): Promise<SiyuanData> {
+      return await this.siyuanRequest("api/bazaar/getInstalledTheme", {})
+    }
 }
