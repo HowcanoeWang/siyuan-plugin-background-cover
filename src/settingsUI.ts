@@ -288,59 +288,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     })
 
     // block theme
-    const installedThemes = getInstalledThemes();
-    const ThemeBlockContainer = [
-        document.getElementById('lightThemeBlockContainer') as HTMLDivElement,
-        document.getElementById('darkThemeBlockContainer') as HTMLDivElement,
-    ]
-
-    var blockThemeConfig = configs.get('blockTheme');
-    const themeMode = ['light', 'dark']
-    debug('[settingsUI] Current block theme config:', blockThemeConfig)
-    
-    // i==0 -> light; i == 1 -> dark
-    for (var i = 0; i < installedThemes.length; i++) {
-        var iThemes = installedThemes[i];
-
-        // iter each mode themes
-        for (var j = 0; j < iThemes.length; j++) {
-            /**
-             *  检查config里面的设置
-             */ 
-            var itheme = iThemes[j] // 安装的某个 dark|light theme
-            var btnOnOff: boolean;  // 该主题是否屏蔽
-
-            // if "dark+" in 'blockTheme.light' keys
-            var ithemeConfig = blockThemeConfig[themeMode[i]]
-            console.log('aaaa', ithemeConfig, itheme)
-            if (itheme in ithemeConfig) {
-                // 在设置中存在，直接读取之前的设置值
-                btnOnOff = ithemeConfig[itheme];
-            } else {
-                // 在设置中不存在，添加然后设置值为false
-                btnOnOff = false;
-                ithemeConfig[itheme] = btnOnOff;
-            }
-
-            /**
-             *  添加设置中的按钮
-             */ 
-            let parser = new DOMParser();
-            var blockLabelItem = parser.parseFromString(`
-            <label class="fn__flex" style="width:30%;margin: 8px 3% 0 0">
-                <div class="fn__flex-1">
-                    ${window.bgCoverPlugin.themeName2DisplayName[itheme]}
-                </div>
-                <span class="fn__space"></span>
-                <input class="b3-switch" id="${themeMode[i]}-${itheme}" type="checkbox">
-            </label>`, 
-            'text/html').body.firstChild as HTMLDivElement
-            
-            ThemeBlockContainer[i].appendChild(blockLabelItem);
-        }
-    }
-    configs.set('blockTheme', blockThemeConfig);
-    configs.save();
+    generateBlockThemeElement();
 
     // the Auto refresh switch
     const autoRefreshElement = document.getElementById('autoRefreshInput') as HTMLInputElement;
@@ -416,6 +364,92 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     //     pluginInstance.saveData(STORAGE_NAME, {readonlyText: inputElement.value});
     //     dialog.destroy();
     // });
+}
+
+export function generateBlockThemeElement(){
+    const [themeMode, themeName] = getCurrentThemeInfo();
+
+    const installedThemes = getInstalledThemes();
+    const ThemeBlockContainer = [
+        document.getElementById('lightThemeBlockContainer') as HTMLDivElement,
+        document.getElementById('darkThemeBlockContainer') as HTMLDivElement,
+    ]
+
+    var blockThemeConfig = configs.get('blockTheme');
+    const themeModeText = ['light', 'dark']
+    debug('[settingsUI][generateBlockThemeElement] Current block theme config:', blockThemeConfig)
+    
+    // i==0 -> light; i == 1 -> dark
+    for (var i = 0; i < installedThemes.length; i++) {
+        var iThemes = installedThemes[i];
+
+        // iter each mode themes
+        for (var j = 0; j < iThemes.length; j++) {
+            /**
+             *  检查config里面的设置
+             */ 
+            var itheme = iThemes[j] // 安装的某个 dark|light theme
+            var btnOnOffValue: boolean;  // 该主题是否屏蔽
+
+            // if "dark+" in 'blockTheme.light' keys
+            var ithemeConfig = blockThemeConfig[themeModeText[i]]
+            if (itheme in ithemeConfig) {
+                // 在设置中存在，直接读取之前的设置值
+                btnOnOffValue = ithemeConfig[itheme];
+            } else {
+                // 在设置中不存在，添加然后设置值为false
+                btnOnOffValue = false;
+                ithemeConfig[itheme] = btnOnOffValue;
+            }
+
+            /**
+             *  添加设置中的按钮
+             */ 
+            let parser = new DOMParser();
+            var blockLabelItem = parser.parseFromString(`
+            <label class="fn__flex" style="width:28%;margin: 8px 5% 0 0">
+                <div class="fn__flex-1">
+                    ${window.bgCoverPlugin.themeName2DisplayName[itheme]}
+                </div>
+                <span class="fn__space"></span>
+                <input class="b3-switch" data-mode="${themeModeText[i]}" data-theme="${itheme}" type="checkbox">
+            </label>`, 
+            'text/html').body.firstChild as HTMLDivElement
+            
+            ThemeBlockContainer[i].appendChild(blockLabelItem);
+
+            // 高亮当前主题
+            if (themeMode === i && itheme === themeName) {
+                let textItem = blockLabelItem.querySelectorAll('div')[0]
+
+                textItem.style.setProperty('color', 'var(--b3-theme-primary)');
+                textItem.textContent += `(${window.bgCoverPlugin.i18n.crtThemeText})`
+            }
+
+            /**
+             * 绑定开关
+             */
+            let onOffBtn = blockLabelItem.querySelectorAll('input')[0]
+            onOffBtn.checked = btnOnOffValue;
+
+            onOffBtn.addEventListener('click', async () => {
+                var blockThemeCfg = configs.get('blockTheme');
+
+                let mode = onOffBtn.getAttribute('data-mode');
+                let theme = onOffBtn.getAttribute('data-theme');
+
+                blockThemeCfg[mode][theme] = !blockThemeCfg[mode][theme]
+                debug(`[settingsUI] User changed blockTheme ${theme} in ${mode} mode`)
+                
+                configs.set('blockTheme', blockThemeCfg);
+                configs.save();
+
+                await bgRender.applySettings();
+            })
+        }
+    }
+    configs.set('blockTheme', blockThemeConfig);
+    configs.save();
 }
 
 export function updateSliderElement(elementid:string, value:string, setAriaLabel:boolean=true) {

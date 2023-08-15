@@ -83,5 +83,6 @@
   "themeOnChangeTitle": "侦测到主题改变",
   "themeOnChangeMsg": "建议刷新重载思源来使插件适配更改后的主题",
   "themeRefresh": "刷新",
-  "blockThemeTitle": "屏蔽主题 (在下列主题不启用插件)"
+  "blockThemeTitle": "屏蔽主题 (在下列主题不显示背景)",
+  "crtThemeText": "当前主题"
 }
