@@ -25,7 +25,7 @@ export function warn(...msg: any[]): void {
 /**
  * 获取当前主题名字和模式
  */
-export function getThemeInfo() {
+export function getCurrentThemeInfo() {
     // 0 -> light, 1 -> dark
     const themeMode = (window as any).siyuan.config.appearance.mode
     let themeName = ''
@@ -39,10 +39,17 @@ export function getThemeInfo() {
     return [themeMode, themeName]
 }
 
-export async function getInstalledThemeName() {
+export function getInstalledThemes() {
+    const lightThemes = (window as any).siyuan.config.appearance.lightThemes;
+    const darkThemes = (window as any).siyuan.config.appearance.darkThemes;
+
+    return [lightThemes, darkThemes]
+}
+
+export async function themeName2DisplayName() {
     // source code: https://github.com/frostime/sy-theme-change/blob/7792635b34c993f428a5e27bc8218bee9730550c/src/index.ts#L13-L43
 
-    let name2displayName: cst.installedThemeNames = {};
+    let name2displayName: cst.installedThemeNames = {'daylight': 'daylight', 'midnight': 'midnight'};
 
     let ka = new KernelApi();
 
@@ -59,7 +66,7 @@ export async function getInstalledThemeName() {
         name2displayName[pkg.name] = displayName;
     }
 
-    console.log('aaaaaa', name2displayName)
+    debug(`[utils][themeName2DisplayName] name2displayName:`, name2displayName);
 
     return name2displayName;
 }
@@ -171,7 +178,7 @@ export class CloseCV {
                   colorString.replaceAll(' ', '') === 'rgb(0,0,0)' ||
                   colorString.replaceAll(' ', '') === 'rgb(0,0,0,0)' ||
                   colorString.replaceAll(' ', '') === 'rgba(0,0,0,0)'){
-            const [themeMode, themeName] = getThemeInfo();
+            const [themeMode, themeName] = getCurrentThemeInfo();
             if (themeMode === 'light') {
                 changedColor = `rgba(255, 255, 255, ${alpha})`
             }else{
@@ -288,7 +295,7 @@ export class OS {
         var outArray: outArray
         let out = await this.ka.readDir(dir);
         if (out !== null || out !== undefined) {
-            debug("out.data", out.data)
+            debug("[os.listdir] out.data ->", out.data)
             outArray = out.data as outArray
         }
         

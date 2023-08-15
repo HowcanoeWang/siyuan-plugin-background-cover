@@ -15,7 +15,7 @@ import {
 import {
     error, warn, info, debug,
     CloseCV, MD5, OS, Numpy,
-    getThemeInfo
+    getCurrentThemeInfo
 } from './utils';
 
 import BgCoverPlugin from "./index"

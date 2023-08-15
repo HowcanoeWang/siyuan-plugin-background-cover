@@ -2,11 +2,13 @@ import { IObject } from 'siyuan';
 import packageInfo from '../plugin.json'
 
 declare global {
-    interface Window { bgCoverPlugin : {
-        i18n: IObject,
-        isMobile: boolean,
-        installedThemeNames?: installedThemeNames
-    } }
+    interface Window { 
+        bgCoverPlugin : {
+            i18n: IObject,
+            isMobile: boolean,
+            themeName2DisplayName?: installedThemeNames
+        } 
+    }
 }
 
 export enum bgMode {
@@ -42,6 +44,15 @@ export interface installedThemeReturn {
     }
 }
 
+export interface blockThemeConfig {
+    dark: blockThemeItem,
+    light: blockThemeItem
+}
+
+export interface blockThemeItem {
+    [key: string]: boolean,
+}
+
 export const hashLength = 2097152;
 
 export const pluginAssetsDir = `/data/public/${packageInfo.name}/assets`
@@ -65,7 +76,7 @@ export const configFile = 'bg-cover-setting.json';
 
 export type configKey = (
     'autoRefresh' |'opacity' | 'blur' | 'activate' | 'bgObj' |
-    'version' | 'prevTheme' | 'fileidx' | 'inDev'
+    'version' | 'prevTheme' | 'fileidx' | 'inDev' | 'blockTheme'
 );
 
 export const demoImgURL = 'https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover/static/FyBE0bUakAELfeF.jpg'
@@ -84,6 +95,7 @@ export var defaultConfigs = {
     'fileidx': {} as fileIndex,
     'version': packageInfo.version as string,
     'inDev': false as boolean,
+    'blockTheme': {light:{}, dark:{}} as blockThemeConfig,
 };
 
 export const diyIcon = {
