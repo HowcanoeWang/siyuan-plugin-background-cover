@@ -12,7 +12,7 @@ import * as topbarUI from "./topbarUI";
 import {
     error, warn, info, debug,
     CloseCV, MD5, OS, Numpy,
-    getThemeInfo
+    getCurrentThemeInfo
 } from './utils';
 
 // pythonic style

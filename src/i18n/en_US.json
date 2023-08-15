@@ -83,5 +83,6 @@
   "updateHashNotice": "The background plugin version 0.3.2 updated the file hash logic, please re-add the background covers",
   "themeOnChangeTitle": "The theme has been changed",
   "themeOnChangeMsg": "Recommend to refresh the SiYuan note to make the theme changes taking effect",
-  "themeRefresh": "Refresh"
+  "themeRefresh": "Refresh",
+  "blockThemeTitle": "Block Theme (not activate plugin on the following theme)"
 }

@@ -17,7 +17,7 @@ import { configs } from './configs';
 import {
     error, warn, info, debug,
     CloseCV, MD5, OS, Numpy,
-    getThemeInfo, getInstalledThemeName
+    getCurrentThemeInfo, themeName2DisplayName
 } from './utils';
 import * as cst from './constants';
 import * as topbarUI from "./topbarUI";
@@ -92,11 +92,11 @@ export default class BgCoverPlugin extends Plugin {
         await fileManagerUI.checkCacheDirctory();
 
         // load the user setting data
-        const [themeMode, themeName] = getThemeInfo();
+        const [themeMode, themeName] = getCurrentThemeInfo();
         configs.set('prevTheme', themeName);
 
-        const istThemeRtn = await getInstalledThemeName();
-        window.bgCoverPlugin.installedThemeNames = istThemeRtn;
+        const theme_n2d = await themeName2DisplayName();
+        window.bgCoverPlugin.themeName2DisplayName = theme_n2d;
 
         await bgRender.applySettings();
 
@@ -104,9 +104,6 @@ export default class BgCoverPlugin extends Plugin {
 
         // 去除检测到主题变化的提示(因为此时已经刷新了)
         noticeUI.removeThemeRefreshDialog();
-
-        // 临时debug用，不用每次都打开
-        // themeAdapterUI.adaptConfigEditor(this);
     }
 
     onunload() {
@@ -121,7 +118,7 @@ export default class BgCoverPlugin extends Plugin {
     // }
 
     private async themeOnChange() {
-        const [themeMode, themeName] = getThemeInfo();
+        const [themeMode, themeName] = getCurrentThemeInfo();
         let prevTheme = configs.get('prevTheme')
 
         debug(`Theme changed! from ${prevTheme} to ${themeMode} | ${themeName}`)

@@ -8,12 +8,12 @@ import * as cst from "./constants";
 import * as fileManagerUI from "./fileManagerUI";
 import * as topbarUI from "./topbarUI";
 import * as bgRender from "./bgRender";
-import * as noticeUI from "./noticeUI"
+import * as noticeUI from "./noticeUI";
 
 import {
     error, warn, info, debug,
     CloseCV, MD5, OS, Numpy,
-    getThemeInfo
+    getCurrentThemeInfo, getInstalledThemes
 } from './utils';
 
 // pythonic style
@@ -95,6 +95,57 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                 value="${configs.get('activate')}"
             />
         </label>
+
+        
+        <!--
+        // theme black list
+        -->
+
+        <div class="b3-label">
+            ${window.bgCoverPlugin.i18n.blockThemeTitle}
+            <!-- light theme block -->
+            <div class="b3-list b3-list--border b3-list--background">
+                <div class="b3-list-item b3-list-item--narrow toggle">
+                    <span class="b3-list-item__toggle b3-list-item__toggle--hl">
+                        <svg class="b3-list-item__arrow b3-list-item__arrow--open"><use xlink:href="#iconRight"></use></svg>
+                    </span>
+                    <span class="b3-list-item__text ft__on-surface">${window.bgCoverPlugin.i18n.themeAdaptEditorMode0}</span>
+                </div>
+                <div class="b3-list__panel">
+                    <div class="config-query" id="lightThemeBlockContainer">
+
+                        <!-- label item add by for loop -->
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="fn__hr"></div>
+
+            <!-- dark theme block -->
+            <div class="b3-list b3-list--border b3-list--background">
+                <div class="b3-list-item b3-list-item--narrow toggle">
+                    <span class="b3-list-item__toggle b3-list-item__toggle--hl">
+                        <svg class="b3-list-item__arrow b3-list-item__arrow--open"><use xlink:href="#iconRight"></use></svg>
+                    </span>
+                    <span class="b3-list-item__text ft__on-surface">${window.bgCoverPlugin.i18n.themeAdaptEditorMode1}</span>
+                </div>
+                <div class="b3-list__panel">
+                    <div class="config-query" id="darkThemeBlockContainer">
+                        
+                        <!-- label item add by for loop -->
+
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        
+        <!--
+        // 自动更新按钮
+        -->
+
         <label class="fn__flex b3-label">
             <div class="fn__flex-1">
                 ${window.bgCoverPlugin.i18n.autoRefreshLabel}
@@ -235,6 +286,61 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         configs.save();
         bgRender.applySettings();
     })
+
+    // block theme
+    const installedThemes = getInstalledThemes();
+    const ThemeBlockContainer = [
+        document.getElementById('lightThemeBlockContainer') as HTMLDivElement,
+        document.getElementById('darkThemeBlockContainer') as HTMLDivElement,
+    ]
+
+    var blockThemeConfig = configs.get('blockTheme');
+    const themeMode = ['light', 'dark']
+    debug('[settingsUI] Current block theme config:', blockThemeConfig)
+    
+    // i==0 -> light; i == 1 -> dark
+    for (var i = 0; i < installedThemes.length; i++) {
+        var iThemes = installedThemes[i];
+
+        // iter each mode themes
+        for (var j = 0; j < iThemes.length; j++) {
+            /**
+             *  检查config里面的设置
+             */ 
+            var itheme = iThemes[j] // 安装的某个 dark|light theme
+            var btnOnOff: boolean;  // 该主题是否屏蔽
+
+            // if "dark+" in 'blockTheme.light' keys
+            var ithemeConfig = blockThemeConfig[themeMode[i]]
+            console.log('aaaa', ithemeConfig, itheme)
+            if (itheme in ithemeConfig) {
+                // 在设置中存在，直接读取之前的设置值
+                btnOnOff = ithemeConfig[itheme];
+            } else {
+                // 在设置中不存在，添加然后设置值为false
+                btnOnOff = false;
+                ithemeConfig[itheme] = btnOnOff;
+            }
+
+            /**
+             *  添加设置中的按钮
+             */ 
+            let parser = new DOMParser();
+            var blockLabelItem = parser.parseFromString(`
+            <label class="fn__flex" style="width:30%;margin: 8px 3% 0 0">
+                <div class="fn__flex-1">
+                    ${window.bgCoverPlugin.themeName2DisplayName[itheme]}
+                </div>
+                <span class="fn__space"></span>
+                <input class="b3-switch" id="${themeMode[i]}-${itheme}" type="checkbox">
+            </label>`, 
+            'text/html').body.firstChild as HTMLDivElement
+            
+            ThemeBlockContainer[i].appendChild(blockLabelItem);
+        }
+    }
+    configs.set('blockTheme', blockThemeConfig);
+    configs.save();
 
     // the Auto refresh switch
     const autoRefreshElement = document.getElementById('autoRefreshInput') as HTMLInputElement;
