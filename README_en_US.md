@@ -28,7 +28,7 @@ Default background cover artist ——
 
 ## Features
 
-- [X] Only the **desktop** and **browser-desktop (PC)** are supported
+- [X] The plugin backend supports all platforms (Considering the UI interaction, support for **narrow-screen mobile devices** is not available)
 - [X] Tiling a picture as a background for SiYuan Notes
 - [X] Compatible theme
 - [X] Manually adjust the transparency
@@ -56,7 +56,7 @@ The range of transparency that can be set by the user is `[0.1, 1]`. However, to
 **23.08.15**
 
 * Add theme blocking functionality to support disabling the plugin on specific themes.
-* open privilage for all frontend and backend
+* The plugin backend supports all platforms, while the frontend UI is only available for desktop wide screens.
 
 **23.08.13**
 
