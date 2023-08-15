@@ -50,10 +50,21 @@ export function changeBackgroundContent(background: string, mode: cst.bgMode) {
     }
 };
 
+export function isBlockTheme(){
+    var blockTheme = configs.get('blockTheme')
+    const themeModeText = ['light', 'dark']
+    const [themeMode, themeName] = getCurrentThemeInfo();
+
+    var result = blockTheme[themeModeText[themeMode]][themeName];
+    debug(`[bgRender][isBlockTheme] search mode='${themeModeText[themeMode]}', name='${themeName}' result is ${result}`)
+
+    return result;
+}
+
 export function changeOpacity(alpha: number) {
     let opacity = 0.99 - 0.25 * alpha;
 
-    if (configs.get('activate')) {
+    if (configs.get('activate') && !isBlockTheme() ) {
         document.body.style.setProperty('opacity', opacity.toString());
     } else {
         document.body.style.removeProperty('opacity');
@@ -81,10 +92,10 @@ export async function applySettings() {
     var bgLayer = document.getElementById('bglayer');
     debug(bgLayer);
 
-    if (configs.get('activate')) {
-        bgLayer.style.removeProperty('display')
+    if (configs.get('activate') && !isBlockTheme() ) {
+        bgLayer.style.removeProperty('display');
     } else {
-        bgLayer.style.setProperty('display', 'none')
+        bgLayer.style.setProperty('display', 'none');
     }
 
     // 缓存文件夹中没有图片 | 用户刚刚使用这个插件 | 用户刚刚重置了插件数据 | 当前文件404找不到

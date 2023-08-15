@@ -84,5 +84,6 @@
   "themeOnChangeTitle": "The theme has been changed",
   "themeOnChangeMsg": "Recommend to refresh the SiYuan note to make the theme changes taking effect",
   "themeRefresh": "Refresh",
-  "blockThemeTitle": "Block Theme (not activate plugin on the following theme)"
+  "blockThemeTitle": "Block Theme (not show background on the following themes)",
+  "crtThemeText": "Current"
 }
