@@ -327,9 +327,7 @@ export async function batchUploadImages(
     if (fileArray.length === 0) {
         debug('[fileManagerUI][batchUploadImages] fileArray为空，不存在需要上传的图片')
     }else{
-        for (let i in fileArray) {
-            let file = fileArray[i];
-
+        for (let file of fileArray) {
             bgObj = await uploadOneImage(file);
 
             debug('[fileManagerUI][batchUploadImages] 在上传的循环内', bgObj)

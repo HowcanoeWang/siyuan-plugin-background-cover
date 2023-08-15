@@ -200,22 +200,9 @@ export async function addSingleLocalImageFile() {
     if (cacheImgNum >= cst.cacheMaxNum) {
         showMessage(window.bgCoverPlugin.i18n.addSingleImageExceed1 + cst.cacheMaxNum + window.bgCoverPlugin.i18n.addSingleImageExceed2, 7000, 'error');
     }else{
-        const pickerOpts = {
-            types: [
-                {
-                    description: "Images",
-                    accept: {
-                        "image/*": cst.supportedImageSuffix,
-                    },
-                },
-            ],
-            excludeAcceptAllOption: true,
-            multiple: false,
-        };
-
         // return an Array
-        const fileHandle = await window.showOpenFilePicker(pickerOpts);
-        let file = await fileHandle[0].getFile();
+        const fileHandle = await os.openFilePicker(cst.supportedImageSuffix.toString())
+        let file = fileHandle[0];
 
         let bgObj = await fileManagerUI.uploadOneImage(file);
 
@@ -231,35 +218,30 @@ export async function addSingleLocalImageFile() {
 export async function addDirectory() {
     const cacheImgNum = fileManagerUI.getCacheImgNum();
 
-    const directoryHandle = await window.showDirectoryPicker();
-    const fileEntries = await directoryHandle.values();
+    const fileList = await os.openFolderPicker();
 
-
-    let fileContainer:Array<File> = []
+    let fileContainer:Array<File> = [];
 
     // 遍历文件夹中的每个文件
-    for await (const fileEntry of fileEntries) {
+    for await (const file of fileList) {
         // 检查文件类型是否为文件，排除文件夹
-        if (fileEntry.kind === 'file') {
-            const file = await fileEntry.getFile();
-            const fileName = file.name;
+        const fileName = file.name;
 
-            const [prefix, suffix] = os.splitext(fileName)
-            // suffix = 'jpg'
-            debug(`[topbarUI][addDirectory] 当前图片${fileName}后缀为${suffix}, 存在于允许的图片后缀(${cst.supportedImageSuffix})中：${cst.supportedImageSuffix.includes(`.${suffix}`)}`)
-            if (cst.supportedImageSuffix.includes(`.${suffix}`)) {
+        const [prefix, suffix] = os.splitext(fileName)
+        // suffix = 'jpg'
+        debug(`[topbarUI][addDirectory] 当前图片${fileName}后缀为${suffix}, 存在于允许的图片后缀(${cst.supportedImageSuffix})中：${cst.supportedImageSuffix.includes(`.${suffix}`)}`)
+        if (cst.supportedImageSuffix.includes(`.${suffix}`)) {
 
-                let md5 = await fileManagerUI.imgExistsInCache(file, false);
+            let md5 = await fileManagerUI.imgExistsInCache(file, false);
 
-                if (md5 !== 'exists') {
-                    fileContainer.push(file)
-                }else{
-                    debug(`[topbarUI][addDirectory] 当前图片${fileName}md5为${md5}, 存在于缓存中`)
-                }
+            if (md5 !== 'exists') {
+                fileContainer.push(file)
+            }else{
+                debug(`[topbarUI][addDirectory] 当前图片${fileName}md5为${md5}, 存在于缓存中`)
             }
-
-            debug(`[topbarUI][addDirectory] fileContainer`, fileContainer)
         }
+
+        debug(`[topbarUI][addDirectory] fileContainer`, fileContainer)
 
         if (fileContainer.length >= cst.cacheMaxNum - cacheImgNum) {
             showMessage(window.bgCoverPlugin.i18n.addDirectoryLabelError1 + cst.cacheMaxNum + window.bgCoverPlugin.i18n.addDirectoryLabelError2, 7000, 'error')
