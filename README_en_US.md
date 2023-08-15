@@ -28,7 +28,7 @@ Default background cover artist ——
 
 ## Features
 
-- [X] Only the **desktop** and **browser-desktop (PC)** are supported.
+- [X] Only the **desktop** and **browser-desktop (PC)** are supported
 - [X] Tiling a picture as a background for SiYuan Notes
 - [X] Compatible theme
 - [X] Manually adjust the transparency
@@ -44,14 +44,19 @@ Default background cover artist ——
 
 ## Implementation
 
-Add a <canvas> element within the <HTML> element, at the same level as <head> and <body>. The <canvas> element should be tiled and centered, and placed at the bottom layer of the notebook to serve as the background for images. Then, add the style='opacity: xxx' attribute to the <body> element to achieve transparency for the notebook panel. This replaces the previous CSS transparency mode to avoid compatibility issues with all themes.
+Add a `<canvas>` element within the `<HTML>` element, at the same level as `<head>` and `<body>`. The `<canvas>` element should be tiled and centered, and placed at the bottom layer of the notebook to serve as the background for images. Then, add the `style='opacity: xxx'` attribute to the `<body>` element to achieve transparency for the notebook panel. This replaces the previous CSS transparency mode to avoid compatibility issues with all themes.
 
-The range of transparency that can be set by the user is [0.1, 1]. However, to ensure readability of the notebook content, a weighted logic f(x) = 0.99 - 0.25x is used. The weighted transparency range is [0.74, 0.99]. Since different themes have completely different color settings, the same transparency setting may not appear consistent across different themes.
+The range of transparency that can be set by the user is `[0.1, 1]`. However, to ensure readability of the notebook content, a weighted logic `f(x) = 0.99 - 0.25x` is used. The weighted transparency range is `[0.74, 0.99]`. Since different themes have completely different color settings, the same transparency setting may not appear consistent across different themes.
 
 ## ChangeLogs
 
 <details open>
 <summary><b>Augest 2023</b></summary>
+
+**23.08.15**
+
+* Add theme blocking functionality to support disabling the plugin on specific themes.
+* open privilage for all frontend and backend
 
 **23.08.13**
 
@@ -213,5 +218,6 @@ This project is inspired and modified from
 * [siyuan-theme-dark+](https://github.com/Zuoqiu-Yingyi/siyuan-theme-dark-plus)
 * [siyuan-plugin-importer](https://github.com/terwer/siyuan-plugin-importer/tree/main)
 * [siyuan-dailynote-today](https://github.com/frostime/siyuan-dailynote-today)
+* [sy-theme-change](https://github.com/frostime/sy-theme-change/tree/main)
 
 Thanks to the members in the 'Siyuan developer' group for patiently answering my questions regarding this plugin development.

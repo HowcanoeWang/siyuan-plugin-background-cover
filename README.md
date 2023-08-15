@@ -50,6 +50,11 @@
 <details open>
 <summary><b>Augest 2023</b></summary>
 
+**23.08.15**
+
+* 增加主题屏蔽功能，支持在指定主题上不启用插件
+* 开放全端权限，方便测试
+
 **23.08.13**
 
 * 修复重置按钮报错的问题
@@ -211,5 +216,6 @@
 * [思源dark+主题](https://github.com/Zuoqiu-Yingyi/siyuan-theme-dark-plus)
 * [思源导入插件](https://github.com/terwer/siyuan-plugin-importer/tree/main)
 * [思源今日日记看板](https://github.com/frostime/siyuan-dailynote-today)
+* [切换主题](https://github.com/frostime/sy-theme-change/tree/main)
 
 感谢 `思源爱好者折腾群`中各类大佬耐心解答我关于此插件开发中遇到的各种问题

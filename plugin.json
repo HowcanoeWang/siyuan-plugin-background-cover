@@ -4,8 +4,8 @@
   "url": "https://github.com/HowcanoeWang/siyuan-plugin-background-cover",
   "version": "0.4.1",
   "minAppVersion": "2.9.3",
-  "backends": ["windows", "linux", "darwin"],
-  "frontends": ["desktop", "browser-desktop"],
+  "backends": ["all"],
+  "frontends": ["desktop", "desktop-window", "browser-desktop"],
   "displayName": {
     "default": "Background Cover",
     "zh_CN": "替换背景图片"
