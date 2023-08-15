@@ -38,15 +38,18 @@ let np = new Numpy();
 export default class BgCoverPlugin extends Plugin {
 
     public isMobile: boolean;
+    public isBrowser: boolean;
     public htmlThemeNode = document.getElementsByTagName('html')[0];
 
     async onload() {
         const frontEnd = getFrontend();
         this.isMobile = frontEnd === "mobile" || frontEnd === "browser-mobile";
+        this.isBrowser = frontEnd.includes("browser");
 
         window.bgCoverPlugin = {
             i18n: this.i18n,
             isMobile: this.isMobile,
+            isBrowser: this.isBrowser
         };
         
         // 图标的制作参见帮助文档
