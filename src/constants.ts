@@ -6,6 +6,7 @@ declare global {
         bgCoverPlugin : {
             i18n: IObject,
             isMobile: boolean,
+            isBrowser: boolean,
             themeName2DisplayName?: installedThemeNames
         } 
     }
