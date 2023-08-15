@@ -347,6 +347,57 @@ export class OS {
             return null;
         }
     }
+
+    /**
+     * 
+     * @param acceptedFileTypes : '.jpg,.png'
+     * @returns 
+     */
+    public async openFilePicker(acceptedFileTypes?: string): Promise<File[] | null> {
+        return new Promise((resolve, reject) => {
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.multiple = false;
+          input.value = '';
+
+          if (acceptedFileTypes) {
+            input.accept = acceptedFileTypes;
+          }
+      
+          input.addEventListener('change', () => {
+            if (input.files) {
+              resolve(Array.from(input.files));
+            } else {
+              reject(new Error('No file selected'));
+            }
+          });
+      
+          input.click();
+        });
+    };
+
+    public async openFolderPicker(): Promise<File[] | null> {
+        return new Promise((resolve, reject) => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.webkitdirectory = true;
+            input.multiple = true;
+            input.value = '';
+        
+            input.addEventListener('change', () => {
+                if (input.files && input.files.length > 0) {
+                    const file = input.files[0];
+                    //   resolve(file.webkitRelativePath as any);
+                    resolve(Array.from(input.files));
+                } else {
+                    reject(new Error('No folder selected'));
+                }
+            });
+      
+            input.click();
+        });
+    }
+
 }
 
 
