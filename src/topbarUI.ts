@@ -145,7 +145,7 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
 
 export async function pluginOnOff() {
     configs.set('activate', !configs.get('activate'))
-    configs.save();
+    configs.save('[topbarUI][pluginOnOff]');
     bgRender.applySettings();
 }
 
@@ -189,7 +189,7 @@ export async function selectPictureRandom(manualPress: boolean = false) {
         bgRender.changeBackgroundContent(fileidx[r_hash].path, fileidx[r_hash].mode)
         configs.set('bgObj', fileidx[r_hash])
     }
-    await configs.save()
+    await configs.save('[topbarUI][selectPictureRandom]')
     settingsUI.updateSettingPanelElementStatus()
 }
 
@@ -208,7 +208,7 @@ export async function addSingleLocalImageFile() {
 
         // 文件不重复且上传成功
         if (bgObj !== undefined) {
-            await configs.save();
+            await configs.save('[topbarUI][addSinglelocalImageFile]');
             bgRender.changeBackgroundContent(bgObj.path, bgObj.mode);
             settingsUI.updateSettingPanelElementStatus();
         };
