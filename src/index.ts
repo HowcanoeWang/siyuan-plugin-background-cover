@@ -113,7 +113,10 @@ export default class BgCoverPlugin extends Plugin {
         info(`${this.i18n.byePlugin}`);
         configs.save('[index.ts][onunload]');
 
-        // bgRender.unbindNotePanel();
+        // remove changes when deactivate plugin
+        var bgLayer = document.getElementById('bglayer');
+        bgLayer.remove();
+        document.body.style.removeProperty('opacity');
     }
 
     // private eventBusLog({detail}: any) {
