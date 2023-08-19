@@ -98,15 +98,15 @@ export default class BgCoverPlugin extends Plugin {
         const [themeMode, themeName] = getCurrentThemeInfo();
         configs.set('prevTheme', themeName);
 
-        const theme_n2d = await themeName2DisplayName();
-        window.bgCoverPlugin.themeName2DisplayName = theme_n2d;
-
         await bgRender.applySettings();
 
         debug(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
 
         // 去除检测到主题变化的提示(因为此时已经刷新了)
         noticeUI.removeThemeRefreshDialog();
+
+        const theme_n2d = await themeName2DisplayName();
+        window.bgCoverPlugin.themeName2DisplayName = theme_n2d;
     }
 
     onunload() {
