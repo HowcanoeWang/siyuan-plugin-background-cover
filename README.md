@@ -50,6 +50,11 @@
 <details open>
 <summary><b>Augest 2023</b></summary>
 
+**23.08.19**
+
+* 使用github上的`themes.json`来替代耗时的`api/bazaar/getInstalledTheme`
+* 针对直连Github有困难的大陆用户，插件内提供临时的最新主题缓存信息
+
 **23.08.15**
 
 * 增加主题屏蔽功能，支持在指定主题上不启用插件

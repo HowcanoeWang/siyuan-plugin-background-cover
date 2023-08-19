@@ -53,6 +53,11 @@ The range of transparency that can be set by the user is `[0.1, 1]`. However, to
 <details open>
 <summary><b>Augest 2023</b></summary>
 
+**23.08.19**
+
+* Use the `themes.json` file from GitHub to replace the time-consuming `api/bazaar/getInstalledTheme` function.
+* For users in mainland China who have difficulties accessing GitHub directly, the plugin will provide temporary cached information about the latest themes within the plugin itself.
+
 **23.08.15**
 
 * Add theme blocking functionality to support disabling the plugin on specific themes.
