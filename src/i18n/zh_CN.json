@@ -55,7 +55,7 @@
   "addStyle": "添加样式",
   "setAsBg": "设为背景",
   "bugReportLabel": "Bug反馈",
-  "bugReportConfirmText": "由于该背景插件是通过整体修改opacity实现的，如果开启插件后部分UI透明度/显示异常，请联系主题作者进行适配。",
+  "bugReportConfirmText": "由于该背景插件是通过整体修改opacity实现的，如果开启插件后部分UI透明度/显示异常，请先联系主题作者进行适配。",
   "confirmBugReport": "仍然汇报",
   "resetConfigLabel": "重置设置",
   "resetConfigDes": "将所有设置恢复到插件初始值",
@@ -84,5 +84,6 @@
   "themeOnChangeMsg": "建议刷新重载思源来使插件适配更改后的主题",
   "themeRefresh": "刷新",
   "blockThemeTitle": "屏蔽主题 (在下列主题不显示背景)",
-  "crtThemeText": "当前主题"
+  "crtThemeText": "当前主题",
+  "failConnectGithubJson": "从Github上获取最新主题信息'themes.json'失败，使用插件自身的缓存信息"
 }

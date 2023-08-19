@@ -56,7 +56,7 @@
   "addStyle": "Add style",
   "setAsBg": "Set as background",
   "bugReportLabel": "Bug report",
-  "bugReportConfirmText": "As this background cover plugin is implemented by modifying the opacity of the entire interface, if some UI element's transparency display abnormally after enabling the plugin, please contact the theme author for compatibility adjustments.",
+  "bugReportConfirmText": "As this background cover plugin is implemented by modifying the opacity of the entire interface, if some UI element's transparency display abnormally after enabling the plugin, please first contact the theme author for compatibility adjustments.",
   "confirmBugReport": "Still reporting",
   "resetConfigLabel": "Reset Configs",
   "resetConfigDes": "Reset all configs to default values ",
@@ -85,5 +85,6 @@
   "themeOnChangeMsg": "Recommend to refresh the SiYuan note to make the theme changes taking effect",
   "themeRefresh": "Refresh",
   "blockThemeTitle": "Block Theme (not show background on the following themes)",
-  "crtThemeText": "Current"
+  "crtThemeText": "Current",
+  "failConnectGithubJson": "Failed to fetch latest 'themes.json' file from Github, use plugin cached file."
 }
