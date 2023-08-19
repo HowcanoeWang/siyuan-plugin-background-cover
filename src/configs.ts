@@ -44,7 +44,7 @@ class configManager {
         if (loaded == null || loaded == undefined || loaded == '') {
             //如果没有配置文件，则使用默认配置，并保存
             debug(`没有配置文件，使用默认配置`)
-            this.save();
+            this.save('[configs][load init]');
         } else {
             //如果有配置文件，则使用配置文件
             debug(`读入配置文件: ${cst.configFile}`)
@@ -73,14 +73,19 @@ class configManager {
                 error(`Setting load error: ${error_msg}`);
             }
 
-            this.save();
+            this.save('[configs][load update]');
         }
         // eventBus.publish(eventBus.EventSettingLoaded, {});
     }
 
-    async save() {
+    async save(logHeader?:String) {
         let json = JSON.stringify(this.settings);
-        debug(`写入配置文件:`, json);
+        if (logHeader) {
+            debug(`${logHeader}写入配置文件:`, json);
+        } else {
+            debug(`写入配置文件:`, json);
+        }
+        
         this.plugin.saveData(cst.configFile, json);
     }
 }

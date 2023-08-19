@@ -111,7 +111,7 @@ export default class BgCoverPlugin extends Plugin {
 
     onunload() {
         info(`${this.i18n.byePlugin}`);
-        configs.save();
+        configs.save('[index.ts][onunload]');
 
         // bgRender.unbindNotePanel();
     }
@@ -129,7 +129,7 @@ export default class BgCoverPlugin extends Plugin {
         if (prevTheme !== themeName) {
             // 更换主题时且没有重载时，提示需要刷新笔记页面
             configs.set('prevTheme', themeName);
-            await configs.save()
+            await configs.save('[index][themeOnChange]')
             noticeUI.themeRefreshDialog();
             // 如果重载了，这个界面会在onLoadReady时被去掉
         }

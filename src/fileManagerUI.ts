@@ -155,7 +155,7 @@ export async function checkCacheDirctory() {
     }
 
     configs.set('fileidx', fileidx)
-    await configs.save()
+    await configs.save('[fileManagerUI][checkCacheDirectory]')
 
     // raise warning to users
     if (notCorrectCacheImgs.length !== 0) {
@@ -231,7 +231,7 @@ export async function clearCacheFolder(mode: cst.bgMode){
         bgRender.useDefaultLiaoLiaoBg();
     };
 
-    await configs.save();
+    await configs.save('[fileManagerUI][clearCacheFolder]');
 }
 
 export async function imgExistsInCache(file: File, notice: boolean = true): Promise<string> {
@@ -333,7 +333,7 @@ export async function batchUploadImages(
             debug('[fileManagerUI][batchUploadImages] 在上传的循环内', bgObj)
         };
 
-        await configs.save();
+        await configs.save('[fileManagerUI][batchUploadImages]');
 
         if (applySetting){
             debug('[fileManagerUI][batchUploadImages] 在应用设置的判断内', bgObj)
@@ -491,7 +491,7 @@ export function generateCacheImgList(){
             bgRender.changeBackgroundContent(bgObj.path, bgObj.mode);
             configs.set('bgObj', bgObj);
         
-            configs.save();
+            configs.save('[fileManagerUI][generateCacheImgList][setBgBtn.click]');
         });
 
 
@@ -527,7 +527,7 @@ export function generateCacheImgList(){
                 bgRender.useDefaultLiaoLiaoBg();
             };
         
-            configs.save();
+            configs.save('[fileManagerUI][generateCacheImgList][delBtn.click]');
         });
 
         /**

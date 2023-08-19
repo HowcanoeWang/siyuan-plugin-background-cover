@@ -263,7 +263,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
                 configs.set('fileidx', fileidx)
 
-                configs.save();
+                configs.save('[settingsUI][openSettingDialog][cxyElement.change]');
             }
 
         })
@@ -283,7 +283,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     activateElement.addEventListener("click", () => {
         configs.set('activate', !configs.get('activate'));
         activateElement.value = configs.get('activate');
-        configs.save();
+        configs.save('[settingsUI][openSettingDialog][activateElement.change]');
         bgRender.applySettings();
     })
 
@@ -297,7 +297,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     autoRefreshElement.addEventListener("click", () => {
         configs.set('autoRefresh', !configs.get('autoRefresh'));
         autoRefreshElement.value = `${configs.get('autoRefresh')}`;
-        configs.save();
+        configs.save('[settingsUI][openSettingDialog][autoRefreshElement.change]');
     })
 
     // transparency/opacity slider
@@ -307,7 +307,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         if (configs.get('activate')) {
             bgRender.changeOpacity(configs.get('opacity'));
         }
-        configs.save();
+        configs.save('[settingsUI][openSettingDialog][opacityElement.change]');
     })
     opacityElement.addEventListener("input", () => {
         // update the aira-label value
@@ -321,7 +321,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         if (configs.get('activate')) {
             bgRender.changeBlur(configs.get('blur'));
         }
-        configs.save();
+        configs.save('[settingsUI][openSettingDialog][blurElement.change]');
     })
     blurElement.addEventListener("input", () => {
         // update the aira-label value
@@ -333,7 +333,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     resetSettingElement.addEventListener("click", async () => {
         os.rmtree(cst.pluginImgDataDir);
         configs.reset();
-        await configs.save();
+        await configs.save('[settingsUI][openSettingDialog][resetSettingElement.click]');
         await bgRender.applySettings();
     })
 
@@ -344,7 +344,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     devModeElement.addEventListener("click", () => {
         configs.set('inDev', !configs.get('inDev'));
         devModeElement.value = `${configs.get('inDev')}`;
-        configs.save();
+        configs.save('[settingsUI][openSettingDialog][devModeElement.change]');
     })
 
     // const inputElement = dialog.element.querySelector("textarea");
@@ -442,14 +442,14 @@ export function generateBlockThemeElement(){
                 debug(`[settingsUI] User changed blockTheme ${theme} in ${mode} mode`)
                 
                 configs.set('blockTheme', blockThemeCfg);
-                configs.save();
+                configs.save('[settingsUI][generateBlockThemeElement][onOffBtn.click]');
 
                 await bgRender.applySettings();
             })
         }
     }
     configs.set('blockTheme', blockThemeConfig);
-    configs.save();
+    configs.save('[settingsUI][generateBlockThemeElement]');
 }
 
 export function updateSliderElement(elementid:string, value:string, setAriaLabel:boolean=true) {
