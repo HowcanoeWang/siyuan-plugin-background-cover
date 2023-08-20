@@ -50,6 +50,10 @@
 <details open>
 <summary><b>Augest 2023</b></summary>
 
+**23.08.20**
+
+* 为安卓App端增加图片上传提示
+
 **23.08.19**
 
 * 使用github上的`themes.json`来替代耗时的`api/bazaar/getInstalledTheme`
