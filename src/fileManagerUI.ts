@@ -251,7 +251,7 @@ export async function imgExistsInCache(file: File, notice: boolean = true): Prom
             const dialog = new Dialog({
                 title: `${window.bgCoverPlugin.i18n.inDevTitle}`,
                 content: `<div class="b3-dialog__content">${window.bgCoverPlugin.i18n.imageFileExist}</div>`,
-                width: window.bgCoverPlugin.isMobile ? "92vw" : "520px",
+                width: window.bgCoverPlugin.isMobileLayout ? "92vw" : "520px",
             });
         }else{
             debug(`[fileManagerUI][imgIsInCache] 当前图片${file.name}已存在`)
@@ -350,7 +350,7 @@ export async function batchUploadImages(
 export async function selectPictureDialog() {
     const cacheManagerDialog = new Dialog({
         title: window.bgCoverPlugin.i18n.selectPictureManagerTitle,
-        width: window.bgCoverPlugin.isMobile ? "92vw" : "520px",
+        width: window.bgCoverPlugin.isMobileLayout ? "92vw" : "520px",
         height: "92vh",
         content: `
         <div class="fn__flex-column" style="height: 100%">

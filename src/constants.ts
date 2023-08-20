@@ -5,8 +5,9 @@ declare global {
     interface Window { 
         bgCoverPlugin : {
             i18n: IObject,
-            isMobile: boolean,
+            isMobileLayout: boolean,
             isBrowser: boolean,
+            isAndroid?: boolean,
             themeName2DisplayName?: installedThemeNames
         } 
     }

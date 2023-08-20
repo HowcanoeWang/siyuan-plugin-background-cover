@@ -8,6 +8,7 @@ import {
     // adaptHotkey,
     getFrontend,
     getBackend,
+    IMenuItemOption
     // IModel,
     // Setting, fetchPost
 } from "siyuan";
@@ -78,26 +79,40 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                 },
             ]
         });
+
+        let submenu: IMenuItemOption[] = [
+            {
+                icon: "iconImage",
+                label: `${window.bgCoverPlugin.i18n.addSingleImageLabel}`,
+                click: () => {
+                    addSingleLocalImageFile();
+                }
+            },
+            {
+                icon: "iconFolder",
+                label: `${window.bgCoverPlugin.i18n.addDirectoryLabel}`,
+                click: () => {
+                    addDirectory();
+                }
+            },
+        ];
+        const frontEnd = getFrontend();
+        const backEnd = getBackend();
+
+        if (window.bgCoverPlugin.isAndroid && !window.bgCoverPlugin.isBrowser) {
+            submenu.unshift(
+                {
+                    icon: "iconSparkles",
+                    label: `${window.bgCoverPlugin.i18n.androidLimitNotice}`,
+                    type: "readonly",
+                }
+            )
+        }
         menu.addItem({
             icon: "iconAdd",
             label: `${window.bgCoverPlugin.i18n.addImageLabel}`,
             type: "submenu",
-            submenu: [
-                {
-                    icon: "iconImage",
-                    label: `${window.bgCoverPlugin.i18n.addSingleImageLabel}`,
-                    click: () => {
-                        addSingleLocalImageFile();
-                    }
-                },
-                {
-                    icon: "iconFolder",
-                    label: `${window.bgCoverPlugin.i18n.addDirectoryLabel}`,
-                    click: () => {
-                        addDirectory();
-                    }
-                },
-            ]
+            submenu: submenu,
         });
         menu.addItem({
             id: 'pluginOnOffMenu',
@@ -126,7 +141,7 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
             }
         });
 
-        if (window.bgCoverPlugin.isMobile) {
+        if (window.bgCoverPlugin.isMobileLayout) {
             menu.fullscreen();
         } else {
             menu.open({
@@ -198,8 +213,6 @@ export async function addSingleLocalImageFile() {
         // return an Array
         const fileHandle = await os.openFilePicker(cst.supportedImageSuffix.toString())
 
-        noticeUI.showAndroidLimit();
-
         let file = fileHandle[0];
 
         let bgObj = await fileManagerUI.uploadOneImage(file);
@@ -217,8 +230,6 @@ export async function addDirectory() {
     const cacheImgNum = fileManagerUI.getCacheImgNum();
 
     const fileList = await os.openFolderPicker();
-
-    noticeUI.showAndroidLimit();
 
     let fileContainer:Array<File> = [];
 
