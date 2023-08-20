@@ -45,100 +45,95 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
     });
 
     topBarElement.addEventListener("click", async () => {
-        if (window.bgCoverPlugin.isMobile) {
-            noticeUI.showMobileTodo();
-            // pluginInstance.addMenu();
-        } else {
-            let rect = topBarElement.getBoundingClientRect();
-            // 如果被隐藏，则使用更多按钮
-            if (rect.width === 0) {
-                rect = document.querySelector("#barMore").getBoundingClientRect();
-            }
-            if (rect.width === 0) {
-                rect = document.querySelector("#barPlugins").getBoundingClientRect();
-            }
+        let rect = topBarElement.getBoundingClientRect();
+        // 如果被隐藏，则使用更多按钮
+        if (rect.width === 0) {
+            rect = document.querySelector("#barMore").getBoundingClientRect();
+        }
+        if (rect.width === 0) {
+            rect = document.querySelector("#barPlugins").getBoundingClientRect();
+        }
 
-            const menu = new Menu("topBarSample", () => { });
-            menu.addItem({
-                icon: "iconIndent",
-                label: `${window.bgCoverPlugin.i18n.selectPictureLabel}`,
-                type: "submenu",
-                submenu: [
-                    {
-                        icon: "iconHand",
-                        label: `${window.bgCoverPlugin.i18n.selectPictureManualLabel}`,
-                        accelerator: pluginInstance.commands[0].customHotkey,
-                        click: () => {
-                            selectPictureByHand();
-                        }
-                    }, 
-                    {
-                        icon: "iconMark",
-                        label: `${window.bgCoverPlugin.i18n.selectPictureRandomLabel}`,
-                        accelerator: pluginInstance.commands[1].customHotkey,
-                        click: () => {
-                            selectPictureRandom(true);
-                        }
-                    },
-                ]
+        const menu = new Menu("topBarSample", () => { });
+        menu.addItem({
+            icon: "iconIndent",
+            label: `${window.bgCoverPlugin.i18n.selectPictureLabel}`,
+            type: "submenu",
+            submenu: [
+                {
+                    icon: "iconHand",
+                    label: `${window.bgCoverPlugin.i18n.selectPictureManualLabel}`,
+                    accelerator: pluginInstance.commands[0].customHotkey,
+                    click: () => {
+                        selectPictureByHand();
+                    }
+                }, 
+                {
+                    icon: "iconMark",
+                    label: `${window.bgCoverPlugin.i18n.selectPictureRandomLabel}`,
+                    accelerator: pluginInstance.commands[1].customHotkey,
+                    click: () => {
+                        selectPictureRandom(true);
+                    }
+                },
+            ]
+        });
+        menu.addItem({
+            icon: "iconAdd",
+            label: `${window.bgCoverPlugin.i18n.addImageLabel}`,
+            type: "submenu",
+            submenu: [
+                {
+                    icon: "iconImage",
+                    label: `${window.bgCoverPlugin.i18n.addSingleImageLabel}`,
+                    click: () => {
+                        addSingleLocalImageFile();
+                    }
+                },
+                {
+                    icon: "iconFolder",
+                    label: `${window.bgCoverPlugin.i18n.addDirectoryLabel}`,
+                    click: () => {
+                        addDirectory();
+                    }
+                },
+            ]
+        });
+        menu.addItem({
+            id: 'pluginOnOffMenu',
+            icon: `${configs.get('activate') ? 'iconClose' : 'iconSelect'}`,
+            label: `${configs.get('activate') ? window.bgCoverPlugin.i18n.closeBackgroundLabel : window.bgCoverPlugin.i18n.openBackgroundLabel}`,
+            accelerator: pluginInstance.commands[2].customHotkey,
+            click: () => {
+                topbarUI.pluginOnOff();
+            }
+        });
+
+        menu.addSeparator();
+
+        menu.addItem({
+            icon: "iconGithub",
+            label: `${window.bgCoverPlugin.i18n.bugReportLabel}`,
+            click: () => {
+                noticeUI.bugReportDialog();
+            }
+        });
+        menu.addItem({
+            icon: "iconSettings",
+            label: `${window.bgCoverPlugin.i18n.settingLabel}`,
+            click: () => {
+                settingsUI.openSettingDialog(pluginInstance);
+            }
+        });
+
+        if (window.bgCoverPlugin.isMobile) {
+            menu.fullscreen();
+        } else {
+            menu.open({
+                x: rect.right,
+                y: rect.bottom,
+                isLeft: true,
             });
-            menu.addItem({
-                icon: "iconAdd",
-                label: `${window.bgCoverPlugin.i18n.addImageLabel}`,
-                type: "submenu",
-                submenu: [
-                    {
-                        icon: "iconImage",
-                        label: `${window.bgCoverPlugin.i18n.addSingleImageLabel}`,
-                        click: () => {
-                            addSingleLocalImageFile();
-                        }
-                    },
-                    {
-                        icon: "iconFolder",
-                        label: `${window.bgCoverPlugin.i18n.addDirectoryLabel}`,
-                        click: () => {
-                            addDirectory();
-                        }
-                    },
-                ]
-            });
-            menu.addItem({
-                id: 'pluginOnOffMenu',
-                icon: `${configs.get('activate') ? 'iconClose' : 'iconSelect'}`,
-                label: `${configs.get('activate') ? window.bgCoverPlugin.i18n.closeBackgroundLabel : window.bgCoverPlugin.i18n.openBackgroundLabel}`,
-                accelerator: pluginInstance.commands[2].customHotkey,
-                click: () => {
-                    topbarUI.pluginOnOff();
-                }
-            });
-    
-            menu.addSeparator();
-    
-            menu.addItem({
-                icon: "iconGithub",
-                label: `${window.bgCoverPlugin.i18n.bugReportLabel}`,
-                click: () => {
-                    noticeUI.bugReportDialog();
-                }
-            });
-            menu.addItem({
-                icon: "iconSettings",
-                label: `${window.bgCoverPlugin.i18n.settingLabel}`,
-                click: () => {
-                    settingsUI.openSettingDialog(pluginInstance);
-                }
-            });
-    
-            if (window.bgCoverPlugin.isMobile) {
-                menu.fullscreen();
-            } else {
-                menu.open({
-                    x: rect.right,
-                    y: rect.bottom,
-                    isLeft: true,
-                });
-            };
         };
     });
 };
@@ -202,6 +197,9 @@ export async function addSingleLocalImageFile() {
     }else{
         // return an Array
         const fileHandle = await os.openFilePicker(cst.supportedImageSuffix.toString())
+
+        noticeUI.showAndroidLimit();
+
         let file = fileHandle[0];
 
         let bgObj = await fileManagerUI.uploadOneImage(file);
@@ -219,6 +217,8 @@ export async function addDirectory() {
     const cacheImgNum = fileManagerUI.getCacheImgNum();
 
     const fileList = await os.openFolderPicker();
+
+    noticeUI.showAndroidLimit();
 
     let fileContainer:Array<File> = [];
 
