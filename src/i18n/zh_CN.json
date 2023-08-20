@@ -86,5 +86,5 @@
   "blockThemeTitle": "屏蔽主题 (在下列主题不显示背景)",
   "crtThemeText": "当前主题",
   "failConnectGithubJson": "从Github上获取最新主题信息'themes.json'失败，使用插件自身的缓存信息",
-  "androidLimitNotice": "受限于安卓文件权限，部分文件夹内的图片无法在App内上传，请在软件设置中开启伺服后(设置 > 关于 > 伺服)，用浏览器访问上传解除限制。"
+  "androidLimitNotice": "受限于安卓文件权限，部分文件夹内的图片无法在App内上传，请在软件设置中开启伺服后(设置 > 关于 > 伺服)，用浏览器访问上传，以解除此限制。"
 }

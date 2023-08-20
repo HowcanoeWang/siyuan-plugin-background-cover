@@ -9,3 +9,4 @@ index.js
 i18n
 *.xcf
 static/preview/*
+SyncSettings.ffs_gui

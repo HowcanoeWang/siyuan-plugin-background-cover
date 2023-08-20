@@ -1,7 +1,7 @@
 import packageInfo from '../plugin.json'
 import BgCoverPlugin from "./index"
 
-import { Dialog } from "siyuan";
+import { Dialog, getBackend, getFrontend } from "siyuan";
 import { configs } from "./configs";
 
 import * as cst from "./constants";
@@ -30,7 +30,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
     const dialog = new Dialog({
         title: `${window.bgCoverPlugin.i18n.addTopBarIcon}(v${packageInfo.version}) ${window.bgCoverPlugin.i18n.settingLabel}`,
-        width: window.bgCoverPlugin.isMobile ? "92vw" : "max(520px, 50vw)",
+        width: window.bgCoverPlugin.isMobileLayout ? "92vw" : "max(520px, 50vw)",
         height: "max(520px, 90vh)",
         content: `
         <div class="config__tab-container">
@@ -216,7 +216,11 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
             <div class="fn__flex-1">
                 ${window.bgCoverPlugin.i18n.inDevModeLabel}
                 <div class="b3-label__text">
-                    ${window.bgCoverPlugin.i18n.inDevModeDes}
+                    ${window.bgCoverPlugin.i18n.inDevModeDes} • 
+                    FrontEnd: <code class="fn__code">${getFrontend()}</code> • BackEnd: <code class="fn__code">${getBackend()}</code> • 
+                    isMobileLayout: <code class="fn__code">${window.bgCoverPlugin.isMobileLayout}</code> • 
+                    isBrowser: <code class="fn__code">${window.bgCoverPlugin.isBrowser}</code> • 
+                    isAndroid: <code class="fn__code">${window.bgCoverPlugin.isAndroid}</code>
                 </div>
             </div>
             <span class="fn__flex-center" />
@@ -227,6 +231,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                 value="${configs.get('inDev')}"
             />
         </label>
+
         </div>`
     });
 

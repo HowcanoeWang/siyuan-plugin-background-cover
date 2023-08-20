@@ -21,7 +21,7 @@ export function showIndev(msg: string = '') {
     const dialog = new Dialog({
         title: `${window.bgCoverPlugin.i18n.inDevTitle}`,
         content: `<div class="b3-dialog__content">${window.bgCoverPlugin.i18n.inDev}<span>${msg}</span></div>`,
-        width: window.bgCoverPlugin.isMobile ? "92vw" : "520px",
+        width: window.bgCoverPlugin.isMobileLayout ? "92vw" : "520px",
     });
 }
 
@@ -36,7 +36,7 @@ export function bugReportDialog() {
         </div>
         <div class="b3-dialog__action">
         `,
-        width: window.bgCoverPlugin.isMobile ? "92vw" : `520px`,
+        width: window.bgCoverPlugin.isMobileLayout ? "92vw" : `520px`,
     });
 
     const btnsElement = dialog.element.querySelectorAll(".b3-button");
@@ -64,7 +64,7 @@ export function themeRefreshDialog() {
         </div>
         <div class="b3-dialog__action">
         `,
-        width: window.bgCoverPlugin.isMobile ? "92vw" : `520px`,
+        width: window.bgCoverPlugin.isMobileLayout ? "92vw" : `520px`,
     });
 
     const btnsElement = dialog.element.querySelectorAll(".b3-button");
@@ -95,11 +95,5 @@ export function removeThemeRefreshDialog(){
      */
     if (dialog !== undefined) {
         dialog.parentElement.parentElement.remove();
-    }
-}
-
-export function showAndroidLimit() {
-    if (window.bgCoverPlugin.isMobile && !window.bgCoverPlugin.isBrowser) {
-        showMessage(`${window.bgCoverPlugin.i18n.androidLimitNotice}`, 7000, "info");
     }
 }

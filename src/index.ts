@@ -37,19 +37,24 @@ let np = new Numpy();
 
 export default class BgCoverPlugin extends Plugin {
 
-    public isMobile: boolean;
+    public isMobileLayout: boolean;
     public isBrowser: boolean;
+    public isAndroidBackend: boolean;
     public htmlThemeNode = document.getElementsByTagName('html')[0];
 
     async onload() {
         const frontEnd = getFrontend();
-        this.isMobile = frontEnd === "mobile" || frontEnd === "browser-mobile";
+        const backEnd = getBackend();
+
+        this.isMobileLayout = frontEnd === "mobile" || frontEnd === "browser-mobile";
         this.isBrowser = frontEnd.includes("browser");
+        this.isAndroidBackend = backEnd === "android";
 
         window.bgCoverPlugin = {
             i18n: this.i18n,
-            isMobile: this.isMobile,
-            isBrowser: this.isBrowser
+            isMobileLayout: this.isMobileLayout,
+            isBrowser: this.isBrowser,
+            isAndroid: this.isAndroidBackend,
         };
         
         // 图标的制作参见帮助文档
