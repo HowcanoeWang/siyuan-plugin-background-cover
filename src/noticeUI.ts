@@ -97,3 +97,9 @@ export function removeThemeRefreshDialog(){
         dialog.parentElement.parentElement.remove();
     }
 }
+
+export function showAndroidLimit() {
+    if (window.bgCoverPlugin.isMobile && !window.bgCoverPlugin.isBrowser) {
+        showMessage(`${window.bgCoverPlugin.i18n.androidLimitNotice}`, 7000, "info");
+    }
+}
