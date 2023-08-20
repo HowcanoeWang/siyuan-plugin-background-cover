@@ -53,6 +53,10 @@ The range of transparency that can be set by the user is `[0.1, 1]`. However, to
 <details open>
 <summary><b>Augest 2023</b></summary>
 
+**23.08.20**
+
+* Add file upload notice for Android App
+
 **23.08.19**
 
 * Use the `themes.json` file from GitHub to replace the time-consuming `api/bazaar/getInstalledTheme` function.
