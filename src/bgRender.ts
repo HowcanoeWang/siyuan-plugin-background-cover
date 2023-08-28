@@ -64,7 +64,7 @@ export function isBlockTheme(){
 export function changeOpacity(alpha: number) {
     let opacity = 0.99 - 0.25 * alpha;
 
-    if (configs.get('activate') && !isBlockTheme() ) {
+    if (configs.get('activate') && !isBlockTheme() && alpha !== 0) {
         document.body.style.setProperty('opacity', opacity.toString());
     } else {
         document.body.style.removeProperty('opacity');

@@ -53,6 +53,10 @@ The range of transparency that can be set by the user is `[0.1, 1]`. However, to
 <details open>
 <summary><b>Augest 2023</b></summary>
 
+**23.08.28**
+
+* Provide an option to disable the transparency of the `<body>` element (setting the foreground opacity to 0) to accommodate transparent themes such as `Cliff-Dark` and `Dark+`.
+
 **23.08.20**
 
 * Add file upload notice for Android App
