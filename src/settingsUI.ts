@@ -174,7 +174,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                 </div>
             </div>
             <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${configs.get('opacity')}">   
-                <input id="opacityInput" class="b3-slider fn__size200" max="1" min="0.1" step="0.05" type="range" value="${configs.get('opacity')}">
+                <input id="opacityInput" class="b3-slider fn__size200" max="1" min="0" step="0.05" type="range" value="${configs.get('opacity')}">
             </div>
         </label>
         <label class="fn__flex b3-label config__item">

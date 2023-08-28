@@ -50,6 +50,10 @@
 <details open>
 <summary><b>Augest 2023</b></summary>
 
+**23.08.28**
+
+* 提供关闭`<body>`透明度选项(前景透明度调为0)，适配部分透明主题(`Cliff-Dark`, `Dark+`)
+
 **23.08.20**
 
 * 为安卓App端增加图片上传提示
