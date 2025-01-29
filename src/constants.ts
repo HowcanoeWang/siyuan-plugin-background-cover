@@ -32,21 +32,6 @@ export interface installedThemeNames {
     [key: string]: string;
 }
 
-export interface themeJsonItem {
-    package: {
-        name: string, 
-        displayName:{
-            [key:string]: string
-        }
-    }
-}
-
-export interface themeJson {
-    repos: [
-        themeJsonItem
-    ]
-}
-
 export interface blockThemeConfig {
     dark: blockThemeItem,
     light: blockThemeItem

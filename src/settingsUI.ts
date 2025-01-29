@@ -1,7 +1,7 @@
 import packageInfo from '../plugin.json'
 import BgCoverPlugin from "./index"
 
-import { Dialog, getBackend, getFrontend } from "siyuan";
+import { Dialog, getBackend, getFrontend, showMessage} from "siyuan";
 import { configs } from "./configs";
 
 import * as cst from "./constants";
@@ -33,7 +33,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         width: window.bgCoverPlugin.isMobileLayout ? "92vw" : "max(520px, 50vw)",
         height: "max(520px, 90vh)",
         content: `
-        <div class="config__tab-container">
+        <div class="config__tab-container" style="background-color: var(--b3-theme-background)">
         <!--
         // info panel part
         -->
@@ -55,7 +55,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                 </div>
             </div>
         </label>
-        <label class="fn__flex b3-label">
+        <label class="fn__flex b3-label config__item">
             <div class="fn__flex-1">
                 <div class="fn__flex">
                     ${window.bgCoverPlugin.i18n.cacheDirectoryLabel}
@@ -80,7 +80,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         // onoff switch part
         -->
 
-        <label class="fn__flex b3-label">
+        <label class="fn__flex b3-label config__item">
             <div class="fn__flex-1">
                 ${window.bgCoverPlugin.i18n.openBackgroundLabel}
                 <div class="b3-label__text">
@@ -101,41 +101,25 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         // theme black list
         -->
 
-        <div class="b3-label">
+        <div class="b3-label config__item">
             ${window.bgCoverPlugin.i18n.blockThemeTitle}
             <!-- light theme block -->
-            <div class="b3-list b3-list--border b3-list--background">
-                <div class="b3-list-item b3-list-item--narrow toggle">
-                    <span class="b3-list-item__toggle b3-list-item__toggle--hl">
-                        <svg class="b3-list-item__arrow b3-list-item__arrow--open"><use xlink:href="#iconRight"></use></svg>
-                    </span>
-                    <span class="b3-list-item__text ft__on-surface">${window.bgCoverPlugin.i18n.themeAdaptEditorMode0}</span>
-                </div>
-                <div class="b3-list__panel">
-                    <div class="config-query" id="lightThemeBlockContainer">
+            <div class="b3-label__text">${window.bgCoverPlugin.i18n.themeAdaptEditorMode0}</div>
+            <div class="b3-label">
+                <div class="config-query" id="lightThemeBlockContainer">
 
-                        <!-- label item add by for loop -->
+                    <!-- label item add by for loop -->
 
-                    </div>
                 </div>
             </div>
 
-            <div class="fn__hr"></div>
-
             <!-- dark theme block -->
-            <div class="b3-list b3-list--border b3-list--background">
-                <div class="b3-list-item b3-list-item--narrow toggle">
-                    <span class="b3-list-item__toggle b3-list-item__toggle--hl">
-                        <svg class="b3-list-item__arrow b3-list-item__arrow--open"><use xlink:href="#iconRight"></use></svg>
-                    </span>
-                    <span class="b3-list-item__text ft__on-surface">${window.bgCoverPlugin.i18n.themeAdaptEditorMode1}</span>
-                </div>
-                <div class="b3-list__panel">
-                    <div class="config-query" id="darkThemeBlockContainer">
-                        
-                        <!-- label item add by for loop -->
+            <div class="b3-label__text">${window.bgCoverPlugin.i18n.themeAdaptEditorMode1}</div>
+            <div class="b3-label">
+                <div class="config-query" id="darkThemeBlockContainer">
+                    
+                    <!-- label item add by for loop -->
 
-                    </div>
                 </div>
             </div>
             
@@ -146,7 +130,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         // 自动更新按钮
         -->
 
-        <label class="fn__flex b3-label">
+        <label class="fn__flex b3-label config__item">
             <div class="fn__flex-1">
                 ${window.bgCoverPlugin.i18n.autoRefreshLabel}
                 <div class="b3-label__text">
@@ -456,7 +440,7 @@ export function generateBlockThemeElement(){
              */ 
             let parser = new DOMParser();
             var blockLabelItem = parser.parseFromString(`
-            <label class="fn__flex" style="width:28%;margin: 8px 5% 0 0">
+            <label class="fn__flex">
                 <div class="fn__flex-1">
                     ${itheme['label']}
                 </div>
@@ -472,7 +456,7 @@ export function generateBlockThemeElement(){
                 let textItem = blockLabelItem.querySelectorAll('div')[0]
 
                 textItem.style.setProperty('color', 'var(--b3-theme-primary)');
-                textItem.textContent += `(${window.bgCoverPlugin.i18n.crtThemeText})`
+                textItem.textContent += `[${window.bgCoverPlugin.i18n.crtThemeText}]`
             }
 
             /**
@@ -531,6 +515,7 @@ export function opacityShortcut(isAdd:boolean) {
     };
 
     if (opacity > 1 || opacity < 0) {
+        showMessage(`[${window.bgCoverPlugin.i18n.addTopBarIcon}]${window.bgCoverPlugin.i18n.opacityShortcutOverflow}`, 4000, 'info')
         return;
     } else {
         configs.set('opacity', opacity);
@@ -552,6 +537,7 @@ export function blurShortcut(isAdd:boolean) {
     };
 
     if (blur > 10 || blur < 0) {
+        showMessage(`[${window.bgCoverPlugin.i18n.addTopBarIcon}]${window.bgCoverPlugin.i18n.blurShortcutOverflow}`, 4000, 'info')
         return;
     } else {
         configs.set('blur', blur);

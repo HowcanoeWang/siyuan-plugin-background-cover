@@ -88,7 +88,7 @@ export default class BgCoverPlugin extends Plugin {
             }
         });
         this.addCommand({
-            langKey: "reduceBackgroundOpacity",
+            langKey: "reduceBackgroundOpacityLabel",
             hotkey: "⇧⌘7",
             callback: () => {
                 settingsUI.opacityShortcut(false);
@@ -96,7 +96,7 @@ export default class BgCoverPlugin extends Plugin {
             }
         });
         this.addCommand({
-            langKey: "addBackgroundOpacity",
+            langKey: "addBackgroundOpacityLabel",
             hotkey: "⇧⌘8",
             callback: () => {
                 settingsUI.opacityShortcut(true);
@@ -104,7 +104,7 @@ export default class BgCoverPlugin extends Plugin {
             }
         });
         this.addCommand({
-            langKey: "reduceBackgroundBlur",
+            langKey: "reduceBackgroundBlurLabel",
             hotkey: "⇧⌘9",
             callback: () => {
                 settingsUI.blurShortcut(false);
@@ -112,7 +112,7 @@ export default class BgCoverPlugin extends Plugin {
             }
         });
         this.addCommand({
-            langKey: "addBackgroundBlur",
+            langKey: "addBackgroundBlurLabel",
             hotkey: "⇧⌘0",
             callback: () => {
                 settingsUI.blurShortcut(true);
