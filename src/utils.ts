@@ -3,7 +3,6 @@ import { configs } from './configs'
 
 import * as cst from './constants';
 
-import themesJson from './themes.json';
 import { showMessage } from 'siyuan';
 
 // simple logging functions
@@ -47,79 +46,6 @@ export function getInstalledThemes() {
     const darkThemes = (window as any).siyuan.config.appearance.darkThemes;
 
     return [lightThemes, darkThemes]
-}
-
-export async function getGithubThemeJson(): Promise<cst.themeJson> {
-    const url = "https://raw.githubusercontent.com/siyuan-note/bazaar/main/stage/themes.json"
-
-    try {
-        const response = await fetch(url);
-        const data = await response.json() as cst.themeJson;
-        return data;
-    } catch (error) {
-        debug('[utiles][getGithubThemeJson] Failed to fetch data from Github:', error);
-        showMessage(`[${window.bgCoverPlugin.i18n.addTopBarIcon}]${window.bgCoverPlugin.i18n.failConnectGithubJson}`, 4000, 'info')
-        return undefined;
-    }
-}
-
-export function parseThemesJson(themeRepos: cst.themeJsonItem[]): cst.installedThemeNames {
-    var themeReturn: cst.installedThemeNames = {'daylight': 'daylight', 'midnight': 'midnight'};
-
-    const Lang = (window as any).siyuan.config.lang;
-
-    for (var i = 0; i < themeRepos.length; i++ ) {
-        var themeObj = themeRepos[i] as cst.themeJsonItem;
-
-        let displayName = themeObj.package.displayName[Lang];
-        if (displayName === undefined || displayName === null || displayName === '') {
-            displayName = themeObj.package.displayName['default'];
-        }
-
-        themeReturn[themeObj.package.name] = displayName;
-    }
-
-    return themeReturn
-}
-
-export async function themeName2DisplayName() {
-    // source code: https://github.com/frostime/sy-theme-change/blob/7792635b34c993f428a5e27bc8218bee9730550c/src/index.ts#L13-L43
-
-
-    const [lightThemes, darkThemes] = getInstalledThemes();
-    const installedThemes = [...new Set([...lightThemes ,...darkThemes])];
-
-    let name2displayName: cst.installedThemeNames = parseThemesJson(themesJson["repos"]);
-
-    debug(`[utils][themeName2DisplayName] cached theme info:`, name2displayName, 'Installed themes:', installedThemes);
-
-    // check if the cached themes.json contains all installed themes
-    var needDownload = false;
-    // var needDownload = true;  // debug testing
-    for (var key of installedThemes) {
-        if (!name2displayName.hasOwnProperty(key)) {
-            needDownload = true;
-            debug(`[utils][themeName2DisplayName] the installed theme ${key} does not in the cached them info`);
-        }
-    }
-    // 缓存的themes.json不包括最新安装的主题
-    if (needDownload) {
-        debug(`[utils][themeName2DisplayName] try to update theme info from Github`);
-        var istThemeRtn = await getGithubThemeJson();
-        if (istThemeRtn) {
-            name2displayName = parseThemesJson(istThemeRtn["repos"]);
-        }
-    }
-
-    // 更新之后，再次检查是否存在，如果还不存在，则直接把主题key作为显示名，而不是i18n里面翻译的主题名
-    for (var key of installedThemes) {
-        if (!name2displayName.hasOwnProperty(key)) {
-            debug(`[utils][themeName2DisplayName] Still not find theme info of [${key}], use it as theme name directly`);
-            name2displayName[key] = key;
-        }
-    }
-
-    return name2displayName;
 }
 
 // Array merging function

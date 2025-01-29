@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint . --fix --cache",
     "dev": "webpack --mode development",
-    "build": "node src/updateTheme.js && webpack --mode production"
+    "build": "webpack --mode production"
   },
   "keywords": [],
   "author": "Vanessa",

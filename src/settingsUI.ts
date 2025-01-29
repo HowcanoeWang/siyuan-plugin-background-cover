@@ -404,6 +404,19 @@ export function generateBlockThemeElement(){
     const [themeMode, themeName] = getCurrentThemeInfo();
 
     const installedThemes = getInstalledThemes();
+    /** 
+     in siyan 2.1.30, theme data structure changed to:
+     不需要加载缓存就能直接获取主题字段和对应的名字了
+     installedThemes = [lightThemes, darkThemes]
+     lightThemes = [
+        {
+            "name": "daylight",
+            "label": "daylight（默认主题）"
+        },
+        ...
+    ]
+    **/
+
     const ThemeBlockContainer = [
         document.getElementById('lightThemeBlockContainer') as HTMLDivElement,
         document.getElementById('darkThemeBlockContainer') as HTMLDivElement,
@@ -423,17 +436,19 @@ export function generateBlockThemeElement(){
              *  检查config里面的设置
              */ 
             var itheme = iThemes[j] // 安装的某个 dark|light theme
+            // itheme = {"name": "daylight", "label": "daylight（默认主题）"}
+
             var btnOnOffValue: boolean;  // 该主题是否屏蔽
 
             // if "dark+" in 'blockTheme.light' keys
             var ithemeConfig = blockThemeConfig[themeModeText[i]]
-            if (itheme in ithemeConfig) {
+            if (itheme["name"] in ithemeConfig) {
                 // 在设置中存在，直接读取之前的设置值
-                btnOnOffValue = ithemeConfig[itheme];
+                btnOnOffValue = ithemeConfig[itheme["name"]];
             } else {
                 // 在设置中不存在，添加然后设置值为false
                 btnOnOffValue = false;
-                ithemeConfig[itheme] = btnOnOffValue;
+                ithemeConfig[itheme["name"]] = btnOnOffValue;
             }
 
             /**
@@ -443,17 +458,17 @@ export function generateBlockThemeElement(){
             var blockLabelItem = parser.parseFromString(`
             <label class="fn__flex" style="width:28%;margin: 8px 5% 0 0">
                 <div class="fn__flex-1">
-                    ${window.bgCoverPlugin.themeName2DisplayName[itheme]}
+                    ${itheme['label']}
                 </div>
                 <span class="fn__space"></span>
-                <input class="b3-switch" data-mode="${themeModeText[i]}" data-theme="${itheme}" type="checkbox">
+                <input class="b3-switch" data-mode="${themeModeText[i]}" data-theme="${itheme['name']}" type="checkbox">
             </label>`, 
             'text/html').body.firstChild as HTMLDivElement
             
             ThemeBlockContainer[i].appendChild(blockLabelItem);
 
             // 高亮当前主题
-            if (themeMode === i && itheme === themeName) {
+            if (themeMode === i && itheme["name"] === themeName) {
                 let textItem = blockLabelItem.querySelectorAll('div')[0]
 
                 textItem.style.setProperty('color', 'var(--b3-theme-primary)');
