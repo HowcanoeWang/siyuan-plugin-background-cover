@@ -2,7 +2,7 @@
   "name": "siyuan-plugin-background-cover",
   "author": "HowcanoeWang",
   "url": "https://github.com/HowcanoeWang/siyuan-plugin-background-cover",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "minAppVersion": "2.9.3",
   "backends": ["all"],
   "frontends": ["desktop", "desktop-window", "browser-desktop"],
@@ -22,9 +22,6 @@
   "funding": {
     "openCollective": "",
     "patreon": "",
-    "github": "",
-    "custom": [
-      "https://afdian.net/a/HowcanoeWang"
-    ]
+    "github": "https://github.com/HowcanoeWang"
   }
 }

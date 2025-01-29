@@ -19,10 +19,8 @@
 <div align="center">
 默认背景图美少女画师 ——   
 <code>劉了了_Ale</code><br>
-<a href="https://afdian.net/a/_LIAO">爱发电</a> | 
 <a href="https://www.fanbox.cc/@ale">Fanbox</a> | 
 <a href="https://space.bilibili.com/3883010">B站</a> | 
-<a href="https://twitter.com/_LIAO">推特</a>
 </div>
 
 ## 特性
