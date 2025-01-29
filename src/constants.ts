@@ -83,7 +83,7 @@ export type configKey = (
     'version' | 'prevTheme' | 'fileidx' | 'inDev' | 'blockTheme'
 );
 
-export const demoImgURL = 'https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover/static/FyBE0bUakAELfeF.jpg'
+export const demoImgURL = './plugins/siyuan-plugin-background-cover/static/FyBE0bUakAELfeF.jpg'
 
 export var defaultConfigs = {
     // 启动时随机更改图片

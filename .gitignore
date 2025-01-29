@@ -10,3 +10,5 @@ i18n
 *.xcf
 static/preview/*
 SyncSettings.ffs_gui
+static/output.mp4
+static/aaa.mp4
