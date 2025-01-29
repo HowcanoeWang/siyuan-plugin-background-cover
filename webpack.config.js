@@ -32,7 +32,11 @@ module.exports = (env, argv) => {
                 {from: "README*.md", to: "./dist/"},
                 {from: "plugin.json", to: "./dist/"},
                 {from: "src/themes.json", to: "./dist/"},
-                {from: "src/i18n/", to: "./dist/i18n/"}
+                {from: "src/i18n/", to: "./dist/i18n/"},
+                {from: "static/FyBE0bUakAELfeF.jpg", to: "./dist/static/"},
+                {from: "static/afdian.jpg", to: "./dist/static/"},
+                {from: "static/ali.jpg", to: "./dist/static/"},
+                {from: "static/wechat.png", to: "./dist/static/"}
             ],
         }));
         plugins.push(new ZipPlugin({
