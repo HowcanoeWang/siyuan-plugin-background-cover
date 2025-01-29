@@ -87,6 +87,38 @@ export default class BgCoverPlugin extends Plugin {
                 topbarUI.pluginOnOff();
             }
         });
+        this.addCommand({
+            langKey: "reduceBackgroundOpacity",
+            hotkey: "⇧⌘7",
+            callback: () => {
+                settingsUI.opacityShortcut(false);
+
+            }
+        });
+        this.addCommand({
+            langKey: "addBackgroundOpacity",
+            hotkey: "⇧⌘8",
+            callback: () => {
+                settingsUI.opacityShortcut(true);
+
+            }
+        });
+        this.addCommand({
+            langKey: "reduceBackgroundBlur",
+            hotkey: "⇧⌘9",
+            callback: () => {
+                settingsUI.blurShortcut(false);
+
+            }
+        });
+        this.addCommand({
+            langKey: "addBackgroundBlur",
+            hotkey: "⇧⌘0",
+            callback: () => {
+                settingsUI.blurShortcut(true);
+
+            }
+        });
 
         // 侦测theme主题有没有发生变化
         const themeChangeObserver = new MutationObserver(await this.themeOnChange.bind(this));

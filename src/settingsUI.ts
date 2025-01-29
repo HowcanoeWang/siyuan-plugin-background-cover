@@ -522,6 +522,46 @@ export function updateCheckedElement(elementid:string, value:boolean) {
     }
 }
 
+export function opacityShortcut(isAdd:boolean) {
+    var opacity = configs.get('opacity');
+    if (isAdd) {
+        opacity = Number((opacity + 0.1).toFixed(2));
+    } else {
+        opacity = Number((opacity - 0.1).toFixed(2));
+    };
+
+    if (opacity > 1 || opacity < 0) {
+        return;
+    } else {
+        configs.set('opacity', opacity);
+        configs.save('[settingsUI][opacityShortcut]');
+        if (configs.get('activate')) {
+            bgRender.changeOpacity(opacity);
+        }
+        updateSliderElement('opacityInput', `${opacity}`);
+    };
+
+}
+
+export function blurShortcut(isAdd:boolean) {
+    var blur = configs.get('blur');
+    if (isAdd) {
+        blur = Number((blur + 1).toFixed(0));
+    } else {
+        blur = Number((blur - 1).toFixed(0));
+    };
+
+    if (blur > 10 || blur < 0) {
+        return;
+    } else {
+        configs.set('blur', blur);
+        configs.save('[settingsUI][blurShortcut]');
+        if (configs.get('activate')) {
+            bgRender.changeBlur(blur);
+        }
+        updateSliderElement('blurInput', `${blur}`);
+    };
+}
 
 export function updateSettingPanelElementStatus() {
     // update current image URL

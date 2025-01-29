@@ -55,6 +55,8 @@ The range of transparency that can be set by the user is `[0.1, 1]`. However, to
 
 * Move CDN image to local folder
 * Fix theme name display issue in settings
+* Support change background opacty and blur using shortcut keys
+
 
 </details>
 
