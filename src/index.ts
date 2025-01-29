@@ -17,7 +17,7 @@ import { configs } from './configs';
 import {
     error, warn, info, debug,
     CloseCV, MD5, OS, Numpy,
-    getCurrentThemeInfo, themeName2DisplayName
+    getCurrentThemeInfo
 } from './utils';
 import * as cst from './constants';
 import * as topbarUI from "./topbarUI";
@@ -109,9 +109,6 @@ export default class BgCoverPlugin extends Plugin {
 
         // 去除检测到主题变化的提示(因为此时已经刷新了)
         noticeUI.removeThemeRefreshDialog();
-
-        const theme_n2d = await themeName2DisplayName();
-        window.bgCoverPlugin.themeName2DisplayName = theme_n2d;
     }
 
     onunload() {

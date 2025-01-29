@@ -48,11 +48,12 @@
 ## 更新日志
 
 <details open>
-<summary><b>Jan 2024</b></summary>
+<summary><b>Jan 2025</b></summary>
 
 **25.01.29**
 
 * 将 CDN 图片迁移到本地文件夹
+* 修复设置中主题名称显示问题
 
 </details>
 

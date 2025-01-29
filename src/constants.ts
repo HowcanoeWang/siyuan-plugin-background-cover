@@ -7,8 +7,7 @@ declare global {
             i18n: IObject,
             isMobileLayout: boolean,
             isBrowser: boolean,
-            isAndroid?: boolean,
-            themeName2DisplayName?: installedThemeNames
+            isAndroid?: boolean
         } 
     }
 }

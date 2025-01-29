@@ -51,11 +51,12 @@ The range of transparency that can be set by the user is `[0.1, 1]`. However, to
 ## ChangeLogs
 
 <details open>
-<summary><b>Jan 2024</b></summary>
+<summary><b>Jan 2025</b></summary>
 
 **25.01.29**
 
 * Move CDN image to local folder
+* Fix theme name display issue in settings
 
 </details>
 
