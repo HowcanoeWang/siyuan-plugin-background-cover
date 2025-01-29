@@ -20,10 +20,8 @@ Add a picture you like to cover the entire Siyuan Note
 <div align="center">
 Default background cover artist ——   
 <code>劉了了_Ale</code><br>
-<a href="https://afdian.net/a/_LIAO">AFDIAN</a> | 
 <a href="https://www.fanbox.cc/@ale">Fanbox</a> | 
 <a href="https://space.bilibili.com/3883010">Bilibili</a> | 
-<a href="https://twitter.com/_LIAO">Twitter</a>
 </div>
 
 ## Features
