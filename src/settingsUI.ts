@@ -232,6 +232,35 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
             />
         </label>
 
+        <!--
+        Donations Section
+        -->
+         <label class="fn__flex b3-label config__item"> 
+             <div class="fn__flex-1"> 
+                 ${window.bgCoverPlugin.i18n.donationTitle} 
+                  <div class="b3-abel__text" style="text-align: center;"> 
+                      <table style="width: 50%; margin-left: auto; margin-right: auto;"> 
+                         <thead> 
+                             <tr> 
+                                 <th>${window.bgCoverPlugin.i18n.donationAlipay}</th> 
+                                 <th>${window.bgCoverPlugin.i18n.donationWechat}</th> 
+                             </tr> 
+                         </thead> 
+                         <tbody> 
+                             <tr> 
+                                 <td style="text-align: center;"> 
+                                     <img width="256px" alt="" src="./plugins/siyuan-plugin-background-cover/static/ali.jpg"> 
+                                 </td> 
+                                 <td style="text-align: center;"> 
+                                     <img width="256px" alt="" src="./plugins/siyuan-plugin-background-cover/static/wechat.png"> 
+                                 </td> 
+                             </tr> 
+                         </tbody> 
+                     </table> 
+                 </div> 
+             </div> 
+         </label>
+
         </div>`
     });
 

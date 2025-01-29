@@ -51,6 +51,15 @@ The range of transparency that can be set by the user is `[0.1, 1]`. However, to
 ## ChangeLogs
 
 <details open>
+<summary><b>Jan 2024</b></summary>
+
+**25.01.29**
+
+* Move CDN image to local folder
+
+</details>
+
+<details>
 <summary><b>Augest 2023</b></summary>
 
 **23.08.28**
@@ -203,25 +212,6 @@ The range of transparency that can be set by the user is `[0.1, 1]`. However, to
 - initialize the project
 
 </details>
-
-## Donation
-
-<table>
-<thead>
-<tr>
-<th style="text-align:center;">AliPay</th>
-<th style="text-align:center;">WeChat</th>
-<th style="text-align:center;">Afdian</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center;"><img width="256" class="mb-4 rounded" alt="" src="https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover@main/static/ali.jpg"></td>
-<td style="text-align:center;"><img width="256" class="mb-4 rounded" alt="" src="https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover@main/static/wechat.png"></td>
-<td style="text-align:center;"><img width="256" class="mb-4 rounded" alt="" src="https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover@main/static/afdian.jpg"></td>
-</tr>
-</tbody>
-</table>
 
 ## Acknowledgement
 

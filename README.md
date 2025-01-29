@@ -48,6 +48,15 @@
 ## 更新日志
 
 <details open>
+<summary><b>Jan 2024</b></summary>
+
+**25.01.29**
+
+* 将 CDN 图片迁移到本地文件夹
+
+</details>
+
+<details>
 <summary><b>Augest 2023</b></summary>
 
 **23.08.28**
@@ -201,25 +210,6 @@
 - 初始化项目
 
 </details>
-
-## 捐赠
-
-<table>
-<thead>
-<tr>
-<th style="text-align:center;">支付宝</th>
-<th style="text-align:center;">微信支付</th>
-<th style="text-align:center;">爱发电</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:center;"><img width="256" class="mb-4 rounded" alt="" src="https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover@main/static/ali.jpg"></td>
-<td style="text-align:center;"><img width="256" class="mb-4 rounded" alt="" src="https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover@main/static/wechat.png"></td>
-<td style="text-align:center;"><img width="256" class="mb-4 rounded" alt="" src="https://cdn.jsdelivr.net/gh/HowcanoeWang/siyuan-plugin-background-cover@main/static/afdian.jpg"></td>
-</tr>
-</tbody>
-</table>
 
 ## 致谢
 
