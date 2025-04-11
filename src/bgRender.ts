@@ -21,13 +21,53 @@ let cv2 = new CloseCV();
 export function createBgLayer() {
     var bgLayer = document.createElement('canvas');
     bgLayer.id = "bglayer";
-    bgLayer.className = "bglayer";
+    
+    ///////////////////////////////////////////////
+    // 载入scss修复思源笔记v3.1.26重载插件会丢失的bug //
+    ///////////////////////////////////////////////
+    // bgLayer.className = "bglayer";
+    // 直接设置样式
+    bgLayer.style.backgroundRepeat = 'no-repeat';
+    bgLayer.style.backgroundAttachment = 'fixed';
+    bgLayer.style.backgroundSize = 'cover';
+    bgLayer.style.backgroundPosition = 'center center';
+    bgLayer.style.width = '100%';
+    bgLayer.style.height = '100%';
+    bgLayer.style.position = 'absolute';
+    bgLayer.style.zIndex = '-10000';
 
     var htmlElement = document.documentElement;
     htmlElement.insertBefore(bgLayer, document.head);
 
     debug('[bgRender][createBgLayer] bgLayer created')
+
+    // <video id="v1" loop="true" autoplay="autoplay" muted="" class="bglayer" style="object-fit: cover; object-position: 50% 70%;">
+    //     <source src="plugins/siyuan-plugin-background-cover/assets/videos/aaa.mp4" type="video/mp4">
+    // </video>
 }
+
+// export function createBgLayer() {
+//     var bgLayer = document.createElement('video');
+//     bgLayer.id = "bglayer";
+//     bgLayer.className = "bglayer";
+//     bgLayer.loop = true;
+//     bgLayer.autoplay = true;
+//     bgLayer.muted = true;
+//     bgLayer.style.objectFit = "cover";
+//     bgLayer.style.objectPosition = "50% 70%";
+//     bgLayer.innerHTML = '<source src="plugins/siyuan-plugin-background-cover/static/output.mp4" type="video/mp4">';
+
+
+//     var htmlElement = document.documentElement;
+//     htmlElement.insertBefore(bgLayer, document.head);
+
+//     debug('[bgRender][createBgLayer] bgLayer created')
+
+//     // <video id="v1" loop="true" autoplay="autoplay" muted="" class="bglayer" style="object-fit: cover; object-position: 50% 70%;">
+//     //     <source src="plugins/siyuan-plugin-background-cover/assets/videos/aaa.mp4" type="video/mp4">
+//     // </video>
+// }
+
 
 export function useDefaultLiaoLiaoBg() {
     debug(`[bgRender][applySettings] 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图`)

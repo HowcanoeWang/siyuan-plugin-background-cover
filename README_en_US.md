@@ -22,6 +22,7 @@ Default background cover artist ——
 <code>劉了了_Ale</code><br>
 <a href="https://www.fanbox.cc/@ale">Fanbox</a> | 
 <a href="https://space.bilibili.com/3883010">Bilibili</a> | 
+<a href="https://m.weibo.cn/u/2309170351">Weibo</a> 
 </div>
 
 ## Features
@@ -49,6 +50,15 @@ The range of transparency that can be set by the user is `[0.1, 1]`. However, to
 ## ChangeLogs
 
 <details open>
+<summary><b>April 2025</b></summary>
+
+**25.04.11**
+
+* Temporarily fixing plugin reload may cause CSS style loss and abnormal plugin background display.
+
+</details>
+
+<details>
 <summary><b>Jan 2025</b></summary>
 
 **25.01.29**
