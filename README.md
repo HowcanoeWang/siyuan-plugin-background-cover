@@ -20,12 +20,13 @@
 默认背景图美少女画师 ——   
 <code>劉了了_Ale</code><br>
 <a href="https://www.fanbox.cc/@ale">Fanbox</a> | 
-<a href="https://space.bilibili.com/3883010">B站</a> | 
+<a href="https://space.bilibili.com/3883010">B站</a> |  
+<a href="https://m.weibo.cn/u/2309170351">微博</a> 
 </div>
 
 ## 特性
 
-- [X] 插件后端全平台支持 (考虑UI交互，**窄距手机端**不提供支持)
+- [X] 插件全平台支持
 - [X] 平铺一张图片作为思源笔记背景
 - [X] 手动调整透明度
 - [X] 手动调整背景虚化程度
@@ -46,6 +47,15 @@
 ## 更新日志
 
 <details open>
+<summary><b>April 2025</b></summary>
+
+**25.04.11**
+
+* 临时修复插件重载会导致css样式丢失插件背景显示异常
+
+</details>
+
+<details>
 <summary><b>Jan 2025</b></summary>
 
 **25.01.29**

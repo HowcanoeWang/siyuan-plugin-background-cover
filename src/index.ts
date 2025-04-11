@@ -27,7 +27,6 @@ import * as fileManagerUI from "./fileManagerUI"
 import * as bgRender from "./bgRender"
 
 import packageInfo from '../plugin.json'
-import "./index.scss";
 
 // pythonic style
 let os = new OS();
@@ -56,6 +55,19 @@ export default class BgCoverPlugin extends Plugin {
             isBrowser: this.isBrowser,
             isAndroid: this.isAndroidBackend,
         };
+
+        ///////////////////////////////////////////////
+        // 载入scss修复思源笔记v3.1.26重载插件会丢失的bug //
+        ///////////////////////////////////////////////
+        const style = document.createElement('style');
+        style.id = 'snippetCSS-pluginsStylesiyuan-plugin-background-cover';
+        // 加载CSS内容
+        const cssResponse = await fetch('./index.scss');
+        const cssText = await cssResponse.text();
+        style.textContent = cssText;
+        // 添加到head
+        document.head.appendChild(style);
+        ///////////////////////////////////////////////
         
         // 图标的制作参见帮助文档
         this.addIcons(cst.diyIcon.iconLogo);
@@ -63,7 +75,7 @@ export default class BgCoverPlugin extends Plugin {
         configs.setPlugin(this);
         //初始化数据
         await configs.load();
-        await topbarUI.initTopbar(this)
+        await topbarUI.initTopbar(this);
 
         // 绑定快捷键
         this.addCommand({
