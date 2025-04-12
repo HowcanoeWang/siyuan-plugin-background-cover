@@ -45,6 +45,12 @@ export default class BgCoverPlugin extends Plugin {
         const frontEnd = getFrontend();
         const backEnd = getBackend();
 
+        // this.data[cst.STORAGE_NAME] = {readonlyText: "Readonly"};
+        // await this.saveData(cst.STORAGE_NAME, {readonlyText: "aaa"});
+
+        // var aaa = await this.loadData(cst.STORAGE_NAME)
+        // console.log(aaa, this.data[cst.STORAGE_NAME])
+
         this.isMobileLayout = frontEnd === "mobile" || frontEnd === "browser-mobile";
         this.isBrowser = frontEnd.includes("browser");
         this.isAndroidBackend = backEnd === "android";
@@ -56,18 +62,6 @@ export default class BgCoverPlugin extends Plugin {
             isAndroid: this.isAndroidBackend,
         };
 
-        ///////////////////////////////////////////////
-        // 载入scss修复思源笔记v3.1.26重载插件会丢失的bug //
-        ///////////////////////////////////////////////
-        const style = document.createElement('style');
-        style.id = 'snippetCSS-pluginsStylesiyuan-plugin-background-cover';
-        // 加载CSS内容
-        const cssResponse = await fetch('./index.scss');
-        const cssText = await cssResponse.text();
-        style.textContent = cssText;
-        // 添加到head
-        document.head.appendChild(style);
-        ///////////////////////////////////////////////
         
         // 图标的制作参见帮助文档
         this.addIcons(cst.diyIcon.iconLogo);
