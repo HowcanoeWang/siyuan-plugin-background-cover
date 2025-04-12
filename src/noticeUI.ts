@@ -13,10 +13,6 @@ import {
 } from "siyuan";
 
 
-export function showMobileTodo() {
-    showMessage(`${window.bgCoverPlugin.i18n.mobileNotSupported}`, 1000, "info")
-}
-
 export function showIndev(msg: string = '') {
     const dialog = new Dialog({
         title: `${window.bgCoverPlugin.i18n.inDevTitle}`,
