@@ -275,6 +275,30 @@ export class OS {
         return outArray
     }
 
+    /**
+     * 判断文件夹是否存在
+     * @param dir 文件夹路径
+     * @returns 存在返回true，不存在返回false
+     */
+    public async folderExists(dir: string): Promise<boolean> {
+        try {
+            const out = await this.ka.readDir(dir);
+            // 成功返回且code为0表示文件夹存在
+            if (out && out.code === 0) {
+                return true;
+            }
+            // 404错误表示文件夹不存在
+            if (out && out.code === 404) {
+                return false;
+            }
+            // 其他错误情况也视为不存在
+            return false;
+        } catch (error) {
+            debug("[os.pathExists] error:", error);
+            return false;
+        }
+    }
+
     public splitext(filename:string) {
         let suffix = filename.substring(filename.lastIndexOf('.')+1, filename.length) || filename
         let prefix = filename.substring(0, filename.lastIndexOf('.')) || filename

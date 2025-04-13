@@ -13,28 +13,88 @@ let ka = new KernelApi();
 class configManager {
     plugin: Plugin;
 
-    settings: any = structuredClone(cst.defaultConfigs);
+    // saved locally to /data/storage/local.json by localStorage API
+    localCfg: any = structuredClone(cst.defaultLocalConfigs);
+
+    // saved publically to /data/publish/{plugin-name}/{cst.pluginFileIdx}
+    // need cloud sync cross devices
+    fileIdx: cst.fileIdx = {};
 
     setParent(plugin: Plugin) {
         this.plugin = plugin;
     }
 
-    get(key: cst.configKey) {
-        return this.settings?.[key];
+    bgFileNum() {
+        return Object.keys(this.fileIdx).length
+    }
+
+    bgFileHashKeys() {
+        return Object.keys(this.fileIdx)
+    }
+
+    get(key?: cst.configKey) {
+
+        if (key === undefined) {
+            // 返回全部数据
+            return this.localCfg
+        }
+        if (!(key in this.localCfg)) {
+            info(`存储键 "${key}" 不存在`);
+            return null;
+        }
+
+        // 返回指定键值
+        return this.localCfg?.[key];
+    }
+
+    getBgObj(hash_code: string) {
+        if (!(hash_code in this.fileIdx)) {
+            info(`存储键 "${hash_code}" 不存在`);
+            return null;
+        }
+
+        // 返回指定键值
+        return this.fileIdx?.[hash_code];
     }
 
     set(key: any, value: any) {
         // info(`Setting update: ${key} = ${value}`)
-        if (!(key in this.settings)) {
+        if (!(key in this.localCfg)) {
             error(`"${key}" is not a setting`);
             return;
         }
 
-        this.settings[key] = value;
+        this.localCfg[key] = value;
+    }
+
+    setBgObj(hash_code: string, value: cst.bgObj) {
+        // free to add to file_idx
+        this.fileIdx[hash_code] = value;
+    }
+
+    // 移除键值对
+    remove(key: any) {
+        if (!(key in this.localCfg)) {
+            error(`"${key}" is not a setting`);
+            return;
+        }
+
+        delete this.localCfg[key];
+    }
+
+    removeBgObj(hash_code: string) {
+
+        if (!(hash_code in this.fileIdx)) {
+            error(`"${hash_code}" not exists`);
+            return;
+        }
+
+        delete this.fileIdx[hash_code];
     }
 
     async reset() {
-        this.settings = structuredClone(cst.defaultConfigs);
+        this.localCfg = structuredClone(cst.defaultLocalConfigs);
+        this.fileIdx = {};
         this.save();
     }
 
@@ -42,48 +102,76 @@ class configManager {
      * 导入的时候，需要先加载设置；如果没有设置，则使用默认设置
      */
     async load() {
-        // let loaded = await this.plugin.loadData(cst.configFile);
+        this._loadFileIdx();
+        this._loadLocalCfg();
+    }
+
+    async _loadLocalCfg() {
+        debug(`[configs][_loadLocalCfg] 读取localStorage中的插件配置信息`)
         let loaded = await ka.getLocalStorage(cst.localStorageKey);
 
         if (loaded == null || loaded == undefined || loaded == '') {
-            //如果没有配置文件，则使用默认配置，并保存
-            debug(`没有配置文件，使用默认配置`)
-            this.save('[configs][load init]');
+            debug(`localStorage中没有插件配置信息，使用默认配置并保存`)
+            this._saveLocalCfg('[configs][localStorage init config]');
         } else {
             //如果有配置文件，则使用配置文件
-            debug(`读入配置文件: ${cst.configFile}`)
+            debug(`读入localStorage配置 siyuan.storage[${cst.localStorageKey}]`)
+            // Docker 和  Windows 不知为何行为不一致, 一个读入字符串，一个读入对象
+            // 为了兼容，这里做一下判断
+            if (typeof loaded === 'string') {
+                loaded = JSON.parse(loaded);
+            }
+
+            try {
+                for (let key in loaded) {
+                    if (key in cst.defaultLocalConfigs) {
+                        this.set(key, loaded[key]);
+                    }
+                }
+                debug(`   localStorage配置 读取成功`)
+            } catch (error_msg) {
+                error(`   localStorage配置 读取失败: ${error_msg}`);
+            }
+        }
+    }
+
+    async _loadFileIdx() {
+        debug(`[configs][_loadFileIdx] 读取 /data/publish/插件目录/ 中的背景文件索引信息`)
+        let loaded = await ka.getFile(cst.pluginFileIdxFile, "json" )
+
+        if (loaded == null || loaded == undefined || loaded == '') {
+            //如果没有配置文件，则使用默认配置，并保存
+            debug(`/data/publish/插件目录/ 中没有fileidx.json 配置文件，使用默认配置`)
+            this._saveFileIdx('[configs][fileidx.json init config]');
+        } else {
+            //如果有配置文件，则使用配置文件
+            debug(`读入 ${cst.pluginFileIdxFile} 配置文件`)
             //Docker 和  Windows 不知为何行为不一致, 一个读入字符串，一个读入对象
             //为了兼容，这里做一下判断
             if (typeof loaded === 'string') {
                 loaded = JSON.parse(loaded);
             }
-            // 如果读取的配置文件版本比默认的版本低 或者 版本号不存在
-            // const cfg_version = this.get('version')
-            // let need_update = false
-            // if (cfg_version == null || cfg_version == undefined || cfg_version == '' || cfg_version < defaultSettings.version) {
-            //     need_update = true
-            // }
+
             try {
                 for (let key in loaded) {
-                    // always load the old version info
-                    // if (key === 'version'){
-                    //     continue
-                    // }
-                    if (key in cst.defaultConfigs) {
-                        this.set(key, loaded[key]);
+                    if (key in cst.defaultLocalConfigs) {
+                        this.setBgObj(key, loaded[key]);
                     }
                 }
+                debug(`   fileidx.json 配置文件读取成功`)
             } catch (error_msg) {
-                error(`Setting load error: ${error_msg}`);
+                error(`   fileidx.json 配置文件读取失败: ${error_msg}`);
             }
-
-            this.save('[configs][load update]');
         }
-        // eventBus.publish(eventBus.EventSettingLoaded, {});
     }
 
     async save(logHeader?:String) {
-        let json = this.settings;
+        this._saveLocalCfg(logHeader);
+        this._saveFileIdx(logHeader);
+    }
+
+    async _saveLocalCfg(logHeader?:String) {
+        let json = this.localCfg;
         if (logHeader) {
             debug(`${logHeader}写入配置文件:`, json);
         } else {
@@ -92,6 +180,17 @@ class configManager {
         
         // this.plugin.saveData(cst.configFile, json);
         await ka.setLocalStorage(cst.localStorageKey, json);
+    }
+
+    async _saveFileIdx(logHeader?:String) {
+        let json = this.fileIdx;
+        if (logHeader) {
+            debug(`${logHeader}写入配置文件:`, json);
+        } else {
+            debug(`写入配置文件:`, json);
+        }
+        
+        await ka.putFile(cst.pluginFileIdxFile, json);
     }
 }
 
