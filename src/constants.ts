@@ -7,7 +7,7 @@ declare global {
             i18n: IObject,
             isMobileLayout: boolean,
             isBrowser: boolean,
-            isAndroid?: boolean
+            isAndroid?: boolean,
         } 
     }
 }
@@ -21,7 +21,7 @@ export enum bgMode {
 export interface bgObj {
     name:string, path:string, hash:string, 
     mode: bgMode, offx: number, offy: number,
-    height: number, width: number
+    height: number, width: number,
 }
 
 export interface fileIndex {
@@ -45,6 +45,7 @@ export const hashLength = 2097152;
 
 export const pluginAssetsDir = `/data/public/${packageInfo.name}/assets`
 export const pluginImgDataDir = `${pluginAssetsDir}/images`.toString()
+export const pluginVideoDataDir = `${pluginAssetsDir}/videos`.toString()
 export const pluginLive2DataDir = `${pluginAssetsDir}/live2d`.toString()
 
 export let pluginAssetsDirOS = ''
@@ -62,26 +63,25 @@ export const supportedImageSuffix = [".png", ".jpeg", ".jpg", ".jiff", ".jfif"]
 
 export const configFile = 'bg-cover-setting.json';
 
+export const demoImgURL = './plugins/siyuan-plugin-background-cover/static/FyBE0bUakAELfeF.jpg'
+
 export type configKey = (
-    'autoRefresh' |'opacity' | 'blur' | 'activate' | 'bgObj' |
+    'autoRefresh' |'opacity' | 'blur' | 'activate' | 'crtBgObj' |
     'version' | 'prevTheme' | 'fileidx' | 'inDev' | 'blockTheme'
 );
 
-export const demoImgURL = './plugins/siyuan-plugin-background-cover/static/FyBE0bUakAELfeF.jpg'
-
 export var defaultConfigs = {
+    'version': packageInfo.version as string,
     // 启动时随机更改图片
     'autoRefresh': true as boolean,
     // 当前配置的背景图路径
-    'bgObj': undefined as any,
+    'crtBgObj': undefined as any,
     // 当前配置的背景图透明度
     'opacity': 0.5 as number,
     'blur': 5 as number,
     // 图片类型 1:本地文件，2：https
     'activate': true as boolean,
     'prevTheme': '' as string,
-    'fileidx': {} as fileIndex,
-    'version': packageInfo.version as string,
     'inDev': false as boolean,
     'blockTheme': {light:{}, dark:{}} as blockThemeConfig,
 };

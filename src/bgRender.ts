@@ -72,7 +72,7 @@ export function createBgLayer() {
 export function useDefaultLiaoLiaoBg() {
     debug(`[bgRender][applySettings] 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图`)
     changeBackgroundContent(cst.demoImgURL, cst.bgMode.image)
-    configs.set('bgObj', undefined);
+    configs.set('crtBgObj', undefined);
 }
 
 export function changeBackgroundContent(background: string, mode: cst.bgMode) {
@@ -144,19 +144,19 @@ export async function applySettings() {
     if (cacheImgNum === 0) {
         // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
         useDefaultLiaoLiaoBg();
-    } else if (configs.get('bgObj') === undefined) {
+    } else if (configs.get('crtBgObj') === undefined) {
         // 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张
         debug(`[bgRender][applySettings] 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张`)
         await topbarUI.selectPictureRandom();
     } else {
         // 缓存中有1张以上的图片，bjObj也有内容且图片存在
         debug(`[bgRender][applySettings] 缓存中有1张以上的图片，bjObj也有内容且图片存在`)
-        let bgObj = configs.get('bgObj')
+        let crtBgObj = configs.get('crtBgObj')
         let fileidx = configs.get('fileidx')
         // 没有开启启动自动更换图片，则直接显示该图片
-        if (bgObj.hash in fileidx && !configs.get('autoRefresh')) {
+        if (crtBgObj.hash in fileidx && !configs.get('autoRefresh')) {
             debug(`[bgRender][applySettings] 没有开启启动自动更换图片，则直接显示当前图片`)
-            changeBackgroundContent(bgObj.path, bgObj.mode)
+            changeBackgroundContent(crtBgObj.path, crtBgObj.mode)
         } else {
             // 当bjObj找不到404 | 用户选择随机图片，则随机调一张作为bjObj
             debug(`[bgRender][applySettings] 用户选择随机图片，则随机调一张作为bjObj`)
@@ -166,10 +166,10 @@ export async function applySettings() {
 
     changeOpacity(configs.get('opacity'))
     changeBlur(configs.get('blur'))
-    if (configs.get('bgObj') === undefined){
+    if (configs.get('crtBgObj') === undefined){
         changeBgPosition(null, null)
     }else{
-        changeBgPosition(configs.get('bgObj').offx, configs.get('bgObj').offy)
+        changeBgPosition(configs.get('crtBgObj').offx, configs.get('crtBgObj').offy)
     }
     
     settingsUI.updateSettingPanelElementStatus()
