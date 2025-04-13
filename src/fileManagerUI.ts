@@ -1,4 +1,3 @@
-import BgCoverPlugin from "./index"
 import packageInfo from '../plugin.json'
 
 import { Dialog, showMessage } from "siyuan";
@@ -10,10 +9,10 @@ import * as bgRender from "./bgRender";
 import * as topbarUI from "./topbarUI";
 
 import {
-    error, warn, info, debug,
-    CloseCV, MD5, OS, Numpy,
-    getCurrentThemeInfo
+    error, info, debug,
+    CloseCV, OS,
 } from './utils';
+import { MD5 } from './md5'; // 自动识别.d.ts类型声明
 
 // pythonic style
 let os = new OS();
