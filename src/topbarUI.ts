@@ -1,23 +1,13 @@
 import {
-    Plugin,
     showMessage,
     confirm,
-    Dialog,
     Menu,
-    // openTab,
-    // adaptHotkey,
     getFrontend,
     getBackend,
     IMenuItemOption
-    // IModel,
-    // Setting, fetchPost
 } from "siyuan";
 
-import {
-    error, warn, info, debug,
-    CloseCV, MD5, OS, Numpy,
-    getCurrentThemeInfo
-} from './utils';
+import { debug, OS } from './utils';
 
 import BgCoverPlugin from "./index"
 import { configs } from './configs';

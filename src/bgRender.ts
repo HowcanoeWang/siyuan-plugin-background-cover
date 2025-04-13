@@ -1,7 +1,3 @@
-import packageInfo from '../plugin.json'
-import BgCoverPlugin from "./index"
-
-import { Dialog, showMessage } from "siyuan";
 import { configs } from "./configs";
 
 import * as cst from "./constants";
@@ -11,12 +7,9 @@ import * as settingsUI from "./settingsUI";
 import * as topbarUI from "./topbarUI";
 
 import {
-    error, warn, info, debug,
-    CloseCV, MD5, OS, Numpy,
+    error, debug,
     getCurrentThemeInfo
 } from './utils';
-
-let cv2 = new CloseCV();
 
 export function createBgLayer() {
     var bgLayer = document.createElement('canvas');

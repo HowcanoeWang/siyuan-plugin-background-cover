@@ -6,7 +6,6 @@
 import { Plugin } from 'siyuan';
 import { info, debug, error } from './utils'
 import * as cst from './constants'
-import packageInfo from '../plugin.json'
 
 class configManager {
     plugin: Plugin;

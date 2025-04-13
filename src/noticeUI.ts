@@ -1,17 +1,4 @@
-import {
-    // Plugin,
-    showMessage,
-    // confirm,
-    Dialog,
-    // Menu,
-    // openTab,
-    // adaptHotkey,
-    // getFrontend,
-    // getBackend,
-    // IModel,
-    // Setting, fetchPost
-} from "siyuan";
-
+import { Dialog } from "siyuan";
 
 export function showIndev(msg: string = '') {
     const dialog = new Dialog({

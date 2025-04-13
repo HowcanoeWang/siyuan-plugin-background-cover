@@ -1,38 +1,21 @@
 import {
     Plugin,
-    showMessage,
-    confirm,
-    Dialog,
-    Menu,
-    // openTab,
-    // adaptHotkey,
     getFrontend,
     getBackend,
-    // IModel,
-    // Setting, fetchPost
 } from "siyuan";
 
-import { KernelApi } from "./siyuanAPI";
 import { configs } from './configs';
 import {
-    error, warn, info, debug,
-    CloseCV, MD5, OS, Numpy,
+    info, debug,
     getCurrentThemeInfo
 } from './utils';
+
 import * as cst from './constants';
 import * as topbarUI from "./topbarUI";
 import * as noticeUI from "./noticeUI";
 import * as settingsUI from "./settingsUI";
 import * as fileManagerUI from "./fileManagerUI"
 import * as bgRender from "./bgRender"
-
-import packageInfo from '../plugin.json'
-
-// pythonic style
-let os = new OS();
-let ka = new KernelApi();
-let cv2 = new CloseCV();
-let np = new Numpy();
 
 export default class BgCoverPlugin extends Plugin {
 
@@ -50,6 +33,14 @@ export default class BgCoverPlugin extends Plugin {
 
         // var aaa = await this.loadData(cst.STORAGE_NAME)
         // console.log(aaa, this.data[cst.STORAGE_NAME])
+
+        // ka = new KernelApi()
+
+        // const storage = await ka.getLocalStorage();
+        // console.log(storage);
+
+        // await ka.setLocalStorage('aaa', {'bbb': 'ccc'});
+
 
         this.isMobileLayout = frontEnd === "mobile" || frontEnd === "browser-mobile";
         this.isBrowser = frontEnd.includes("browser");
@@ -150,18 +141,15 @@ export default class BgCoverPlugin extends Plugin {
     }
 
     onunload() {
-        info(`${this.i18n.byePlugin}`);
         configs.save('[index.ts][onunload]');
 
         // remove changes when deactivate plugin
         var bgLayer = document.getElementById('bglayer');
         bgLayer.remove();
         document.body.style.removeProperty('opacity');
-    }
 
-    // private eventBusLog({detail}: any) {
-    //     info(detail);
-    // }
+        info(`${this.i18n.byePlugin}`);
+    }
 
     private async themeOnChange() {
         const [themeMode, themeName] = getCurrentThemeInfo();

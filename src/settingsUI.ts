@@ -8,11 +8,10 @@ import * as cst from "./constants";
 import * as fileManagerUI from "./fileManagerUI";
 import * as topbarUI from "./topbarUI";
 import * as bgRender from "./bgRender";
-import * as noticeUI from "./noticeUI";
 
-import {
-    error, warn, info, debug,
-    CloseCV, MD5, OS, Numpy,
+import { 
+    debug,
+    CloseCV, OS,
     getCurrentThemeInfo, getInstalledThemes
 } from './utils';
 
