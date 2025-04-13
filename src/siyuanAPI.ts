@@ -52,6 +52,10 @@ export interface SiyuanData {
   data: any[] | object | null | undefined
 }
 
+export interface LocalStorageData {
+  [key: string]: any; // 明确声明可索引的字符串键
+}
+
 export class BaseApi {
   /**
    * 向思源请求数据
@@ -141,6 +145,23 @@ export class KernelApi extends BaseApi {
       formData.append("isDir", "false")
       formData.append("modTime", Math.floor(Date.now() / 1000).toString())
       formData.append("file", file)
+  
+      return new Promise((resolve, reject) => {
+        fetchPost("/api/file/putFile", formData, (data) => {
+          if (data.code === 0) {
+            resolve(data)
+          } else {
+            reject(data)
+          }
+        })
+      })
+    }
+
+    public putFolder(path: string): Promise<SiyuanData> {
+      const formData = new FormData()
+      formData.append("path", path)
+      formData.append("isDir", "true")
+      formData.append("modTime", Math.floor(Date.now() / 1000).toString())
   
       return new Promise((resolve, reject) => {
         fetchPost("/api/file/putFile", formData, (data) => {
@@ -271,4 +292,58 @@ export class KernelApi extends BaseApi {
     public async getInstalledTheme(): Promise<SiyuanData> {
       return await this.siyuanRequest("api/bazaar/getInstalledTheme", {})
     }
+
+    public async getLocalStorage(key?: string): Promise<SiyuanData | any> {
+      const response = await this.siyuanRequest("/api/storage/getLocalStorage", {});
+      if (response.code !== 0) {
+        throw new Error(`获取存储失败: ${response.msg}`);
+      }
+      const storageData = response.data as LocalStorageData;
+      if (key === undefined) {
+        // 返回全部数据
+        return {
+          ...response,
+          data: storageData
+        };
+      }
+      if (!(key in storageData)) {
+        throw new Error(`存储键 "${key}" 不存在`);
+      }
+      // 返回指定键值
+      return {
+        ...response,
+        data: storageData[key]
+      };
+    }
+
+    /**
+     * 更新思源笔记本地存储中的指定键值
+     * @param key 要更新的键名
+     * @param value 要设置的值
+     */
+    public async setLocalStorage<T = any>(key: string, value: T): Promise<void> {
+      // 1. 复用 getLocalStorage 获取当前完整存储
+      let currentStorage: LocalStorageData = {};
+      
+      try {
+        const response = await this.getLocalStorage();
+        currentStorage = response.data || {};
+      } catch (e) {
+        console.warn("获取当前存储失败，将使用空对象", e);
+      }
+      // 2. 创建更新后的存储对象
+      const updatedStorage = {
+        ...currentStorage,
+        [key]: value
+      };
+      // 3. 设置更新后的完整存储
+      const setResponse = await this.siyuanRequest("/api/storage/setLocalStorage", {
+        // key: "", // 注意: 思源API可能需要空key表示整个存储
+        val: updatedStorage
+      });
+      if (setResponse.code !== 0) {
+        throw new Error(`存储更新失败: ${setResponse.msg}`);
+      }
+    }
+
 }
