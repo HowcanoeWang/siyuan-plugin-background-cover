@@ -177,13 +177,13 @@ export async function selectPictureRandom(manualPress: boolean = false) {
         let belayerElement = document.getElementById('bglayer')
         if (belayerElement.style.getPropertyValue('background-image') === '') {
             // 如果当前背景不存在任何图片
-            let bgObj = configs.get('bgObj')
+            let bgObj = configs.get('crtBgObj')
             bgRender.changeBackgroundContent(bgObj.path, bgObj.mode)
         }
     } else {
         // 随机选择一张图
         let fileidx = configs.get('fileidx')
-        let crt_hash = configs.get('bgObj').hash
+        let crt_hash = configs.get('crtBgObj').hash
         let r_hash = ''
         while (true) {
             let r = Math.floor(Math.random() * cacheImgNum)

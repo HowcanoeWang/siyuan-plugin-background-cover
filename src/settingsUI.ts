@@ -41,17 +41,17 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
             <div class="fn__flex-1">
                 ${window.bgCoverPlugin.i18n.imgPathLabel}
                 <div class="b3-label__text">
-                    <code id="crtImgName" class="fn__code">${configs.get('bgObj') === undefined ? cst.demoImgURL : configs.get('bgObj').name}</code>
+                    <code id="crtImgName" class="fn__code">${configs.get('crtBgObj') === undefined ? cst.demoImgURL : configs.get('crtBgObj').name}</code>
                 </div>
             </div>
             <div class="fn__flex-center">  
                 <div>
                     <label for="cx">X</label> 
-                    <input id="cx" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${configs.get('bgObj') === undefined ? '50' : configs.get('bgObj').offx}>
+                    <input id="cx" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${configs.get('crtBgObj') === undefined ? '50' : configs.get('crtBgObj').offx}>
                 </div>
                 <div>
                     <label for="cy">Y</label> 
-                    <input id="cy" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${configs.get('bgObj') === undefined ? '50' : configs.get('bgObj').offy}>
+                    <input id="cy" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${configs.get('crtBgObj') === undefined ? '50' : configs.get('crtBgObj').offy}>
                 </div>
             </div>
         </label>
@@ -266,7 +266,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         // 停止拖动的时候，保存图片的位置
         elementsArray[i].addEventListener("change", () => {
             //
-            let bgObj = configs.get('bgObj')
+            let bgObj = configs.get('crtBgObj')
 
             // 使用默认的了了图，此时bgObj为undefined，没有下面这些属性，跳过
             if (bgObj !== undefined) {
@@ -555,8 +555,8 @@ export function updateSettingPanelElementStatus() {
     if (crtImageNameElement === null || crtImageNameElement === undefined) {
         // debug(`Setting panel not open`) 
     } else {
-        let bgObj = configs.get('bgObj')
-        if (configs.get('bgObj') === undefined) {
+        let bgObj = configs.get('crtBgObj')
+        if (configs.get('crtBgObj') === undefined) {
             crtImageNameElement.textContent = cst.demoImgURL.toString()
         } else {
             crtImageNameElement.textContent = bgObj.name
@@ -605,7 +605,7 @@ export function updateOffsetSwitch() {
 
             let fullside: string
             // 使用默认的了了图
-            if (configs.get('bgObj') === undefined) {
+            if (configs.get('crtBgObj') === undefined) {
                 fullside = cv2.getFullSide(
                     container_w, container_h,
                     2458, 1383 // 默认了了图的宽高
@@ -616,7 +616,7 @@ export function updateOffsetSwitch() {
             }else{
                 fullside = cv2.getFullSide(
                     container_w, container_h,
-                    configs.get('bgObj').width, configs.get('bgObj').height
+                    configs.get('crtBgObj').width, configs.get('crtBgObj').height
                 )
             }
 
