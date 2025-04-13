@@ -24,13 +24,10 @@
  */
 
 import { info, debug, error } from './utils'
-import { configs } from './configs'
 import { fetchPost } from "siyuan"
 
 const siyuanApiUrl = ""
 const siyuanApiToken = ""
-// const mediaDir = `./assets`
-
 
 /**
  * 思源 API 返回类型
@@ -301,19 +298,14 @@ export class KernelApi extends BaseApi {
       const storageData = response.data as LocalStorageData;
       if (key === undefined) {
         // 返回全部数据
-        return {
-          ...response,
-          data: storageData
-        };
+        return storageData;
       }
       if (!(key in storageData)) {
-        throw new Error(`存储键 "${key}" 不存在`);
+        // throw new Error(`存储键 "${key}" 不存在`);
+        return undefined;
       }
       // 返回指定键值
-      return {
-        ...response,
-        data: storageData[key]
-      };
+      return storageData[key];
     }
 
     /**
@@ -327,7 +319,7 @@ export class KernelApi extends BaseApi {
       
       try {
         const response = await this.getLocalStorage();
-        currentStorage = response.data || {};
+        currentStorage = response || {};
       } catch (e) {
         console.warn("获取当前存储失败，将使用空对象", e);
       }

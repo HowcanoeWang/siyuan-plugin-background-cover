@@ -57,7 +57,8 @@ export default class BgCoverPlugin extends Plugin {
         // 图标的制作参见帮助文档
         this.addIcons(cst.diyIcon.iconLogo);
 
-        configs.setPlugin(this);
+        configs.setParent(this);
+        
         //初始化数据
         await configs.load();
         await topbarUI.initTopbar(this);

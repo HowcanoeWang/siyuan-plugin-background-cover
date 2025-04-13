@@ -1,6 +1,8 @@
 import { IObject } from 'siyuan';
 import packageInfo from '../plugin.json'
 
+export const localStorageKey = packageInfo.name
+
 declare global {
     interface Window { 
         bgCoverPlugin : {
