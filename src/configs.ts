@@ -4,15 +4,18 @@
  */
 
 import { Plugin } from 'siyuan';
-import { info, debug, error } from './utils'
+import { info, debug, error} from './utils'
 import * as cst from './constants'
+import { KernelApi } from './siyuanAPI';
+
+let ka = new KernelApi();
 
 class configManager {
     plugin: Plugin;
 
     settings: any = structuredClone(cst.defaultConfigs);
 
-    setPlugin(plugin: Plugin) {
+    setParent(plugin: Plugin) {
         this.plugin = plugin;
     }
 
@@ -39,7 +42,9 @@ class configManager {
      * 导入的时候，需要先加载设置；如果没有设置，则使用默认设置
      */
     async load() {
-        let loaded = await this.plugin.loadData(cst.configFile);
+        // let loaded = await this.plugin.loadData(cst.configFile);
+        let loaded = await ka.getLocalStorage(cst.localStorageKey);
+
         if (loaded == null || loaded == undefined || loaded == '') {
             //如果没有配置文件，则使用默认配置，并保存
             debug(`没有配置文件，使用默认配置`)
@@ -78,14 +83,15 @@ class configManager {
     }
 
     async save(logHeader?:String) {
-        let json = JSON.stringify(this.settings);
+        let json = this.settings;
         if (logHeader) {
             debug(`${logHeader}写入配置文件:`, json);
         } else {
             debug(`写入配置文件:`, json);
         }
         
-        this.plugin.saveData(cst.configFile, json);
+        // this.plugin.saveData(cst.configFile, json);
+        await ka.setLocalStorage(cst.localStorageKey, json);
     }
 }
 
