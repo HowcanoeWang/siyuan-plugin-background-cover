@@ -20,7 +20,7 @@
   "addImageLabel": "添加图片",
   "addSingleImageLabel": "添加单张本地图片",
   "addSeveralImagesLabel": "添加多张本地图片",
-  "addSingleImageUploadNotice": "上传中，请稍后",
+  "addSingleImageUploadNotice": "上传中，请稍候",
   "addSingleImageExceed1": "当前缓存目录中图片数超过",
   "addSingleImageExceed2": "张，为保证插件性能，停止上传",
   "addSingleURLImageLabel": "添加单张网络图片",
