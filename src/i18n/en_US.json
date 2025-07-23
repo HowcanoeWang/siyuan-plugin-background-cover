@@ -19,6 +19,7 @@
   "selectPictureRandomNotice": "Only one image in cache directory, please add more images",
   "addImageLabel": "Add Image(s)",
   "addSingleImageLabel": "Add Single Image from Local",
+  "addSeveralImagesLabel": "Add Several Images from Local",
   "addSingleImageUploadNotice": "Uploading, please wait a while",
   "addSingleImageExceed1": "The image number of cached directory exceeds ",
   "addSingleImageExceed2": ", abort uploading images considering the pluin performance",

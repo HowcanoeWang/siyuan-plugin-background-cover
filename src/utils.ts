@@ -350,11 +350,11 @@ export class OS {
      * @param acceptedFileTypes : '.jpg,.png'
      * @returns 
      */
-    public async openFilePicker(acceptedFileTypes?: string): Promise<File[] | null> {
+    public async openFilePicker(acceptedFileTypes?: string, multipleSelect = false): Promise<File[] | null> {
         return new Promise((resolve, reject) => {
           const input = document.createElement('input');
           input.type = 'file';
-          input.multiple = false;
+          input.multiple = multipleSelect;
           input.value = '';
 
           if (acceptedFileTypes) {
