@@ -79,6 +79,13 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                 }
             },
             {
+                icon: "iconLogo",
+                label: `${window.bgCoverPlugin.i18n.addSeveralImagesLabel}`,
+                click: () => {
+                    addSeveralLocalImagesFile();
+                }
+            },
+            {
                 icon: "iconFolder",
                 label: `${window.bgCoverPlugin.i18n.addDirectoryLabel}`,
                 click: () => {
@@ -212,6 +219,29 @@ export async function addSingleLocalImageFile() {
             bgRender.changeBackgroundContent(bgObj.path, bgObj.mode);
             settingsUI.updateSettingPanelElementStatus();
         };
+    };
+};
+
+export async function addSeveralLocalImagesFile() {
+
+    const cacheImgNum = fileManagerUI.getCacheImgNum();
+
+    if (cacheImgNum >= cst.cacheMaxNum) {
+        showMessage(window.bgCoverPlugin.i18n.addSingleImageExceed1 + cst.cacheMaxNum + window.bgCoverPlugin.i18n.addSingleImageExceed2, 7000, 'error');
+    }else{
+        // return an Array
+        const fileHandle = await os.openFilePicker(cst.supportedImageSuffix.toString(), true)
+
+        for (const file of fileHandle) {
+
+            let bgObj = await fileManagerUI.uploadOneImage(file);
+
+            // 文件不重复且上传成功
+            if (bgObj !== undefined) {
+                await configs.save('[topbarUI][addSinglelocalImageFile]');
+                settingsUI.updateSettingPanelElementStatus();
+            };
+        }
     };
 };
 
