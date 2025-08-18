@@ -50,6 +50,15 @@ The range of transparency that can be set by the user is `[0.1, 1]`. However, to
 ## ChangeLogs
 
 <details open>
+<summary><b>Augest 2025</b></summary>
+
+**25.08.18**
+
+* Fix for abnormal background loading in the new version of Siyuan.
+
+</details>
+
+<details>
 <summary><b>April 2025</b></summary>
 
 **25.04.11**

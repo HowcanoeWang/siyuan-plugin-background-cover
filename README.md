@@ -47,6 +47,15 @@
 ## 更新日志
 
 <details open>
+<summary><b>Augest 2025</b></summary>
+
+**25.08.18**
+
+* 修复思源新版本插件背景加载异常
+
+</details>
+
+<details>
 <summary><b>April 2025</b></summary>
 
 **25.04.11**
