@@ -34,7 +34,8 @@ module.exports = (env, argv) => {
                 {from: "src/i18n/", to: "./dist/i18n/"},
                 {from: "static/FyBE0bUakAELfeF.jpg", to: "./dist/static/"},
                 {from: "static/ali.jpg", to: "./dist/static/"},
-                {from: "static/wechat.png", to: "./dist/static/"}
+                {from: "static/wechat.png", to: "./dist/static/"},
+                {from: "static/av71658201.mp4", to: "./dist/static/"}
             ],
         }));
         plugins.push(new ZipPlugin({
