@@ -68,8 +68,7 @@ export async function checkCacheDirctory() {
         debug(`The settings.fileidx is empty {}`)
     }
 
-    for (let i in imgFiles) {
-        let item = imgFiles[i]
+    for (let item of imgFiles) {
         if (item.isDir) {
             // live2d的文件目录
             continue
