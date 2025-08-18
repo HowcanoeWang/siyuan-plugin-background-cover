@@ -86,8 +86,6 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                 }
             },
         ];
-        const frontEnd = getFrontend();
-        const backEnd = getBackend();
 
         if (window.bgCoverPlugin.isAndroid && !window.bgCoverPlugin.isBrowser) {
             submenu.unshift(
@@ -98,6 +96,7 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                 }
             )
         }
+        
         menu.addItem({
             icon: "iconAdd",
             label: `${window.bgCoverPlugin.i18n.addImageLabel}`,

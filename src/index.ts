@@ -53,14 +53,9 @@ export default class BgCoverPlugin extends Plugin {
             isAndroid: this.isAndroidBackend,
         };
 
-        
         // 图标的制作参见帮助文档
         this.addIcons(cst.diyIcon.iconLogo);
 
-        configs.setParent(this);
-        
-        //初始化数据
-        await configs.load();
         await topbarUI.initTopbar(this);
 
         // 绑定快捷键
@@ -119,12 +114,17 @@ export default class BgCoverPlugin extends Plugin {
         });
 
         // 侦测theme主题有没有发生变化
-        const themeChangeObserver = new MutationObserver(await this.themeOnChange.bind(this));
-        themeChangeObserver.observe(this.htmlThemeNode, { attributes: true });
+        // const themeChangeObserver = new MutationObserver(await this.themeOnChange.bind(this));
+        // themeChangeObserver.observe(this.htmlThemeNode, { attributes: true });
         info(this.i18n.helloPlugin);
     }
 
     async onLayoutReady() {
+        configs.setParent(this);
+        
+        //初始化数据
+        await configs.load();
+
         bgRender.createBgLayer();
         
         await fileManagerUI.checkCacheDirctory();
