@@ -5,6 +5,7 @@
 
 import { Plugin } from 'siyuan';
 import { info, debug, error} from './utils'
+import * as tps from './types'
 import * as cst from './constants'
 import { KernelApi } from './siyuanAPI';
 
@@ -14,11 +15,11 @@ class configManager {
     plugin: Plugin;
 
     // saved locally to /data/storage/local.json by localStorage API
-    localCfg: any = structuredClone(cst.defaultLocalConfigs);
+    localCfg: any = structuredClone(tps.defaultLocalConfigs);
 
     // saved publically to /data/publish/{plugin-name}/{cst.pluginFileIdx}
     // need cloud sync cross devices
-    fileIdx: cst.fileIdx = {};
+    fileIdx: tps.fileIdx = {};
 
     setParent(plugin: Plugin) {
         this.plugin = plugin;
@@ -32,7 +33,7 @@ class configManager {
         return Object.keys(this.fileIdx)
     }
 
-    get(key?: cst.localConfigKey) {
+    get(key?: tps.localConfigKey) {
 
         if (key === undefined) {
             // 返回全部数据
@@ -67,7 +68,7 @@ class configManager {
         this.localCfg[key] = value;
     }
 
-    setBgObj(hash_code: string, value: cst.bgObj) {
+    setBgObj(hash_code: string, value: tps.bgObj) {
         // free to add to file_idx
         this.fileIdx[hash_code] = value;
     }
@@ -93,7 +94,7 @@ class configManager {
     }
 
     async reset() {
-        this.localCfg = structuredClone(cst.defaultLocalConfigs);
+        this.localCfg = structuredClone(tps.defaultLocalConfigs);
         this.fileIdx = {};
         this.save();
     }
@@ -124,7 +125,7 @@ class configManager {
 
             try {
                 for (let key in loaded) {
-                    if (key in cst.defaultLocalConfigs) {
+                    if (key in tps.defaultLocalConfigs) {
                         this.set(key, loaded[key]);
                     }
                 }
@@ -154,7 +155,7 @@ class configManager {
 
             try {
                 for (let key in loaded) {
-                    if (key in cst.defaultLocalConfigs) {
+                    if (key in tps.defaultLocalConfigs) {
                         this.setBgObj(key, loaded[key]);
                     }
                 }

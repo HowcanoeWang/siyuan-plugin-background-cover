@@ -1,5 +1,6 @@
 import { configs } from "./configs";
 
+import * as tps from "./types";
 import * as cst from "./constants";
 import * as fileManagerUI from "./fileManagerUI";
 import * as noticeUI from "./noticeUI";
@@ -64,19 +65,19 @@ export function createBgLayer() {
 
 export function useDefaultLiaoLiaoBg() {
     debug(`[bgRender][applySettings] 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图`)
-    changeBackgroundContent(cst.demoImgURL, cst.bgMode.image)
+    changeBackgroundContent(cst.demoImgURL, tps.bgMode.image)
     configs.set('crtBgObj', undefined);
 }
 
-export function changeBackgroundContent(background: string, mode: cst.bgMode) {
+export function changeBackgroundContent(background: string, mode: tps.bgMode) {
     var bgLayer = document.getElementById('bglayer');
 
-    if (mode === cst.bgMode.image) {
+    if (mode === tps.bgMode.image) {
         debug(`[bgRender][changeBackgroundContent] 替换当前背景图片为${background}`)
         bgLayer.style.setProperty('background-image', `url('${background}')`);
-    } else if (mode == cst.bgMode.video) {
+    } else if (mode == tps.bgMode.video) {
         noticeUI.showIndev();
-    } else if (mode == cst.bgMode.live2d) {
+    } else if (mode == tps.bgMode.live2d) {
         noticeUI.showIndev();
     } else {
         error(`[SwitchBgCover Plugin][Error] Background type [${mode}] is not supported, `, 7000, "error");

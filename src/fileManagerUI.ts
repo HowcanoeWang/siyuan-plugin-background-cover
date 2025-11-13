@@ -3,6 +3,7 @@ import packageInfo from '../plugin.json'
 import { Dialog, showMessage } from "siyuan";
 import { KernelApi } from "./siyuanAPI";
 import { configs } from "./configs";
+import * as tps from "./types";
 import * as cst from "./constants";
 import * as settingsUI from "./settingsUI";
 import * as bgRender from "./bgRender";
@@ -50,15 +51,15 @@ export async function checkCacheDirctory() {
     // if config version < 0.3.2, need to the clear cache to update new hash logic
     if (configs.get('version') < '0.3.2' ) {
         showMessage(window.bgCoverPlugin.i18n.updateHashNotice, 7000, 'info');
-        await clearCacheFolder(cst.bgMode.image);
+        await clearCacheFolder(tps.bgMode.image);
         configs.set('version', packageInfo.version);
     }
 
     // check image files
     let imgFiles = await os.listdir(cst.pluginImgDataDir)
 
-    let fileidx: cst.fileIndex = {}
-    let fileidx_db: cst.fileIndex = configs.get('fileidx')
+    let fileidx: tps.fileIndex = {}
+    let fileidx_db: tps.fileIndex = configs.get('fileidx')
     let notCorrectCacheImgs = []
     let extraCacheImgs = []
     let missingCacheImgs = []
@@ -97,7 +98,7 @@ export async function checkCacheDirctory() {
                         // 旧版缓存，需要更新
                         const imageSize = await cv2.getImageSize(bgObj_old.path)
 
-                        let bgObj: cst.bgObj = {
+                        let bgObj: tps.bgObj = {
                             name: bgObj_old.name,
                             path: bgObj_old.path,
                             hash: bgObj_old.hash,
@@ -125,11 +126,11 @@ export async function checkCacheDirctory() {
 
                     debug(`[fileManagerUI][checkCacheDirectory] the cached local file ${item.name} has md5: ${hash_name}`)
 
-                    let bgObj: cst.bgObj = {
+                    let bgObj: tps.bgObj = {
                         name: item.name,
                         path: imgPath,
                         hash: hash_name,
-                        mode: cst.bgMode.image,
+                        mode: tps.bgMode.image,
                         offx: 50,
                         offy: 50,
                         height: imageSize.height,
@@ -179,9 +180,9 @@ export async function checkCacheDirctory() {
     // let live2dFiles = await os.listdir(cst.pluginLive2DataDir)
 }
 
-export async function clearCacheFolder(mode: cst.bgMode){
+export async function clearCacheFolder(mode: tps.bgMode){
     // 图片模式
-    if (mode == cst.bgMode.image) {
+    if (mode == tps.bgMode.image) {
         // 这里应该获取fileidx里面的列表，而不是文件夹内的文件，不然图片缺失的话，删除不掉
         // todo
         let imgList = await os.listdir(cst.pluginImgDataDir);
@@ -219,7 +220,7 @@ export async function clearCacheFolder(mode: cst.bgMode){
         
 
     // live2d 模式
-    } else if (mode == cst.bgMode.live2d) {
+    } else if (mode == tps.bgMode.live2d) {
         // os.rmtree(cst.pluginLive2DataDir);
         // todo
     }
@@ -288,10 +289,10 @@ export async function uploadOneImage(file: File) {
 
             const imageSize = await cv2.getImageSize(imgPath)
 
-            let bgObj: cst.bgObj = {
+            let bgObj: tps.bgObj = {
                 name: file.name,
                 hash: md5,
-                mode: cst.bgMode.image,
+                mode: tps.bgMode.image,
                 path: imgPath,
                 offx: 50,
                 offy: 50,
@@ -319,7 +320,7 @@ export async function batchUploadImages(
     applySetting:boolean=false
     ) 
 {
-    let bgObj:cst.bgObj;
+    let bgObj:tps.bgObj;
 
     debug('[fileManagerUI][batchUploadImages] fileArray', fileArray)
 
@@ -437,7 +438,7 @@ export async function selectPictureDialog() {
 
     let deleteAllImgBtn = document.getElementById('removeAllImgs');
     deleteAllImgBtn.addEventListener('click', async () => {
-        await clearCacheFolder(cst.bgMode.image);
+        await clearCacheFolder(tps.bgMode.image);
     });
 }
 
