@@ -28,20 +28,6 @@ export default class BgCoverPlugin extends Plugin {
         const frontEnd = getFrontend();
         const backEnd = getBackend();
 
-        // this.data[cst.STORAGE_NAME] = {readonlyText: "Readonly"};
-        // await this.saveData(cst.STORAGE_NAME, {readonlyText: "aaa"});
-
-        // var aaa = await this.loadData(cst.STORAGE_NAME)
-        // console.log(aaa, this.data[cst.STORAGE_NAME])
-
-        // ka = new KernelApi()
-
-        // const storage = await ka.getLocalStorage();
-        // console.log(storage);
-
-        // await ka.setLocalStorage('aaa', {'bbb': 'ccc'});
-
-
         this.isMobileLayout = frontEnd === "mobile" || frontEnd === "browser-mobile";
         this.isBrowser = frontEnd.includes("browser");
         this.isAndroidBackend = backEnd === "android";
@@ -142,7 +128,8 @@ export default class BgCoverPlugin extends Plugin {
     }
 
     onunload() {
-        configs.save('[index.ts][onunload]');
+        // solve cloud sync conflicts
+        // configs.save('[index.ts][onunload]');
 
         // remove changes when deactivate plugin
         var bgLayer = document.getElementById('bglayer');
