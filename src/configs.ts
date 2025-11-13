@@ -32,7 +32,7 @@ class configManager {
         return Object.keys(this.fileIdx)
     }
 
-    get(key?: cst.configKey) {
+    get(key?: cst.localConfigKey) {
 
         if (key === undefined) {
             // 返回全部数据

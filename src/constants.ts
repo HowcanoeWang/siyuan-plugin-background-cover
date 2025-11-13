@@ -73,11 +73,7 @@ export const supportedImageSuffix = [".png", ".jpeg", ".jpg", ".jiff", ".jfif"]
 
 export const demoImgURL = './plugins/siyuan-plugin-background-cover/static/FyBE0bUakAELfeF.jpg'
 
-export type configKey = (
-    'autoRefresh' | 'opacity' | 'blur' | 'activate' | 'crtBgObj' |
-    'version' | 'prevTheme' | 'bgCfg' | 'inDev' | 'blockTheme'
-);
-
+// 不进行云同步，当前设备的独有配置
 export var defaultLocalConfigs = {
     'version': packageInfo.version as string,
     // 启动时随机更改图片
@@ -93,6 +89,8 @@ export var defaultLocalConfigs = {
     'inDev': false as boolean,
     'blockTheme': {light:{}, dark:{}} as blockThemeConfig,
 };
+export type localConfigKey = keyof typeof defaultLocalConfigs;
+
 
 export const diyIcon = {
     iconLogo: `<symbol id="iconLogo" viewBox="0 0 32 32">
