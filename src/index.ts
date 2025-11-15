@@ -4,7 +4,7 @@ import {
     getBackend,
 } from "siyuan";
 
-import { configs } from './configs';
+import { confmngr } from './configs';
 import {
     info, debug,
     getCurrentThemeInfo
@@ -106,10 +106,10 @@ export default class BgCoverPlugin extends Plugin {
     }
 
     async onLayoutReady() {
-        configs.setParent(this);
+        confmngr.setParent(this);
         
         //初始化数据
-        await configs.load();
+        await confmngr.load();
 
         bgRender.createBgLayer();
         
@@ -117,7 +117,7 @@ export default class BgCoverPlugin extends Plugin {
 
         // load the user setting data
         const [themeMode, themeName] = getCurrentThemeInfo();
-        configs.set('prevTheme', themeName);
+        confmngr.set('prevTheme', themeName);
 
         await bgRender.applySettings();
 
@@ -141,14 +141,14 @@ export default class BgCoverPlugin extends Plugin {
 
     private async themeOnChange() {
         const [themeMode, themeName] = getCurrentThemeInfo();
-        let prevTheme = configs.get('prevTheme')
+        let prevTheme = confmngr.get('prevTheme')
 
         debug(`Theme changed! from ${prevTheme} to ${themeMode} | ${themeName}`)
 
         if (prevTheme !== themeName) {
             // 更换主题时且没有重载时，提示需要刷新笔记页面
-            configs.set('prevTheme', themeName);
-            await configs.save('[index][themeOnChange]')
+            confmngr.set('prevTheme', themeName);
+            await confmngr.save('[index][themeOnChange]')
             noticeUI.themeRefreshDialog();
             // 如果重载了，这个界面会在onLoadReady时被去掉
         }

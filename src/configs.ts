@@ -195,4 +195,4 @@ class configManager {
     }
 }
 
-export const configs: configManager = new configManager();
+export const confmngr: configManager = new configManager();

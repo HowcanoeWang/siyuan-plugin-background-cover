@@ -1,4 +1,4 @@
-import { configs } from "./configs";
+import { confmngr } from "./configs";
 
 import * as tps from "./types";
 import * as cst from "./constants";
@@ -66,7 +66,7 @@ export function createBgLayer() {
 export function useDefaultLiaoLiaoBg() {
     debug(`[bgRender][applySettings] 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图`)
     changeBackgroundContent(cst.demoImgURL, tps.bgMode.image)
-    configs.set('crtBgObj', undefined);
+    confmngr.set('crtBgObj', undefined);
 }
 
 export function changeBackgroundContent(background: string, mode: tps.bgMode) {
@@ -85,7 +85,7 @@ export function changeBackgroundContent(background: string, mode: tps.bgMode) {
 };
 
 export function isBlockTheme(){
-    var blockTheme = configs.get('blockTheme')
+    var blockTheme = confmngr.get('blockTheme')
     const themeModeText = ['light', 'dark']
     const [themeMode, themeName] = getCurrentThemeInfo();
 
@@ -98,7 +98,7 @@ export function isBlockTheme(){
 export function changeOpacity(alpha: number) {
     let opacity = 0.99 - 0.25 * alpha;
 
-    if (configs.get('activate') && !isBlockTheme() && alpha !== 0) {
+    if (confmngr.get('activate') && !isBlockTheme() && alpha !== 0) {
         document.body.style.setProperty('opacity', opacity.toString());
     } else {
         document.body.style.removeProperty('opacity');
@@ -126,7 +126,7 @@ export async function applySettings() {
     var bgLayer = document.getElementById('bglayer');
     debug(bgLayer);
 
-    if (configs.get('activate') && !isBlockTheme() ) {
+    if (confmngr.get('activate') && !isBlockTheme() ) {
         bgLayer.style.removeProperty('display');
     } else {
         bgLayer.style.setProperty('display', 'none');
@@ -138,17 +138,17 @@ export async function applySettings() {
     if (cacheImgNum === 0) {
         // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
         useDefaultLiaoLiaoBg();
-    } else if (configs.get('crtBgObj') === undefined) {
+    } else if (confmngr.get('crtBgObj') === undefined) {
         // 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张
         debug(`[bgRender][applySettings] 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张`)
         await topbarUI.selectPictureRandom();
     } else {
         // 缓存中有1张以上的图片，bjObj也有内容且图片存在
         debug(`[bgRender][applySettings] 缓存中有1张以上的图片，bjObj也有内容且图片存在`)
-        let crtBgObj = configs.get('crtBgObj')
-        let fileidx = configs.get('fileidx')
+        let crtBgObj = confmngr.get('crtBgObj')
+        let fileidx = confmngr.get('fileidx')
         // 没有开启启动自动更换图片，则直接显示该图片
-        if (crtBgObj.hash in fileidx && !configs.get('autoRefresh')) {
+        if (crtBgObj.hash in fileidx && !confmngr.get('autoRefresh')) {
             debug(`[bgRender][applySettings] 没有开启启动自动更换图片，则直接显示当前图片`)
             changeBackgroundContent(crtBgObj.path, crtBgObj.mode)
         } else {
@@ -158,12 +158,12 @@ export async function applySettings() {
         }
     }
 
-    changeOpacity(configs.get('opacity'))
-    changeBlur(configs.get('blur'))
-    if (configs.get('crtBgObj') === undefined){
+    changeOpacity(confmngr.get('opacity'))
+    changeBlur(confmngr.get('blur'))
+    if (confmngr.get('crtBgObj') === undefined){
         changeBgPosition(null, null)
     }else{
-        changeBgPosition(configs.get('crtBgObj').offx, configs.get('crtBgObj').offy)
+        changeBgPosition(confmngr.get('crtBgObj').offx, confmngr.get('crtBgObj').offy)
     }
     
     settingsUI.updateSettingPanelElementStatus()

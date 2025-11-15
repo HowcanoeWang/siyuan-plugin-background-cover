@@ -10,7 +10,7 @@ import {
 import { debug, OS } from './utils';
 
 import BgCoverPlugin from "./index"
-import { configs } from './configs';
+import { confmngr } from './configs';
 import * as cst from './constants';
 import * as noticeUI from "./noticeUI";
 import * as settingsUI from "./settingsUI";
@@ -112,8 +112,8 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
         });
         menu.addItem({
             id: 'pluginOnOffMenu',
-            icon: `${configs.get('activate') ? 'iconClose' : 'iconSelect'}`,
-            label: `${configs.get('activate') ? window.bgCoverPlugin.i18n.closeBackgroundLabel : window.bgCoverPlugin.i18n.openBackgroundLabel}`,
+            icon: `${confmngr.get('activate') ? 'iconClose' : 'iconSelect'}`,
+            label: `${confmngr.get('activate') ? window.bgCoverPlugin.i18n.closeBackgroundLabel : window.bgCoverPlugin.i18n.openBackgroundLabel}`,
             accelerator: pluginInstance.commands[2].customHotkey,
             click: () => {
                 topbarUI.pluginOnOff();
@@ -150,8 +150,8 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
 };
 
 export async function pluginOnOff() {
-    configs.set('activate', !configs.get('activate'))
-    configs.save('[topbarUI][pluginOnOff]');
+    confmngr.set('activate', !confmngr.get('activate'))
+    confmngr.save('[topbarUI][pluginOnOff]');
     bgRender.applySettings();
 }
 
@@ -173,13 +173,13 @@ export async function selectPictureRandom(manualPress: boolean = false) {
         let belayerElement = document.getElementById('bglayer')
         if (belayerElement.style.getPropertyValue('background-image') === '') {
             // 如果当前背景不存在任何图片
-            let bgObj = configs.get('crtBgObj')
+            let bgObj = confmngr.get('crtBgObj')
             bgRender.changeBackgroundContent(bgObj.path, bgObj.mode)
         }
     } else {
         // 随机选择一张图
-        let fileidx = configs.get('fileidx')
-        let crt_hash = configs.get('crtBgObj').hash
+        let fileidx = confmngr.get('fileidx')
+        let crt_hash = confmngr.get('crtBgObj').hash
         let r_hash = ''
         while (true) {
             let r = Math.floor(Math.random() * cacheImgNum)
@@ -193,9 +193,9 @@ export async function selectPictureRandom(manualPress: boolean = false) {
         }
         debug('[topbarUI][selectPictureRandom] 跳出抽卡死循环,前景图为：', fileidx[r_hash])
         bgRender.changeBackgroundContent(fileidx[r_hash].path, fileidx[r_hash].mode)
-        configs.set('bgObj', fileidx[r_hash])
+        confmngr.set('bgObj', fileidx[r_hash])
     }
-    await configs.save('[topbarUI][selectPictureRandom]')
+    await confmngr.save('[topbarUI][selectPictureRandom]')
     settingsUI.updateSettingPanelElementStatus()
 }
 
@@ -215,7 +215,7 @@ export async function addSingleLocalImageFile() {
 
         // 文件不重复且上传成功
         if (bgObj !== undefined) {
-            await configs.save('[topbarUI][addSinglelocalImageFile]');
+            await confmngr.save('[topbarUI][addSinglelocalImageFile]');
             bgRender.changeBackgroundContent(bgObj.path, bgObj.mode);
             settingsUI.updateSettingPanelElementStatus();
         };
@@ -238,7 +238,7 @@ export async function addSeveralLocalImagesFile() {
 
             // 文件不重复且上传成功
             if (bgObj !== undefined) {
-                await configs.save('[topbarUI][addSinglelocalImageFile]');
+                await confmngr.save('[topbarUI][addSinglelocalImageFile]');
                 settingsUI.updateSettingPanelElementStatus();
             };
         }

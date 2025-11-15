@@ -2,7 +2,7 @@ import packageInfo from '../plugin.json'
 import BgCoverPlugin from "./index"
 
 import { Dialog, getBackend, getFrontend, showMessage} from "siyuan";
-import { configs } from "./configs";
+import { confmngr } from "./configs";
 
 import * as cst from "./constants";
 import * as fileManagerUI from "./fileManagerUI";
@@ -40,17 +40,17 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
             <div class="fn__flex-1">
                 ${window.bgCoverPlugin.i18n.imgPathLabel}
                 <div class="b3-label__text">
-                    <code id="crtImgName" class="fn__code">${configs.get('crtBgObj') === undefined ? cst.demoImgURL : configs.get('crtBgObj').name}</code>
+                    <code id="crtImgName" class="fn__code">${confmngr.get('crtBgObj') === undefined ? cst.demoImgURL : confmngr.get('crtBgObj').name}</code>
                 </div>
             </div>
             <div class="fn__flex-center">  
                 <div>
                     <label for="cx">X</label> 
-                    <input id="cx" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${configs.get('crtBgObj') === undefined ? '50' : configs.get('crtBgObj').offx}>
+                    <input id="cx" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${confmngr.get('crtBgObj') === undefined ? '50' : confmngr.get('crtBgObj').offx}>
                 </div>
                 <div>
                     <label for="cy">Y</label> 
-                    <input id="cy" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${configs.get('crtBgObj') === undefined ? '50' : configs.get('crtBgObj').offy}>
+                    <input id="cy" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${confmngr.get('crtBgObj') === undefined ? '50' : confmngr.get('crtBgObj').offy}>
                 </div>
             </div>
         </label>
@@ -91,7 +91,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                 id="onoffInput"
                 class="b3-switch fn__flex-center"
                 type="checkbox"
-                value="${configs.get('activate')}"
+                value="${confmngr.get('activate')}"
             />
         </label>
 
@@ -141,7 +141,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                 id="autoRefreshInput"
                 class="b3-switch fn__flex-center"
                 type="checkbox"
-                value="${configs.get('autoRefresh')}"
+                value="${confmngr.get('autoRefresh')}"
             />
         </label>
 
@@ -156,8 +156,8 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                     ${window.bgCoverPlugin.i18n.opacityDes}
                 </div>
             </div>
-            <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${configs.get('opacity')}">   
-                <input id="opacityInput" class="b3-slider fn__size200" max="1" min="0" step="0.05" type="range" value="${configs.get('opacity')}">
+            <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${confmngr.get('opacity')}">   
+                <input id="opacityInput" class="b3-slider fn__size200" max="1" min="0" step="0.05" type="range" value="${confmngr.get('opacity')}">
             </div>
         </label>
         <label class="fn__flex b3-label config__item">
@@ -167,8 +167,8 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                     ${window.bgCoverPlugin.i18n.blurDes}
                 </div>
             </div>
-            <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${configs.get('blur')}">   
-                <input id="blurInput" class="b3-slider fn__size200" max="10" min="0" step="1" type="range" value="${configs.get('blur')}">
+            <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${confmngr.get('blur')}">   
+                <input id="blurInput" class="b3-slider fn__size200" max="10" min="0" step="1" type="range" value="${confmngr.get('blur')}">
             </div>
         </label>
 
@@ -211,7 +211,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                 id="devModeInput"
                 class="b3-switch fn__flex-center"
                 type="checkbox"
-                value="${configs.get('inDev')}"
+                value="${confmngr.get('inDev')}"
             />
         </label>
 
@@ -265,7 +265,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         // 停止拖动的时候，保存图片的位置
         elementsArray[i].addEventListener("change", () => {
             //
-            let bgObj = configs.get('crtBgObj')
+            let bgObj = confmngr.get('crtBgObj')
 
             // 使用默认的了了图，此时bgObj为undefined，没有下面这些属性，跳过
             if (bgObj !== undefined) {
@@ -273,14 +273,14 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                 bgObj.offx = cxElement.value
                 bgObj.offy = cyElement.value
 
-                configs.set('bgObj', bgObj)
+                confmngr.set('bgObj', bgObj)
 
-                let fileidx = configs.get('fileidx')
+                let fileidx = confmngr.get('fileidx')
                 fileidx[bgObj.hash] = bgObj
 
-                configs.set('fileidx', fileidx)
+                confmngr.set('fileidx', fileidx)
 
-                configs.save('[settingsUI][openSettingDialog][cxyElement.change]');
+                confmngr.save('[settingsUI][openSettingDialog][cxyElement.change]');
             }
 
         })
@@ -295,12 +295,12 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
     // plugin onoff switch
     const activateElement = document.getElementById('onoffInput') as HTMLInputElement;
-    activateElement.checked = configs.get('activate');
+    activateElement.checked = confmngr.get('activate');
 
     activateElement.addEventListener("click", () => {
-        configs.set('activate', !configs.get('activate'));
-        activateElement.value = configs.get('activate');
-        configs.save('[settingsUI][openSettingDialog][activateElement.change]');
+        confmngr.set('activate', !confmngr.get('activate'));
+        activateElement.value = confmngr.get('activate');
+        confmngr.save('[settingsUI][openSettingDialog][activateElement.change]');
         bgRender.applySettings();
     })
 
@@ -309,22 +309,22 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
     // the Auto refresh switch
     const autoRefreshElement = document.getElementById('autoRefreshInput') as HTMLInputElement;
-    autoRefreshElement.checked = configs.get('autoRefresh');
+    autoRefreshElement.checked = confmngr.get('autoRefresh');
 
     autoRefreshElement.addEventListener("click", () => {
-        configs.set('autoRefresh', !configs.get('autoRefresh'));
-        autoRefreshElement.value = `${configs.get('autoRefresh')}`;
-        configs.save('[settingsUI][openSettingDialog][autoRefreshElement.change]');
+        confmngr.set('autoRefresh', !confmngr.get('autoRefresh'));
+        autoRefreshElement.value = `${confmngr.get('autoRefresh')}`;
+        confmngr.save('[settingsUI][openSettingDialog][autoRefreshElement.change]');
     })
 
     // transparency/opacity slider
     const opacityElement = document.getElementById('opacityInput') as HTMLInputElement;
     opacityElement.addEventListener("change", () => {
-        configs.set('opacity', parseFloat(opacityElement.value));
-        if (configs.get('activate')) {
-            bgRender.changeOpacity(configs.get('opacity'));
+        confmngr.set('opacity', parseFloat(opacityElement.value));
+        if (confmngr.get('activate')) {
+            bgRender.changeOpacity(confmngr.get('opacity'));
         }
-        configs.save('[settingsUI][openSettingDialog][opacityElement.change]');
+        confmngr.save('[settingsUI][openSettingDialog][opacityElement.change]');
     })
     opacityElement.addEventListener("input", () => {
         // update the aira-label value
@@ -334,11 +334,11 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     // blur slider
     const blurElement =  document.getElementById('blurInput') as HTMLInputElement;
     blurElement.addEventListener("change", () => {
-        configs.set('blur', parseFloat(blurElement.value));
-        if (configs.get('activate')) {
-            bgRender.changeBlur(configs.get('blur'));
+        confmngr.set('blur', parseFloat(blurElement.value));
+        if (confmngr.get('activate')) {
+            bgRender.changeBlur(confmngr.get('blur'));
         }
-        configs.save('[settingsUI][openSettingDialog][blurElement.change]');
+        confmngr.save('[settingsUI][openSettingDialog][blurElement.change]');
     })
     blurElement.addEventListener("input", () => {
         // update the aira-label value
@@ -349,19 +349,19 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     const resetSettingElement = document.getElementById('resetBtn') as HTMLButtonElement;
     resetSettingElement.addEventListener("click", async () => {
         os.rmtree(cst.pluginImgDataDir);
-        configs.reset();
-        await configs.save('[settingsUI][openSettingDialog][resetSettingElement.click]');
+        confmngr.reset();
+        await confmngr.save('[settingsUI][openSettingDialog][resetSettingElement.click]');
         await bgRender.applySettings();
     })
 
     // the dev mode settings
     const devModeElement = document.getElementById('devModeInput') as HTMLInputElement;
-    devModeElement.checked = configs.get('inDev');
+    devModeElement.checked = confmngr.get('inDev');
 
     devModeElement.addEventListener("click", () => {
-        configs.set('inDev', !configs.get('inDev'));
-        devModeElement.value = `${configs.get('inDev')}`;
-        configs.save('[settingsUI][openSettingDialog][devModeElement.change]');
+        confmngr.set('inDev', !confmngr.get('inDev'));
+        devModeElement.value = `${confmngr.get('inDev')}`;
+        confmngr.save('[settingsUI][openSettingDialog][devModeElement.change]');
     })
 
     // const inputElement = dialog.element.querySelector("textarea");
@@ -405,7 +405,7 @@ export function generateBlockThemeElement(){
         document.getElementById('darkThemeBlockContainer') as HTMLDivElement,
     ]
 
-    var blockThemeConfig = configs.get('blockTheme');
+    var blockThemeConfig = confmngr.get('blockTheme');
     const themeModeText = ['light', 'dark']
     debug('[settingsUI][generateBlockThemeElement] Current block theme config:', blockThemeConfig)
     
@@ -465,7 +465,7 @@ export function generateBlockThemeElement(){
             onOffBtn.checked = btnOnOffValue;
 
             onOffBtn.addEventListener('click', async () => {
-                var blockThemeCfg = configs.get('blockTheme');
+                var blockThemeCfg = confmngr.get('blockTheme');
 
                 let mode = onOffBtn.getAttribute('data-mode');
                 let theme = onOffBtn.getAttribute('data-theme');
@@ -473,15 +473,15 @@ export function generateBlockThemeElement(){
                 blockThemeCfg[mode][theme] = !blockThemeCfg[mode][theme]
                 debug(`[settingsUI] User changed blockTheme ${theme} in ${mode} mode`)
                 
-                configs.set('blockTheme', blockThemeCfg);
-                configs.save('[settingsUI][generateBlockThemeElement][onOffBtn.click]');
+                confmngr.set('blockTheme', blockThemeCfg);
+                confmngr.save('[settingsUI][generateBlockThemeElement][onOffBtn.click]');
 
                 await bgRender.applySettings();
             })
         }
     }
-    configs.set('blockTheme', blockThemeConfig);
-    configs.save('[settingsUI][generateBlockThemeElement]');
+    confmngr.set('blockTheme', blockThemeConfig);
+    confmngr.save('[settingsUI][generateBlockThemeElement]');
 }
 
 export function updateSliderElement(elementid:string, value:string, setAriaLabel:boolean=true) {
@@ -506,7 +506,7 @@ export function updateCheckedElement(elementid:string, value:boolean) {
 }
 
 export function opacityShortcut(isAdd:boolean) {
-    var opacity = configs.get('opacity');
+    var opacity = confmngr.get('opacity');
     if (isAdd) {
         opacity = Number((opacity + 0.1).toFixed(2));
     } else {
@@ -517,9 +517,9 @@ export function opacityShortcut(isAdd:boolean) {
         showMessage(`[${window.bgCoverPlugin.i18n.addTopBarIcon}]${window.bgCoverPlugin.i18n.opacityShortcutOverflow}`, 4000, 'info')
         return;
     } else {
-        configs.set('opacity', opacity);
-        configs.save('[settingsUI][opacityShortcut]');
-        if (configs.get('activate')) {
+        confmngr.set('opacity', opacity);
+        confmngr.save('[settingsUI][opacityShortcut]');
+        if (confmngr.get('activate')) {
             bgRender.changeOpacity(opacity);
         }
         updateSliderElement('opacityInput', `${opacity}`);
@@ -528,7 +528,7 @@ export function opacityShortcut(isAdd:boolean) {
 }
 
 export function blurShortcut(isAdd:boolean) {
-    var blur = configs.get('blur');
+    var blur = confmngr.get('blur');
     if (isAdd) {
         blur = Number((blur + 1).toFixed(0));
     } else {
@@ -539,9 +539,9 @@ export function blurShortcut(isAdd:boolean) {
         showMessage(`[${window.bgCoverPlugin.i18n.addTopBarIcon}]${window.bgCoverPlugin.i18n.blurShortcutOverflow}`, 4000, 'info')
         return;
     } else {
-        configs.set('blur', blur);
-        configs.save('[settingsUI][blurShortcut]');
-        if (configs.get('activate')) {
+        confmngr.set('blur', blur);
+        confmngr.save('[settingsUI][blurShortcut]');
+        if (confmngr.get('activate')) {
             bgRender.changeBlur(blur);
         }
         updateSliderElement('blurInput', `${blur}`);
@@ -554,8 +554,8 @@ export function updateSettingPanelElementStatus() {
     if (crtImageNameElement === null || crtImageNameElement === undefined) {
         // debug(`Setting panel not open`) 
     } else {
-        let bgObj = configs.get('crtBgObj')
-        if (configs.get('crtBgObj') === undefined) {
+        let bgObj = confmngr.get('crtBgObj')
+        if (confmngr.get('crtBgObj') === undefined) {
             crtImageNameElement.textContent = cst.demoImgURL.toString()
         } else {
             crtImageNameElement.textContent = bgObj.name
@@ -574,19 +574,19 @@ export function updateSettingPanelElementStatus() {
     }
 
     // update onoff switch button
-    updateCheckedElement('onoffInput', configs.get('activate'))
+    updateCheckedElement('onoffInput', confmngr.get('activate'))
 
     // 更新autorefresh按钮
-    updateCheckedElement('autoRefreshInput', configs.get('autoRefresh'))
+    updateCheckedElement('autoRefreshInput', confmngr.get('autoRefresh'))
 
     // 更新opacity滑动条
-    updateSliderElement('opacityInput', configs.get('opacity'))
+    updateSliderElement('opacityInput', confmngr.get('opacity'))
 
     // 更新blur滑动条
-    updateSliderElement('blurInput', configs.get('blur'))
+    updateSliderElement('blurInput', confmngr.get('blur'))
 
     // 更新开发者模式按钮
-    updateCheckedElement('devModeInput', configs.get('inDev'))
+    updateCheckedElement('devModeInput', confmngr.get('inDev'))
 
 }
 
@@ -598,13 +598,13 @@ export function updateOffsetSwitch() {
         // debug(`Setting panel not open`) 
     } else {
         let bglayerElement = document.getElementById('bglayer')
-        if (configs.get('activate')) {
+        if (confmngr.get('activate')) {
             const container_h = parseInt(getComputedStyle(bglayerElement).height)  // -> '1280px'
             const container_w = parseInt(getComputedStyle(bglayerElement).width)
 
             let fullside: string
             // 使用默认的了了图
-            if (configs.get('crtBgObj') === undefined) {
+            if (confmngr.get('crtBgObj') === undefined) {
                 fullside = cv2.getFullSide(
                     container_w, container_h,
                     2458, 1383 // 默认了了图的宽高
@@ -615,7 +615,7 @@ export function updateOffsetSwitch() {
             }else{
                 fullside = cv2.getFullSide(
                     container_w, container_h,
-                    configs.get('crtBgObj').width, configs.get('crtBgObj').height
+                    confmngr.get('crtBgObj').width, confmngr.get('crtBgObj').height
                 )
             }
 

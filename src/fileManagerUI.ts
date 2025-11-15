@@ -2,7 +2,7 @@ import packageInfo from '../plugin.json'
 
 import { Dialog, showMessage } from "siyuan";
 import { KernelApi } from "./siyuanAPI";
-import { configs } from "./configs";
+import { confmngr } from "./configs";
 import * as tps from "./types";
 import * as cst from "./constants";
 import * as settingsUI from "./settingsUI";
@@ -26,11 +26,11 @@ let ka = new KernelApi();
 
 export function getCacheImgNum() {
     let cacheImgNum: number
-    let fileidx = configs.get('fileidx')
+    let fileidx = confmngr.get('fileidx')
     if (fileidx === null || fileidx == undefined) {
         cacheImgNum = 0
     } else {
-        cacheImgNum = Object.keys(configs.get('fileidx')).length
+        cacheImgNum = Object.keys(confmngr.get('fileidx')).length
     }
 
     return cacheImgNum
@@ -49,17 +49,17 @@ export async function checkCacheDirctory() {
     }
 
     // if config version < 0.3.2, need to the clear cache to update new hash logic
-    if (configs.get('version') < '0.3.2' ) {
+    if (confmngr.get('version') < '0.3.2' ) {
         showMessage(window.bgCoverPlugin.i18n.updateHashNotice, 7000, 'info');
         await clearCacheFolder(tps.bgMode.image);
-        configs.set('version', packageInfo.version);
+        confmngr.set('version', packageInfo.version);
     }
 
     // check image files
     let imgFiles = await os.listdir(cst.pluginImgDataDir)
 
     let fileidx: tps.fileIndex = {}
-    let fileidx_db: tps.fileIndex = configs.get('fileidx')
+    let fileidx_db: tps.fileIndex = confmngr.get('fileidx')
     let notCorrectCacheImgs = []
     let extraCacheImgs = []
     let missingCacheImgs = []
@@ -154,8 +154,8 @@ export async function checkCacheDirctory() {
         }
     }
 
-    configs.set('fileidx', fileidx)
-    await configs.save('[fileManagerUI][checkCacheDirectory]')
+    confmngr.set('fileidx', fileidx)
+    await confmngr.save('[fileManagerUI][checkCacheDirectory]')
 
     // raise warning to users
     if (notCorrectCacheImgs.length !== 0) {
@@ -186,7 +186,7 @@ export async function clearCacheFolder(mode: tps.bgMode){
         // 这里应该获取fileidx里面的列表，而不是文件夹内的文件，不然图片缺失的话，删除不掉
         // todo
         let imgList = await os.listdir(cst.pluginImgDataDir);
-        let fileidx = configs.get('fileidx')
+        let fileidx = confmngr.get('fileidx')
 
         // 此部分魔改os.rmtree，因为要考虑到未来的可拓展性，有可能存在live2d的种类，因此不能直接简单的fileidx={}来解决
         for (let i in imgList) {
@@ -205,7 +205,7 @@ export async function clearCacheFolder(mode: tps.bgMode){
             }
         }
 
-        configs.set('fileidx', fileidx)
+        confmngr.set('fileidx', fileidx)
 
         // 清除缓存控制面板中的列表项和图片缓存
         let ulContainerElement = document.getElementById('cacheImgList');
@@ -231,11 +231,11 @@ export async function clearCacheFolder(mode: tps.bgMode){
         bgRender.useDefaultLiaoLiaoBg();
     };
 
-    await configs.save('[fileManagerUI][clearCacheFolder]');
+    await confmngr.save('[fileManagerUI][clearCacheFolder]');
 }
 
 export async function imgExistsInCache(file: File, notice: boolean = true): Promise<string> {
-    let fileidx = configs.get('fileidx')
+    let fileidx = confmngr.get('fileidx')
 
     const blobSlice = File.prototype.slice
     var chunk_blob = blobSlice.call(file, 0, Math.min(file.size, cst.hashLength)); // 2mb header blob
@@ -271,7 +271,7 @@ export async function uploadOneImage(file: File) {
         showMessage(`${file.name}-${fileSizeMB.toFixed(2)}MB<br>${window.bgCoverPlugin.i18n.addSingleImageUploadNotice}`, 3000, "info");
     }
 
-    let fileidx = configs.get('fileidx');
+    let fileidx = confmngr.get('fileidx');
     if (fileidx === undefined || fileidx === null) {
         fileidx = {};
     };
@@ -302,8 +302,8 @@ export async function uploadOneImage(file: File) {
 
             fileidx[bgObj.hash] = bgObj;
 
-            configs.set('bgObj', bgObj);
-            configs.set('fileidx', fileidx);
+            confmngr.set('bgObj', bgObj);
+            confmngr.set('fileidx', fileidx);
 
             debug(`[fileManagerUI][addSingleLocalImageFile]: fileidx ${fileidx}`);
 
@@ -333,7 +333,7 @@ export async function batchUploadImages(
             debug('[fileManagerUI][batchUploadImages] 在上传的循环内', bgObj)
         };
 
-        await configs.save('[fileManagerUI][batchUploadImages]');
+        await confmngr.save('[fileManagerUI][batchUploadImages]');
 
         if (applySetting){
             debug('[fileManagerUI][batchUploadImages] 在应用设置的判断内', bgObj)
@@ -459,7 +459,7 @@ export function generateCacheImgList(){
     // </li>
 
     let listHtml:Array<HTMLLIElement> = []
-    let fileidx = configs.get('fileidx')
+    let fileidx = confmngr.get('fileidx')
     for (const i in fileidx) {
         let bgObj = fileidx[i]
 
@@ -489,9 +489,9 @@ export function generateCacheImgList(){
          */
         setBgBtn.addEventListener('click', () => {
             bgRender.changeBackgroundContent(bgObj.path, bgObj.mode);
-            configs.set('bgObj', bgObj);
+            confmngr.set('bgObj', bgObj);
         
-            configs.save('[fileManagerUI][generateCacheImgList][setBgBtn.click]');
+            confmngr.save('[fileManagerUI][generateCacheImgList][setBgBtn.click]');
         });
 
 
@@ -512,9 +512,9 @@ export function generateCacheImgList(){
         
             // 移除fileidx中的项目
             topbarUI.selectPictureRandom();
-            let fileidx = configs.get('fileidx');
+            let fileidx = confmngr.get('fileidx');
             delete fileidx[bgObj.hash];
-            configs.set('fileidx', fileidx);
+            confmngr.set('fileidx', fileidx);
         
             // 调用os来移除本地文件夹中的缓存文件
             debug(`[fileManagerUI][_rmBg] 移除下列路径的图片：${cst.pluginImgDataDir}/${bgObj.name}`);
@@ -527,7 +527,7 @@ export function generateCacheImgList(){
                 bgRender.useDefaultLiaoLiaoBg();
             };
         
-            configs.save('[fileManagerUI][generateCacheImgList][delBtn.click]');
+            confmngr.save('[fileManagerUI][generateCacheImgList][delBtn.click]');
         });
 
         /**
