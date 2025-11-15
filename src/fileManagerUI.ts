@@ -36,30 +36,19 @@ export function getCacheImgNum() {
     return cacheImgNum
 }
 
-export async function checkCacheDirctory() {
-    // check verion and remove old cache directory
-    if ((window as any).siyuan.config.system.kernelVersion >= '2.9.3') {
-        let oldpluginAssetsDir = `/data/plugins/${packageInfo.name}/assets`;
+export async function checkAssetsDir() {
 
-        let imgFiles = await os.listdir(oldpluginAssetsDir);
-        if (imgFiles !== null && imgFiles.length > 0) {
-            showMessage(window.bgCoverPlugin.i18n.cacheDirectoryMove, 7000, "info");
-            await os.rmtree(oldpluginAssetsDir);
-        }
-    }
-
-    // if config version < 0.3.2, need to the clear cache to update new hash logic
-    if (confmngr.get('version') < '0.3.2' ) {
-        showMessage(window.bgCoverPlugin.i18n.updateHashNotice, 7000, 'info');
-        await clearCacheFolder(tps.bgMode.image);
-        confmngr.set('version', packageInfo.version);
+    // check if folder exists or not
+    if (!(await os.folderExists(cst.pluginAssetsDir))) {
+        debug(`[fileManagerUI][checkAssetsDir] 插件数据根目录不存在，创建根目录${cst.pluginAssetsDir}`)
+        await os.mkdir(cst.pluginAssetsDir);
     }
 
     // check image files
-    let imgFiles = await os.listdir(cst.pluginImgDataDir)
+    let imgFiles = await os.listdir(cst.pluginAssetsDir)
 
-    let fileidx: tps.fileIndex = {}
-    let fileidx_db: tps.fileIndex = confmngr.get('fileidx')
+    let fileidx: tps.fileIdx = {}
+    let fileidx_db: tps.fileIdx = confmngr.get('fileidx')
     let notCorrectCacheImgs = []
     let extraCacheImgs = []
     let missingCacheImgs = []
@@ -70,80 +59,45 @@ export async function checkCacheDirctory() {
 
     for (let i in imgFiles) {
         let item = imgFiles[i]
-        if (item.isDir) {
-            // live2d的文件目录
-            continue
-        } else {
-            // 背景图片
-            debug(`[fileManagerUI][checkCacheDirectory] Check ${item.name} in cached dir`)
-            if (item.name.slice(0, 5) === 'hash-') {
-                const [hash_name, suffix] = os.splitext(item.name.split('-')[1])
 
-                debug(`[fileManagerUI][checkCacheDirectory] hash_name: `, hash_name, fileidx_db, extraCacheImgs)
+        // 背景图片
+        debug(`[fileManagerUI][checkImgAssets] Check ${item.name} in cached dir`)
+        if (item.name.slice(0, 5) === 'hash-') {
+            const [hash_name, suffix] = os.splitext(item.name.split('-')[1])
 
-                // window.fo = await os.openFile(
-                //     `${cst.pluginImgDataDir.slice(5)}/${item.name}`, 
-                //     item.name, 
-                //     "image/*"
-                // );
-                // debug(`[fileManagerUI][checkCacheDirectory] open file to File object`)
+            debug(`[fileManagerUI][checkImgAssets] hash_name: `, hash_name, fileidx_db, extraCacheImgs)
 
-                if (hash_name in fileidx_db) {
-                    let bgObj_old = fileidx_db[hash_name]
+            if (hash_name in fileidx_db) {
+                let bgObj_old = fileidx_db[hash_name]
 
-                    // 对于旧版本的fileidx_db, 检查bgObj的属性是否有遗漏，有的话就补上新属性
-                    if (bgObj_old.offx === undefined ||
-                        bgObj_old.width === undefined ||
-                        bgObj_old.width === 0) {
-                        // 旧版缓存，需要更新
-                        const imageSize = await cv2.getImageSize(bgObj_old.path)
+                fileidx[hash_name] = bgObj_old
 
-                        let bgObj: tps.bgObj = {
-                            name: bgObj_old.name,
-                            path: bgObj_old.path,
-                            hash: bgObj_old.hash,
-                            mode: bgObj_old.mode,
-                            offx: 50,
-                            offy: 50,
-                            height: imageSize.height,
-                            width: imageSize.width
-                        }
-
-                        fileidx[hash_name] = bgObj
-
-                        debug("settings.fileidx为旧版配置，已更新", bgObj)
-                    } else {
-                        fileidx[hash_name] = bgObj_old
-                    }
-                } else {
-                    // 在缓存文件夹中，但图片并不在fileidx中（图片多余了）
-                    // 更新版本：把多余的图片添加到缓存中而不是删除
-                    extraCacheImgs.push(item.name)
-                    //ka.removeFile(`${cst.pluginImgDataDir}/${item.name}`)
-                    // slice(5) to remove '/data' prefix
-                    const imgPath = `${cst.pluginImgDataDir.slice(5)}/${item.name}`
-                    const imageSize = await cv2.getImageSize(imgPath)
-
-                    debug(`[fileManagerUI][checkCacheDirectory] the cached local file ${item.name} has md5: ${hash_name}`)
-
-                    let bgObj: tps.bgObj = {
-                        name: item.name,
-                        path: imgPath,
-                        hash: hash_name,
-                        mode: tps.bgMode.image,
-                        offx: 50,
-                        offy: 50,
-                        height: imageSize.height,
-                        width: imageSize.width
-                    }
-
-                    fileidx[hash_name] = bgObj
-                }
             } else {
-                // 非法缓存图片
-                notCorrectCacheImgs.push(item.name)
-                ka.removeFile(`${cst.pluginImgDataDir}/${item.name}`)
+                // 在缓存文件夹中，但图片并不在fileidx中（图片多余了）
+                // 更新版本：把多余的图片添加到缓存中而不是删除
+                extraCacheImgs.push(item.name)
+                // ka.removeFile(`${cst.pluginImgDataDir}/${item.name}`)
+                // slice(5) to remove '/data' prefix
+                const imgPath = `${cst.pluginAssetsDir.slice(5)}/${item.name}`
+                const imageSize = await cv2.getImageSize(imgPath)
+
+                debug(`[fileManagerUI][checkImgAssets] the cached local file ${item.name} has md5: ${hash_name}`)
+
+                let bgObj: tps.bgObj = {
+                    name: item.name,
+                    path: imgPath,
+                    hash: hash_name,
+                    mode: tps.bgMode.image,
+                    height: imageSize.height,
+                    width: imageSize.width
+                }
+
+                fileidx[hash_name] = bgObj
             }
+        } else {
+            // 非法缓存图片
+            notCorrectCacheImgs.push(item.name)
+            ka.removeFile(`${cst.pluginAssetsDir}/${item.name}`)
         }
     }
 
@@ -155,7 +109,7 @@ export async function checkCacheDirctory() {
     }
 
     confmngr.set('fileidx', fileidx)
-    await confmngr.save('[fileManagerUI][checkCacheDirectory]')
+    await confmngr.save('[fileManagerUI][checkCacheImgDir]')
 
     // raise warning to users
     if (notCorrectCacheImgs.length !== 0) {
@@ -176,6 +130,8 @@ export async function checkCacheDirctory() {
         info(msgInfo)
     }
 
+    // check video files
+
     // check live 2d files
     // let live2dFiles = await os.listdir(cst.pluginLive2DataDir)
 }
@@ -185,7 +141,7 @@ export async function clearCacheFolder(mode: tps.bgMode){
     if (mode == tps.bgMode.image) {
         // 这里应该获取fileidx里面的列表，而不是文件夹内的文件，不然图片缺失的话，删除不掉
         // todo
-        let imgList = await os.listdir(cst.pluginImgDataDir);
+        let imgList = await os.listdir(cst.pluginAssetsDir);
         let fileidx = confmngr.get('fileidx')
 
         // 此部分魔改os.rmtree，因为要考虑到未来的可拓展性，有可能存在live2d的种类，因此不能直接简单的fileidx={}来解决
@@ -194,9 +150,9 @@ export async function clearCacheFolder(mode: tps.bgMode){
 
             if (item.isDir) {
                 // 如果是文件夹，则递归删除，由于这个已经是根目录了，里面的任何文件夹直接无脑删除
-                os.rmtree(`${cst.pluginImgDataDir}/${item.name}/`)
+                os.rmtree(`${cst.pluginAssetsDir}/${item.name}/`)
             }else{
-                let full_path = `${cst.pluginImgDataDir}/${item.name}`
+                let full_path = `${cst.pluginAssetsDir}/${item.name}`
                 await ka.removeFile(full_path)
 
                 const [hash_name, suffix] = os.splitext(item.name.split('-')[1])
@@ -217,13 +173,7 @@ export async function clearCacheFolder(mode: tps.bgMode){
         if (displayDivElement) {
             displayDivElement.innerHTML = null;
         }
-        
-
-    // live2d 模式
-    } else if (mode == tps.bgMode.live2d) {
-        // os.rmtree(cst.pluginLive2DataDir);
-        // todo
-    }
+    }    
 
     const cacheImgNum = getCacheImgNum();
     if (cacheImgNum === 0) {
@@ -281,11 +231,11 @@ export async function uploadOneImage(file: File) {
         const [prefix, suffix] = os.splitext(file.name)
         const hashedName = `hash-${md5}.${suffix}`
 
-        const uploadResult = await ka.putFile(`${cst.pluginImgDataDir}/${hashedName}`, file);
+        const uploadResult = await ka.putFile(`${cst.pluginAssetsDir}/${hashedName}`, file);
 
         if (uploadResult.code === 0) {
             // slice(5) to remove '/data' prefix
-            const imgPath = `${cst.pluginImgDataDir.slice(5)}/${hashedName}`
+            const imgPath = `${cst.pluginAssetsDir.slice(5)}/${hashedName}`
 
             const imageSize = await cv2.getImageSize(imgPath)
 
@@ -294,8 +244,6 @@ export async function uploadOneImage(file: File) {
                 hash: md5,
                 mode: tps.bgMode.image,
                 path: imgPath,
-                offx: 50,
-                offy: 50,
                 width: imageSize.width,
                 height: imageSize.height
             }
@@ -517,7 +465,7 @@ export function generateCacheImgList(){
             confmngr.set('fileidx', fileidx);
         
             // 调用os来移除本地文件夹中的缓存文件
-            debug(`[fileManagerUI][_rmBg] 移除下列路径的图片：${cst.pluginImgDataDir}/${bgObj.name}`);
+            debug(`[fileManagerUI][_rmBg] 移除下列路径的图片：${cst.pluginAssetsDir}/${bgObj.name}`);
             ka.removeFile(`data/${bgObj.path}`);
         
             // 检查当前文件数量是否为空，如果为空则设置为默认了了图

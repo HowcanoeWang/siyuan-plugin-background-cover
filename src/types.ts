@@ -21,7 +21,6 @@ export enum bgMode {
 export interface bgObj {
     name: string, path: string, hash: string,
     mode: bgMode, height: number, width: number,
-    offx: number, offy: number,
 }
 
 export interface bgCfg {
@@ -29,7 +28,7 @@ export interface bgCfg {
     [key: string]: { offx: number, offy: number }
 }
 
-// previous fileidx
+// fileidx, 用于跨设备间的同步记录图片库的信息
 export interface fileIdx {
     // key: bgObj.hash
     [key: string]: bgObj;
@@ -42,14 +41,11 @@ export interface disabledThemeConfig {
 
 // 不进行云同步，当前设备的独有配置
 export var defaultLocalConfigs = {
+    'version': packageInfo.version as string,
     // 当前配置的背景图路径
     'crtBgObj': undefined as any,
+    // 用于判断是否进行了背景更改
     'prevTheme': '' as string,
-    
-};
-
-export var defaultSyncConfigs = {
-    'version': packageInfo.version as string,
     // 启动时随机更改图片
     'autoRefresh': true as boolean,
     // 全局背景图透明度
@@ -64,4 +60,11 @@ export var defaultSyncConfigs = {
     'inDev': false as boolean,
 }
 
+export var defaultSyncConfigs = {
+    'fileidx': {} as fileIdx,
+}
+
 export type localConfigKey = keyof typeof defaultLocalConfigs;
+export type syncConfigKey = keyof typeof defaultSyncConfigs;
+
+export type configKey = localConfigKey | syncConfigKey;

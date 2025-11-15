@@ -299,6 +299,27 @@ export class OS {
         }
     }
 
+    public async mkdir(dir:string) {
+        // await this.ka.mkdir(dir)
+        try {
+            const out = await this.ka.putFolder(dir);
+            // 成功返回且code为0表示文件夹存在
+            if (out && out.code === 0) {
+                return true;
+            }
+            // 404错误表示文件夹不存在
+            if (out && out.code === 404) {
+                return false;
+            }
+            // 其他错误情况也视为不存在
+            return false;
+        } catch (error) {
+            debug("[os.pathExists] error:", error);
+            return false;
+        }
+    }
+    
+
     public splitext(filename:string) {
         let suffix = filename.substring(filename.lastIndexOf('.')+1, filename.length) || filename
         let prefix = filename.substring(0, filename.lastIndexOf('.')) || filename

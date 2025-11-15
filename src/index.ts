@@ -38,6 +38,7 @@ export default class BgCoverPlugin extends Plugin {
             isBrowser: this.isBrowser,
             isAndroid: this.isAndroidBackend,
         };
+        debug(`设置全局变量window.bgCoverPlugin`, window.bgCoverPlugin)
 
         // 图标的制作参见帮助文档
         this.addIcons(cst.diyIcon.iconLogo);
@@ -113,7 +114,7 @@ export default class BgCoverPlugin extends Plugin {
 
         bgRender.createBgLayer();
         
-        await fileManagerUI.checkCacheDirctory();
+        await fileManagerUI.checkAssetsDir();
 
         // load the user setting data
         const [themeMode, themeName] = getCurrentThemeInfo();

@@ -15,96 +15,72 @@ class configManager {
     plugin: Plugin;
 
     // saved locally to /data/storage/local.json by localStorage API
+    // 支持不同设备之间的不同配置
     localCfg: any = structuredClone(tps.defaultLocalConfigs);
 
     // saved publically to /data/publish/{plugin-name}/{cst.pluginFileIdx}
-    // need cloud sync cross devices
-    fileIdx: tps.fileIdx = {};
+    // 存储用户上传的public中的数据库文件
+    // 用于数据重建和索引
+    syncCfg: any = structuredClone(tps.defaultSyncConfigs);
+
+    // 虽然这边分成了LocalConfig和SyncConfig，存储到不同的图片路径下
+    // 但是希望这个configManger的api, 能提供一个良好且无感的读写体验
+    // 直接设置config['key']的值，自动处理保存为local还是sync
 
     setParent(plugin: Plugin) {
         this.plugin = plugin;
     }
 
-    bgFileNum() {
-        return Object.keys(this.fileIdx).length
-    }
+    get(key?: tps.configKey) {
 
-    bgFileHashKeys() {
-        return Object.keys(this.fileIdx)
-    }
+        // 没有指定Key的值ID，如简单的 .get() 则返回全部数据
+        // if (key === undefined) {
+        //     return this.localCfg
+        // }
 
-    get(key?: tps.localConfigKey) {
-
-        if (key === undefined) {
-            // 返回全部数据
-            return this.localCfg
-        }
-        if (!(key in this.localCfg)) {
+        if (key in this.localCfg) {
+            return this.localCfg?.[key];
+        } else if (key in this.syncCfg) {
+            return this.syncCfg?.[key];
+        } else {
             info(`存储键 "${key}" 不存在`);
             return null;
         }
-
-        // 返回指定键值
-        return this.localCfg?.[key];
-    }
-
-    getBgObj(hash_code: string) {
-        if (!(hash_code in this.fileIdx)) {
-            info(`存储键 "${hash_code}" 不存在`);
-            return null;
-        }
-
-        // 返回指定键值
-        return this.fileIdx?.[hash_code];
     }
 
     set(key: any, value: any) {
-        // info(`Setting update: ${key} = ${value}`)
-        if (!(key in this.localCfg)) {
-            error(`"${key}" is not a setting`);
-            return;
+        if (key in this.localCfg) {
+            this.localCfg[key] = value;
+        } else if (key in this.syncCfg) {
+            this.syncCfg[key] = value;
+        } else {
+            info(`存储键 "${key}" 不存在于默认配置中`);
         }
-
-        this.localCfg[key] = value;
-    }
-
-    setBgObj(hash_code: string, value: tps.bgObj) {
-        // free to add to file_idx
-        this.fileIdx[hash_code] = value;
     }
 
     // 移除键值对
     remove(key: any) {
-        if (!(key in this.localCfg)) {
-            error(`"${key}" is not a setting`);
-            return;
-        }
-
-        delete this.localCfg[key];
-    }
-
-    removeBgObj(hash_code: string) {
-
-        if (!(hash_code in this.fileIdx)) {
-            error(`"${hash_code}" not exists`);
-            return;
-        }
-
-        delete this.fileIdx[hash_code];
+        if (key in this.localCfg) {
+            delete this.localCfg[key];
+        } else if (key in this.syncCfg) {
+            delete this.syncCfg[key];
+        } else {
+            info(`存储键 "${key}" 不存在于默认配置中`);
+        }   
     }
 
     async reset() {
         this.localCfg = structuredClone(tps.defaultLocalConfigs);
-        this.fileIdx = {};
-        this.save();
+        this.syncCfg = structuredClone(tps.defaultSyncConfigs);
+        await this.save();
     }
 
     /**
      * 导入的时候，需要先加载设置；如果没有设置，则使用默认设置
      */
     async load() {
-        this._loadFileIdx();
-        this._loadLocalCfg();
+        await this._loadLocalCfg();
+        await this._loadSyncCfg();
     }
 
     async _loadLocalCfg() {
@@ -129,24 +105,25 @@ class configManager {
                         this.set(key, loaded[key]);
                     }
                 }
-                debug(`   localStorage配置 读取成功`)
+                debug(`   localStorage配置 读取成功: `, loaded)
             } catch (error_msg) {
                 error(`   localStorage配置 读取失败: ${error_msg}`);
             }
         }
     }
 
-    async _loadFileIdx() {
+    async _loadSyncCfg() {
         debug(`[configs][_loadFileIdx] 读取 /data/publish/插件目录/ 中的背景文件索引信息`)
-        let loaded = await ka.getFile(cst.pluginFileIdxFile, "json" )
+        let loaded = await this.plugin.loadData(cst.synConfigFile)
+        debug(` synconfig.json 原始读取数据：`, loaded)
 
         if (loaded == null || loaded == undefined || loaded == '') {
             //如果没有配置文件，则使用默认配置，并保存
-            debug(`/data/publish/插件目录/ 中没有fileidx.json 配置文件，使用默认配置`)
-            this._saveFileIdx('[configs][fileidx.json init config]');
+            debug(`/data/publish/插件目录/ 中没有 synconfig.json 配置文件，使用默认配置`)
+            this._saveSyncCfg('[configs][synconfig.json init to default]');
         } else {
             //如果有配置文件，则使用配置文件
-            debug(`读入 ${cst.pluginFileIdxFile} 配置文件`)
+            debug(`读入 ${cst.synConfigFile} 配置文件`)
             //Docker 和  Windows 不知为何行为不一致, 一个读入字符串，一个读入对象
             //为了兼容，这里做一下判断
             if (typeof loaded === 'string') {
@@ -155,43 +132,43 @@ class configManager {
 
             try {
                 for (let key in loaded) {
-                    if (key in tps.defaultLocalConfigs) {
-                        this.setBgObj(key, loaded[key]);
+                    if (key in tps.defaultSyncConfigs) {
+                        this.set(key, loaded[key]);
                     }
                 }
-                debug(`   fileidx.json 配置文件读取成功`)
+                debug(`   synconfig.json 配置文件读取成功: `, loaded)
             } catch (error_msg) {
-                error(`   fileidx.json 配置文件读取失败: ${error_msg}`);
+                error(`   synconfig.json 配置文件读取失败: ${error_msg}`);
             }
         }
     }
 
     async save(logHeader?:String) {
         this._saveLocalCfg(logHeader);
-        this._saveFileIdx(logHeader);
+        this._saveSyncCfg(logHeader);
     }
 
     async _saveLocalCfg(logHeader?:String) {
         let json = this.localCfg;
         if (logHeader) {
-            debug(`${logHeader}写入配置文件:`, json);
+            debug(`${logHeader}写入Local配置文件:`, json);
         } else {
-            debug(`写入配置文件:`, json);
+            debug(`写入Local配置文件:`, json);
         }
         
-        // this.plugin.saveData(cst.configFile, json);
         await ka.setLocalStorage(cst.localStorageKey, json);
     }
 
-    async _saveFileIdx(logHeader?:String) {
-        let json = this.fileIdx;
+    async _saveSyncCfg(logHeader?:String) {
+        let json = this.syncCfg;
         if (logHeader) {
-            debug(`${logHeader}写入配置文件:`, json);
+            debug(`${logHeader}写入Sync配置文件${cst.synConfigFile}:`, json);
         } else {
-            debug(`写入配置文件:`, json);
+            debug(`写入Sync配置文件${cst.synConfigFile}:`, json);
         }
         
-        await ka.putFile(cst.pluginFileIdxFile, json);
+        this.plugin.saveData(cst.synConfigFile, json);
+
     }
 }
 

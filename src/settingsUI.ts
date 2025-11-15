@@ -348,7 +348,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     // reset panel
     const resetSettingElement = document.getElementById('resetBtn') as HTMLButtonElement;
     resetSettingElement.addEventListener("click", async () => {
-        os.rmtree(cst.pluginImgDataDir);
+        os.rmtree(cst.pluginAssetsDir);
         confmngr.reset();
         await confmngr.save('[settingsUI][openSettingDialog][resetSettingElement.click]');
         await bgRender.applySettings();

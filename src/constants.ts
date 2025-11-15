@@ -4,12 +4,9 @@ export const localStorageKey = packageInfo.name
 
 export const hashLength = 2097152;
 
+export const synConfigFile = 'configs.json'
 export const pluginAssetsDir = `/data/public/${packageInfo.name}`
-export const pluginImgDataDir = `${pluginAssetsDir}/images`.toString()
-export const pluginVideoDataDir = `${pluginAssetsDir}/videos`.toString()
-export const pluginLive2DataDir = `${pluginAssetsDir}/live2d`.toString()
 
-export const pluginFileIdxFile = `${pluginAssetsDir}/fileidx.json`.toString()
 
 export let pluginAssetsDirOS = ''
 let dataDir = (window as any).siyuan.config.system.workspaceDir
