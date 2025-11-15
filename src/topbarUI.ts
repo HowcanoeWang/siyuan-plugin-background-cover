@@ -193,7 +193,7 @@ export async function selectPictureRandom(manualPress: boolean = false) {
         }
         debug('[topbarUI][selectPictureRandom] 跳出抽卡死循环,前景图为：', fileidx[r_hash])
         bgRender.changeBackgroundContent(fileidx[r_hash].path, fileidx[r_hash].mode)
-        confmngr.set('bgObj', fileidx[r_hash])
+        confmngr.set('crtBgObj', fileidx[r_hash])
     }
     await confmngr.save('[topbarUI][selectPictureRandom]')
     settingsUI.updateSettingPanelElementStatus()

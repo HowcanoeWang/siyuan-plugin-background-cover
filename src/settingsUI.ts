@@ -273,7 +273,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                 bgObj.offx = cxElement.value
                 bgObj.offy = cyElement.value
 
-                confmngr.set('bgObj', bgObj)
+                confmngr.set('crtBgObj', bgObj)
 
                 let fileidx = confmngr.get('fileidx')
                 fileidx[bgObj.hash] = bgObj

@@ -250,7 +250,7 @@ export async function uploadOneImage(file: File) {
 
             fileidx[bgObj.hash] = bgObj;
 
-            confmngr.set('bgObj', bgObj);
+            confmngr.set('crtBgObj', bgObj);
             confmngr.set('fileidx', fileidx);
 
             debug(`[fileManagerUI][addSingleLocalImageFile]: fileidx ${fileidx}`);
@@ -437,7 +437,7 @@ export function generateCacheImgList(){
          */
         setBgBtn.addEventListener('click', () => {
             bgRender.changeBackgroundContent(bgObj.path, bgObj.mode);
-            confmngr.set('bgObj', bgObj);
+            confmngr.set('crtBgObj', bgObj);
         
             confmngr.save('[fileManagerUI][generateCacheImgList][setBgBtn.click]');
         });
