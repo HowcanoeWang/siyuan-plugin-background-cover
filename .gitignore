@@ -8,6 +8,5 @@ index.css
 index.js
 i18n
 *.xcf
-static/preview/*
+static
 SyncSettings.ffs_gui
-/static/dev
