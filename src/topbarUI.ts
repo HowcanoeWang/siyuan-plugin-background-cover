@@ -73,13 +73,6 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
         let submenu: IMenuItemOption[] = [
             {
                 icon: "iconImage",
-                label: `${window.bgCoverPlugin.i18n.addSingleImageLabel}`,
-                click: () => {
-                    addSingleLocalImageFile();
-                }
-            },
-            {
-                icon: "iconLogo",
                 label: `${window.bgCoverPlugin.i18n.addSeveralImagesLabel}`,
                 click: () => {
                     addSeveralLocalImagesFile();
@@ -198,29 +191,6 @@ export async function selectPictureRandom(manualPress: boolean = false) {
     await confmngr.save('[topbarUI][selectPictureRandom]')
     settingsUI.updateSettingPanelElementStatus()
 }
-
-export async function addSingleLocalImageFile() {
-
-    const cacheImgNum = fileManagerUI.getCacheImgNum();
-
-    if (cacheImgNum >= cst.cacheMaxNum) {
-        showMessage(window.bgCoverPlugin.i18n.addSingleImageExceed1 + cst.cacheMaxNum + window.bgCoverPlugin.i18n.addSingleImageExceed2, 7000, 'error');
-    }else{
-        // return an Array
-        const fileHandle = await os.openFilePicker(cst.supportedImageSuffix.toString())
-
-        let file = fileHandle[0];
-
-        let bgObj = await fileManagerUI.uploadOneImage(file);
-
-        // 文件不重复且上传成功
-        if (bgObj !== undefined) {
-            await confmngr.save('[topbarUI][addSinglelocalImageFile]');
-            bgRender.changeBackgroundContent(bgObj.path, bgObj.mode);
-            settingsUI.updateSettingPanelElementStatus();
-        };
-    };
-};
 
 export async function addSeveralLocalImagesFile() {
 
