@@ -28,223 +28,316 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     const cacheImgNum = fileManagerUI.getCacheImgNum();
 
     const dialog = new Dialog({
-        title: `${window.bgCoverPlugin.i18n.addTopBarIcon}(v${packageInfo.version}) ${window.bgCoverPlugin.i18n.settingLabel}`,
+        // title: `${window.bgCoverPlugin.i18n.addTopBarIcon}(v${packageInfo.version}) ${window.bgCoverPlugin.i18n.settingLabel}`,
         width: window.bgCoverPlugin.isMobileLayout ? "92vw" : "max(520px, 50vw)",
         height: "max(520px, 90vh)",
         content: `
-        <div class="config__tab-container" style="background-color: var(--b3-theme-background)">
-        <!--
-        // info panel part
-        -->
-        <label class="fn__flex b3-label">
-            <div class="fn__flex-1">
-                ${window.bgCoverPlugin.i18n.imgPathLabel}
-                <div class="b3-label__text">
-                    <code id="crtImgName" class="fn__code">${confmngr.get('crtBgObj') === undefined ? cst.demoImgURL : confmngr.get('crtBgObj').name}</code>
-                </div>
-            </div>
-            <div class="fn__flex-center">  
-                <div>
-                    <label for="cx">X</label> 
-                    <input id="cx" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${confmngr.get('crtBgObj') === undefined ? '50' : confmngr.get('crtBgObj').offx}>
-                </div>
-                <div>
-                    <label for="cy">Y</label> 
-                    <input id="cy" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${confmngr.get('crtBgObj') === undefined ? '50' : confmngr.get('crtBgObj').offy}>
-                </div>
-            </div>
-        </label>
-        <label class="fn__flex b3-label config__item">
-            <div class="fn__flex-1">
-                <div class="fn__flex">
-                    ${window.bgCoverPlugin.i18n.cacheDirectoryLabel}
-                    <span class="fn__space"></span>
-                    <span style="color: var(--b3-theme-on-surface)">${window.bgCoverPlugin.i18n.cacheDirectoryDes}</span>
-                    <span id="cacheImgNumElement" class="selected" style="color: rgb(255,0,0)">
-                        [ ${cacheImgNum} ]
-                    </span>
-                </div>
-                <div class="b3-label__text">
-                    <a href="file:///${cst.pluginAssetsDirOS}/" style="word-break: break-all">${cst.pluginAssetsDirOS}</a>
-                </div>
-            </div>
-            <span class="fn__space"></span>
-            <button id="cacheManagerBtn" class="b3-button b3-button--outline fn__flex-center fn__size100" id="appearanceRefresh">
-                <svg><use xlink:href="#iconDatabase"></use></svg>
-                ${window.bgCoverPlugin.i18n.cacheManager}
-            </button>
-        </label>
+        <div class="fn__flex-1 fn__flex config__panel" style="overflow: hidden;position: relative">
+            <ul class="b3-tab-bar b3-list b3-list--background">
 
-        <!--
-        // onoff switch part
-        -->
+                <li data-name="config" class="b3-list-item b3-list-item--focus">
+                    <svg class="b3-list-item__graphic"><use xlink:href="#iconEdit"></use></svg>
+                    <span class="b3-list-item__text">${window.bgCoverPlugin.i18n.tabConfigLabel}</span>
+                </li>
 
-        <label class="fn__flex b3-label config__item">
-            <div class="fn__flex-1">
-                ${window.bgCoverPlugin.i18n.openBackgroundLabel}
-                <div class="b3-label__text">
-                    ${window.bgCoverPlugin.i18n.openBackgroundLabelDes}
-                </div>
-            </div>
-            <span class="fn__flex-center" />
-            <input
-                id="onoffInput"
-                class="b3-switch fn__flex-center"
-                type="checkbox"
-                value="${confmngr.get('activate')}"
-            />
-        </label>
+                <li data-name="assets" class="b3-list-item">
+                    <svg class="b3-list-item__graphic"><use xlink:href="#iconImage"></use></svg>
+                    <span class="b3-list-item__text">${window.bgCoverPlugin.i18n.tabAssetsLabel}</span>
+                </li>
 
-        
-        <!--
-        // theme black list
-        -->
+                <li data-name="theme" class="b3-list-item">
+                    <svg class="b3-list-item__graphic"><use xlink:href="#iconTheme"></use></svg>
+                    <span class="b3-list-item__text">${window.bgCoverPlugin.i18n.tabThemeLabel}</span>
+                </li>
 
-        <div class="b3-label config__item">
-            ${window.bgCoverPlugin.i18n.disabledThemeTitle}
-            <!-- light theme block -->
-            <div class="b3-label__text">${window.bgCoverPlugin.i18n.themeAdaptEditorMode0}</div>
-            <div class="b3-label">
-                <div class="config-query" id="lightThemeBlockContainer">
+                <li data-name="advance" class="b3-list-item">
+                    <svg class="b3-list-item__graphic"><use xlink:href="#iconRiffCard"></use></svg>
+                    <span class="b3-list-item__text">${window.bgCoverPlugin.i18n.tabAdvanceLabel}</span>
+                </li>
 
-                    <!-- label item add by for loop -->
+                <li data-name="about" class="b3-list-item">
+                    <svg class="b3-list-item__graphic"><use xlink:href="#iconInfo"></use></svg>
+                    <span class="b3-list-item__text">${window.bgCoverPlugin.i18n.tabAboutLabel}</span>
+                </li>
 
-                </div>
-            </div>
+            </ul>
 
-            <!-- dark theme block -->
-            <div class="b3-label__text">${window.bgCoverPlugin.i18n.themeAdaptEditorMode1}</div>
-            <div class="b3-label">
-                <div class="config-query" id="darkThemeBlockContainer">
+            <div class="config__tab-wrap">
+
+                <!-- 全局配置Tab -->
+                <div class="config__tab-container" data-name="config">
+                
+                    <!--
+                    // info panel part
+                    -->
                     
-                    <!-- label item add by for loop -->
+                    <label class="fn__flex b3-label">
+                        <div class="fn__flex-1">
+                            ${window.bgCoverPlugin.i18n.imgPathLabel}
+                            <div class="b3-label__text">
+                                <code id="crtImgName" class="fn__code">${confmngr.get('crtBgObj') === undefined ? cst.demoImgURL : confmngr.get('crtBgObj').name}</code>
+                            </div>
+                        </div>
+                        <div class="fn__flex-center">  
+                            <div>
+                                <label for="cx">X</label> 
+                                <input id="cx" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${confmngr.get('crtBgObj') === undefined ? '50' : confmngr.get('crtBgObj').offx}>
+                            </div>
+                            <div>
+                                <label for="cy">Y</label> 
+                                <input id="cy" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${confmngr.get('crtBgObj') === undefined ? '50' : confmngr.get('crtBgObj').offy}>
+                            </div>
+                        </div>
+                    </label>
+
+                    <!--
+                    // onoff switch part
+                    -->
+
+                    <label class="fn__flex b3-label config__item">
+                        <div class="fn__flex-1">
+                            ${window.bgCoverPlugin.i18n.openBackgroundLabel}
+                            <div class="b3-label__text">
+                                ${window.bgCoverPlugin.i18n.openBackgroundLabelDes}
+                            </div>
+                        </div>
+                        <span class="fn__flex-center" />
+                        <input
+                            id="onoffInput"
+                            class="b3-switch fn__flex-center"
+                            type="checkbox"
+                            value="${confmngr.get('activate')}"
+                        />
+                    </label>
+
+                    
+                    <!--
+                    // 自动更新按钮
+                    -->
+
+                    <label class="fn__flex b3-label config__item">
+                        <div class="fn__flex-1">
+                            ${window.bgCoverPlugin.i18n.autoRefreshLabel}
+                            <div class="b3-label__text">
+                                ${window.bgCoverPlugin.i18n.autoRefreshDes}
+                            </div>
+                        </div>
+                        <span class="fn__flex-center" />
+                        <input
+                            id="autoRefreshInput"
+                            class="b3-switch fn__flex-center"
+                            type="checkbox"
+                            value="${confmngr.get('autoRefresh')}"
+                        />
+                    </label>
+
+                    <!--
+                    // slider part Input[4] - Input [5]
+                    -->
+
+                    <label class="fn__flex b3-label config__item">
+                        <div class="fn__flex-1">
+                            ${window.bgCoverPlugin.i18n.opacityLabel}
+                            <div class="b3-label__text">
+                                ${window.bgCoverPlugin.i18n.opacityDes}
+                            </div>
+                        </div>
+                        <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${confmngr.get('opacity')}">   
+                            <input id="opacityInput" class="b3-slider fn__size200" max="1" min="0" step="0.05" type="range" value="${confmngr.get('opacity')}">
+                        </div>
+                    </label>
+                    <label class="fn__flex b3-label config__item">
+                        <div class="fn__flex-1">
+                            ${window.bgCoverPlugin.i18n.blurLabel}
+                            <div class="b3-label__text">
+                                ${window.bgCoverPlugin.i18n.blurDes}
+                            </div>
+                        </div>
+                        <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${confmngr.get('blur')}">   
+                            <input id="blurInput" class="b3-slider fn__size200" max="10" min="0" step="1" type="range" value="${confmngr.get('blur')}">
+                        </div>
+                    </label>
+                </div>
+
+                <!-- 数据目录Tab -->
+
+                <div class="config__tab-container fn__none" data-name="assets">
+
+                    <label class="fn__flex b3-label config__item">
+                        <div class="fn__flex-1">
+                            <div class="fn__flex">
+                                ${window.bgCoverPlugin.i18n.cacheDirectoryLabel}
+                                <span class="fn__space"></span>
+                                <span style="color: var(--b3-theme-on-surface)">${window.bgCoverPlugin.i18n.cacheDirectoryDes}</span>
+                                <span id="cacheImgNumElement" class="selected" style="color: rgb(255,0,0)">
+                                    [ ${cacheImgNum} ]
+                                </span>
+                            </div>
+                            <div class="b3-label__text">
+                                <a href="file:///${cst.pluginAssetsDirOS}/" style="word-break: break-all">${cst.pluginAssetsDirOS}</a>
+                            </div>
+                        </div>
+                        <span class="fn__space"></span>
+                        <button id="cacheManagerBtn" class="b3-button b3-button--outline fn__flex-center fn__size100" id="appearanceRefresh">
+                            <svg><use xlink:href="#iconDatabase"></use></svg>
+                            ${window.bgCoverPlugin.i18n.cacheManager}
+                        </button>
+                    </label>
+                
+                </div>
+
+
+                <!-- 屏蔽主题Tab -->
+
+                <div class="config__tab-container fn__none" data-name="theme">
+                    <!--
+                    // theme black list
+                    -->
+
+                    <div class="b3-label config__item">
+                        ${window.bgCoverPlugin.i18n.disabledThemeTitle}
+                        <!-- light theme block -->
+                        <div class="b3-label__text">${window.bgCoverPlugin.i18n.themeAdaptEditorMode0}</div>
+                        <div class="b3-label">
+                            <div class="config-query" id="lightThemeBlockContainer">
+
+                                <!-- label item add by for loop -->
+
+                            </div>
+                        </div>
+
+                        <!-- dark theme block -->
+                        <div class="b3-label__text">${window.bgCoverPlugin.i18n.themeAdaptEditorMode1}</div>
+                        <div class="b3-label">
+                            <div class="config-query" id="darkThemeBlockContainer">
+                                
+                                <!-- label item add by for loop -->
+
+                            </div>
+                        </div>
+                        
+                    </div>
+
+                </div>
+
+
+                <!-- 高级设置Tab -->
+
+                <div class="config__tab-container fn__none" data-name="advance">
+                    <!--
+                    // reset panel part, Button[0]
+                    -->
+
+                    <label class="b3-label config__item fn__flex">
+                        <div class="fn__flex-1">
+                        ${window.bgCoverPlugin.i18n.resetConfigLabel}
+                            <div class="b3-label__text">
+                                ${window.bgCoverPlugin.i18n.resetConfigDes}<span class="selected" style="color:rgb(255,0,0)">${window.bgCoverPlugin.i18n.resetConfigDes2}
+                                </span>
+                            </div>
+                        </div>
+                        <span class="fn__space"></span>
+                        <button id="resetBtn" class="b3-button b3-button--outline fn__flex-center fn__size100" id="appearanceRefresh">
+                            <svg><use xlink:href="#iconRefresh"></use></svg>
+                            ${window.bgCoverPlugin.i18n.reset}
+                        </button>
+                    </label>
+
+                    <!--
+                    // debug panel part
+                    -->
+
+                    <label class="fn__flex b3-label config__item">
+                        <div class="fn__flex-1">
+                            ${window.bgCoverPlugin.i18n.inDevModeLabel}
+                            <div class="b3-label__text">
+                                ${window.bgCoverPlugin.i18n.inDevModeDes} • 
+                                FrontEnd: <code class="fn__code">${getFrontend()}</code> • BackEnd: <code class="fn__code">${getBackend()}</code> • 
+                                isMobileLayout: <code class="fn__code">${window.bgCoverPlugin.isMobileLayout}</code> • 
+                                isBrowser: <code class="fn__code">${window.bgCoverPlugin.isBrowser}</code> • 
+                                isAndroid: <code class="fn__code">${window.bgCoverPlugin.isAndroid}</code>
+                            </div>
+                        </div>
+                        <span class="fn__flex-center" />
+                        <input
+                            id="devModeInput"
+                            class="b3-switch fn__flex-center"
+                            type="checkbox"
+                            value="${confmngr.get('inDev')}"
+                        />
+                    </label>
+
+                </div>
+
+                <!-- 关于Tab -->
+
+                <div class="config__tab-container fn__none" data-name="about">
+
+                    <label class="fn__flex b3-label config__item"> 
+                        <div class="fn__flex-1"> 
+                            ${window.bgCoverPlugin.i18n.crtVersion} 
+                            <div class="b3-abel__text"> 
+                                v${packageInfo.version}
+                            </div> 
+                        </div> 
+                    </label>
+
+                    <!--
+                    Donations Section
+                    -->
+                    <label class="fn__flex b3-label config__item"> 
+                        <div class="fn__flex-1"> 
+                            ${window.bgCoverPlugin.i18n.donationTitle} 
+                            <div class="b3-abel__text" style="text-align: center;"> 
+                                <table style="width: 75%; margin-left: auto; margin-right: auto;"> 
+                                    <thead> 
+                                        <tr> 
+                                            <th>${window.bgCoverPlugin.i18n.donationAlipay}</th> 
+                                            <th>${window.bgCoverPlugin.i18n.donationWechat}</th> 
+                                        </tr> 
+                                    </thead> 
+                                    <tbody> 
+                                        <tr> 
+                                            <td style="text-align: center;"> 
+                                                <img width="256px" alt="" src="./plugins/siyuan-plugin-background-cover/static/ali.jpg"> 
+                                            </td> 
+                                            <td style="text-align: center;"> 
+                                                <img width="256px" alt="" src="./plugins/siyuan-plugin-background-cover/static/wechat.png"> 
+                                            </td> 
+                                        </tr> 
+                                    </tbody> 
+                                </table> 
+                            </div> 
+                        </div> 
+                    </label>
 
                 </div>
             </div>
-            
-        </div>
-
         
-        <!--
-        // 自动更新按钮
-        -->
-
-        <label class="fn__flex b3-label config__item">
-            <div class="fn__flex-1">
-                ${window.bgCoverPlugin.i18n.autoRefreshLabel}
-                <div class="b3-label__text">
-                    ${window.bgCoverPlugin.i18n.autoRefreshDes}
-                </div>
-            </div>
-            <span class="fn__flex-center" />
-            <input
-                id="autoRefreshInput"
-                class="b3-switch fn__flex-center"
-                type="checkbox"
-                value="${confmngr.get('autoRefresh')}"
-            />
-        </label>
-
-        <!--
-        // slider part Input[4] - Input [5]
-        -->
-
-        <label class="fn__flex b3-label config__item">
-            <div class="fn__flex-1">
-                ${window.bgCoverPlugin.i18n.opacityLabel}
-                <div class="b3-label__text">
-                    ${window.bgCoverPlugin.i18n.opacityDes}
-                </div>
-            </div>
-            <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${confmngr.get('opacity')}">   
-                <input id="opacityInput" class="b3-slider fn__size200" max="1" min="0" step="0.05" type="range" value="${confmngr.get('opacity')}">
-            </div>
-        </label>
-        <label class="fn__flex b3-label config__item">
-            <div class="fn__flex-1">
-                ${window.bgCoverPlugin.i18n.blurLabel}
-                <div class="b3-label__text">
-                    ${window.bgCoverPlugin.i18n.blurDes}
-                </div>
-            </div>
-            <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${confmngr.get('blur')}">   
-                <input id="blurInput" class="b3-slider fn__size200" max="10" min="0" step="1" type="range" value="${confmngr.get('blur')}">
-            </div>
-        </label>
-
-        <!--
-        // reset panel part, Button[0]
-        -->
-
-        <label class="b3-label config__item fn__flex">
-            <div class="fn__flex-1">
-            ${window.bgCoverPlugin.i18n.resetConfigLabel}
-                <div class="b3-label__text">
-                    ${window.bgCoverPlugin.i18n.resetConfigDes}<span class="selected" style="color:rgb(255,0,0)">${window.bgCoverPlugin.i18n.resetConfigDes2}
-                    </span>
-                </div>
-            </div>
-            <span class="fn__space"></span>
-            <button id="resetBtn" class="b3-button b3-button--outline fn__flex-center fn__size100" id="appearanceRefresh">
-                <svg><use xlink:href="#iconRefresh"></use></svg>
-                ${window.bgCoverPlugin.i18n.reset}
-            </button>
-        </label>
-
-        <!--
-        // debug panel part
-        -->
-
-        <label class="fn__flex b3-label config__item">
-            <div class="fn__flex-1">
-                ${window.bgCoverPlugin.i18n.inDevModeLabel}
-                <div class="b3-label__text">
-                    ${window.bgCoverPlugin.i18n.inDevModeDes} • 
-                    FrontEnd: <code class="fn__code">${getFrontend()}</code> • BackEnd: <code class="fn__code">${getBackend()}</code> • 
-                    isMobileLayout: <code class="fn__code">${window.bgCoverPlugin.isMobileLayout}</code> • 
-                    isBrowser: <code class="fn__code">${window.bgCoverPlugin.isBrowser}</code> • 
-                    isAndroid: <code class="fn__code">${window.bgCoverPlugin.isAndroid}</code>
-                </div>
-            </div>
-            <span class="fn__flex-center" />
-            <input
-                id="devModeInput"
-                class="b3-switch fn__flex-center"
-                type="checkbox"
-                value="${confmngr.get('inDev')}"
-            />
-        </label>
-
-        <!--
-        Donations Section
-        -->
-         <label class="fn__flex b3-label config__item"> 
-             <div class="fn__flex-1"> 
-                 ${window.bgCoverPlugin.i18n.donationTitle} 
-                  <div class="b3-abel__text" style="text-align: center;"> 
-                      <table style="width: 50%; margin-left: auto; margin-right: auto;"> 
-                         <thead> 
-                             <tr> 
-                                 <th>${window.bgCoverPlugin.i18n.donationAlipay}</th> 
-                                 <th>${window.bgCoverPlugin.i18n.donationWechat}</th> 
-                             </tr> 
-                         </thead> 
-                         <tbody> 
-                             <tr> 
-                                 <td style="text-align: center;"> 
-                                     <img width="256px" alt="" src="./plugins/siyuan-plugin-background-cover/static/ali.jpg"> 
-                                 </td> 
-                                 <td style="text-align: center;"> 
-                                     <img width="256px" alt="" src="./plugins/siyuan-plugin-background-cover/static/wechat.png"> 
-                                 </td> 
-                             </tr> 
-                         </tbody> 
-                     </table> 
-                 </div> 
-             </div> 
-         </label>
-
         </div>`
+    });
+
+    // Tab switching logic
+    const tabBar = dialog.element.querySelector('.b3-tab-bar');
+    tabBar.addEventListener('click', (event) => {
+        const target = event.target as HTMLElement;
+        const tabElement = target.closest('li');
+
+        if (tabElement && !tabElement.classList.contains('b3-list-item--focus')) {
+            const tabName = tabElement.getAttribute('data-name');
+            
+            // Update tab buttons state
+            tabBar.querySelectorAll('li').forEach(item => {
+                item.classList.remove('b3-list-item--focus');
+            });
+            tabElement.classList.add('b3-list-item--focus');
+
+            // Update tab containers visibility
+            dialog.element.querySelectorAll('.config__tab-container').forEach((container: HTMLElement) => {
+                container.classList.add('fn__none');
+            });
+            dialog.element.querySelector(`.config__tab-container[data-name="${tabName}"]`).classList.remove('fn__none');
+        }
     });
 
     // image position slider
