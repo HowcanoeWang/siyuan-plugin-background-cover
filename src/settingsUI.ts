@@ -101,7 +101,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         -->
 
         <div class="b3-label config__item">
-            ${window.bgCoverPlugin.i18n.blockThemeTitle}
+            ${window.bgCoverPlugin.i18n.disabledThemeTitle}
             <!-- light theme block -->
             <div class="b3-label__text">${window.bgCoverPlugin.i18n.themeAdaptEditorMode0}</div>
             <div class="b3-label">
@@ -305,7 +305,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     })
 
     // block theme
-    generateBlockThemeElement();
+    generatedisabledThemeElement();
 
     // the Auto refresh switch
     const autoRefreshElement = document.getElementById('autoRefreshInput') as HTMLInputElement;
@@ -383,7 +383,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     // });
 }
 
-export function generateBlockThemeElement(){
+export function generatedisabledThemeElement(){
     const [themeMode, themeName] = getCurrentThemeInfo();
 
     const installedThemes = getInstalledThemes();
@@ -405,9 +405,9 @@ export function generateBlockThemeElement(){
         document.getElementById('darkThemeBlockContainer') as HTMLDivElement,
     ]
 
-    var blockThemeConfig = confmngr.get('blockTheme');
+    var disabledThemeConfig = confmngr.get('disabledTheme');
     const themeModeText = ['light', 'dark']
-    debug('[settingsUI][generateBlockThemeElement] Current block theme config:', blockThemeConfig)
+    debug('[settingsUI][generatedisabledThemeElement] Current block theme config:', disabledThemeConfig)
     
     // i==0 -> light; i == 1 -> dark
     for (var i = 0; i < installedThemes.length; i++) {
@@ -423,8 +423,8 @@ export function generateBlockThemeElement(){
 
             var btnOnOffValue: boolean;  // 该主题是否屏蔽
 
-            // if "dark+" in 'blockTheme.light' keys
-            var ithemeConfig = blockThemeConfig[themeModeText[i]]
+            // if "dark+" in 'disabledTheme.light' keys
+            var ithemeConfig = disabledThemeConfig[themeModeText[i]]
             if (itheme["name"] in ithemeConfig) {
                 // 在设置中存在，直接读取之前的设置值
                 btnOnOffValue = ithemeConfig[itheme["name"]];
@@ -465,23 +465,23 @@ export function generateBlockThemeElement(){
             onOffBtn.checked = btnOnOffValue;
 
             onOffBtn.addEventListener('click', async () => {
-                var blockThemeCfg = confmngr.get('blockTheme');
+                var disabledThemeCfg = confmngr.get('disabledTheme');
 
                 let mode = onOffBtn.getAttribute('data-mode');
                 let theme = onOffBtn.getAttribute('data-theme');
 
-                blockThemeCfg[mode][theme] = !blockThemeCfg[mode][theme]
-                debug(`[settingsUI] User changed blockTheme ${theme} in ${mode} mode`)
+                disabledThemeCfg[mode][theme] = !disabledThemeCfg[mode][theme]
+                debug(`[settingsUI] User changed disabledTheme ${theme} in ${mode} mode`)
                 
-                confmngr.set('blockTheme', blockThemeCfg);
-                confmngr.save('[settingsUI][generateBlockThemeElement][onOffBtn.click]');
+                confmngr.set('disabledTheme', disabledThemeCfg);
+                confmngr.save('[settingsUI][generatedisabledThemeElement][onOffBtn.click]');
 
                 await bgRender.applySettings();
             })
         }
     }
-    confmngr.set('blockTheme', blockThemeConfig);
-    confmngr.save('[settingsUI][generateBlockThemeElement]');
+    confmngr.set('disabledTheme', disabledThemeConfig);
+    confmngr.save('[settingsUI][generatedisabledThemeElement]');
 }
 
 export function updateSliderElement(elementid:string, value:string, setAriaLabel:boolean=true) {

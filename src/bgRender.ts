@@ -84,13 +84,13 @@ export function changeBackgroundContent(background: string, mode: tps.bgMode) {
     }
 };
 
-export function isBlockTheme(){
-    var blockTheme = confmngr.get('blockTheme')
+export function isdisabledTheme(){
+    var disabledTheme = confmngr.get('disabledTheme')
     const themeModeText = ['light', 'dark']
     const [themeMode, themeName] = getCurrentThemeInfo();
 
-    var result = blockTheme[themeModeText[themeMode]][themeName];
-    debug(`[bgRender][isBlockTheme] search mode='${themeModeText[themeMode]}', name='${themeName}' result is ${result}`)
+    var result = disabledTheme[themeModeText[themeMode]][themeName];
+    debug(`[bgRender][isdisabledTheme] search mode='${themeModeText[themeMode]}', name='${themeName}' result is ${result}`)
 
     return result;
 }
@@ -98,7 +98,7 @@ export function isBlockTheme(){
 export function changeOpacity(alpha: number) {
     let opacity = 0.99 - 0.25 * alpha;
 
-    if (confmngr.get('activate') && !isBlockTheme() && alpha !== 0) {
+    if (confmngr.get('activate') && !isdisabledTheme() && alpha !== 0) {
         document.body.style.setProperty('opacity', opacity.toString());
     } else {
         document.body.style.removeProperty('opacity');
@@ -126,7 +126,7 @@ export async function applySettings() {
     var bgLayer = document.getElementById('bglayer');
     debug(bgLayer);
 
-    if (confmngr.get('activate') && !isBlockTheme() ) {
+    if (confmngr.get('activate') && !isdisabledTheme() ) {
         bgLayer.style.removeProperty('display');
     } else {
         bgLayer.style.setProperty('display', 'none');

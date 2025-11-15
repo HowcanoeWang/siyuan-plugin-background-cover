@@ -91,7 +91,7 @@
   "themeOnChangeTitle": "The theme has been changed",
   "themeOnChangeMsg": "Recommend to refresh the SiYuan note to make the theme changes taking effect",
   "themeRefresh": "Refresh",
-  "blockThemeTitle": "Block Theme (not show background on the following themes)",
+  "disabledThemeTitle": "Block Theme (not show background on the following themes)",
   "crtThemeText": "Current",
   "failConnectGithubJson": "Failed to fetch latest 'themes.json' file from Github, use plugin cached file.",
   "androidLimitNotice": "Due to Android file permissions, images within certain folders cannot be uploaded within the app. Please enable the 'Network Serving' (Settings > About > Network Serving) in the app settings and use a browser to access and upload the images to bypass this restriction.",

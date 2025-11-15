@@ -43,6 +43,7 @@
   "blurLabel": "背景虚化",
   "blurDes": "范围(0-10), 鼠标拖动后更新",
   "blurShortcutOverflow": "背景虚化超出范围",
+
   "cacheDirectoryLabel": "背景文件数据目录",
   "cacheDirectoryDes": "背景文件数量：",
   "cacheDirectoryMove": "思源2.9.3版本后，缓存目录迁移至/data/public目录中，旧版目录已清理，请重新上传图片",
@@ -90,7 +91,7 @@
   "themeOnChangeTitle": "侦测到主题改变",
   "themeOnChangeMsg": "建议刷新重载思源来使插件适配更改后的主题",
   "themeRefresh": "刷新",
-  "blockThemeTitle": "屏蔽主题 (在下列主题不显示背景)",
+  "disabledThemeTitle": "屏蔽主题 (在下列主题不显示背景)",
   "crtThemeText": "当前主题",
   "failConnectGithubJson": "从Github上获取最新主题信息'themes.json'失败，使用插件自身的缓存信息",
   "androidLimitNotice": "受限于安卓文件权限，部分文件夹内的图片无法在App内上传，请在软件设置中开启伺服后(设置 > 关于 > 伺服)，用浏览器访问上传，以解除此限制。",

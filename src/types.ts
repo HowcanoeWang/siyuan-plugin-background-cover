@@ -35,29 +35,33 @@ export interface fileIdx {
     [key: string]: bgObj;
 }
 
-export interface installedThemeNames {
-    [key: string]: string;
-}
-
-export interface blockThemeConfig {
+export interface disabledThemeConfig {
     dark: { [key: string]: boolean },
     light: { [key:string]: boolean }
 }
 
 // 不进行云同步，当前设备的独有配置
 export var defaultLocalConfigs = {
+    // 当前配置的背景图路径
+    'crtBgObj': undefined as any,
+    'prevTheme': '' as string,
+    
+};
+
+export var defaultSyncConfigs = {
     'version': packageInfo.version as string,
     // 启动时随机更改图片
     'autoRefresh': true as boolean,
-    // 当前配置的背景图路径
-    'crtBgObj': undefined as any,
-    // 当前配置的背景图透明度
+    // 全局背景图透明度
     'opacity': 0.5 as number,
+    // 全局背景图模糊度
     'blur': 5 as number,
+    // 是否启用背景
     'activate': true as boolean,
-    'prevTheme': '' as string,
-    'bgCfg': {} as bgCfg,
+    // 屏蔽背景
+    'disabledTheme': {light:{}, dark:{}} as disabledThemeConfig,
+    // 开发者模式
     'inDev': false as boolean,
-    'blockTheme': {light:{}, dark:{}} as blockThemeConfig,
-};
+}
+
 export type localConfigKey = keyof typeof defaultLocalConfigs;
