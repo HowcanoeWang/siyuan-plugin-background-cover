@@ -13,7 +13,7 @@ import {
     error, info, debug,
     CloseCV, OS,
 } from './utils';
-import { MD5 } from './md5'; // 自动识别.d.ts类型声明
+import { Md5 } from 'ts-md5';
 
 // pythonic style
 let os = new OS();
@@ -192,11 +192,11 @@ export async function imgExistsInCache(file: File, notice: boolean = true): Prom
 
     let file_content = await chunk_blob.text()
     
-    var md5 = MD5(`${file_content}${file.size}`).slice(0, 15);
+    var md5_slice = Md5.hashStr(`${file_content}${file.size}`).slice(0, 15);
 
     debug(`[fileManagerUI][imgExistsInCache] Blob content: [${file_content.slice(20,40)} ...] with length = ${file_content.length}file.size=${file.size}`);
 
-    if (fileidx !== undefined && md5 in fileidx) {
+    if (fileidx !== undefined && md5_slice in fileidx) {
         if (notice) {
             const dialog = new Dialog({
                 title: `${window.bgCoverPlugin.i18n.inDevTitle}`,
@@ -208,16 +208,16 @@ export async function imgExistsInCache(file: File, notice: boolean = true): Prom
         }
         return 'exists'
     } else {
-        return md5
+        return md5_slice
     }
 }
 
 export async function uploadOneImage(file: File) {
     let fileSizeMB: number = (file.size / 1024 / 1024);
 
-    let md5 = await imgExistsInCache(file);
+    let md5_slice = await imgExistsInCache(file);
 
-    if (md5 !== 'exists') {
+    if (md5_slice !== 'exists') {
         showMessage(`${file.name}-${fileSizeMB.toFixed(2)}MB<br>${window.bgCoverPlugin.i18n.addSingleImageUploadNotice}`, 3000, "info");
     }
 
@@ -227,9 +227,9 @@ export async function uploadOneImage(file: File) {
     };
 
     // 检查是否已经在缓存目录中存在了该图片
-    if (md5 !== 'exists') {
+    if (md5_slice !== 'exists') {
         const [prefix, suffix] = os.splitext(file.name)
-        const hashedName = `hash-${md5}.${suffix}`
+        const hashedName = `hash-${md5_slice}.${suffix}`
 
         const uploadResult = await ka.putFile(`${cst.pluginAssetsDir}/${hashedName}`, file);
 
@@ -241,7 +241,7 @@ export async function uploadOneImage(file: File) {
 
             let bgObj: tps.bgObj = {
                 name: file.name,
-                hash: md5,
+                hash: md5_slice,
                 mode: tps.bgMode.image,
                 path: imgPath,
                 width: imageSize.width,

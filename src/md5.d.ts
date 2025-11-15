@@ -1,1 +1,0 @@
-export function MD5(d: string): string;

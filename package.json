@@ -33,6 +33,7 @@
     "zip-webpack-plugin": "^4.0.3"
   },
   "dependencies": {
-    "install": "^0.13.0"
+    "install": "^0.13.0",
+    "ts-md5": "^2.0.1"
   }
 }
