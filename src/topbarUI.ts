@@ -201,15 +201,22 @@ export async function addSeveralLocalImagesFile() {
     }else{
         // return an Array
         const fileHandle = await os.openFilePicker(cst.supportedImageSuffix.toString(), true)
+        let lastUploadedBgObj: any;
 
-        for (const file of fileHandle) {
+        for (const [index, file] of fileHandle.entries()) {
+            const isLast = (index === fileHandle.length - 1);
 
             let bgObj = await fileManagerUI.uploadOneImage(file);
 
             // 文件不重复且上传成功
             if (bgObj !== undefined) {
-                await confmngr.save('[topbarUI][addSinglelocalImageFile]');
-                settingsUI.updateSettingPanelElementStatus();
+                lastUploadedBgObj = bgObj; // 记录最后一次成功上传的对象
+                // 只在最后一次循环时保存和更新UI，减少开销
+                if (isLast) {
+                    await confmngr.save('[topbarUI][addSeveralLocalImagesFile]');
+                    settingsUI.updateSettingPanelElementStatus();
+                    bgRender.changeBackgroundContent(lastUploadedBgObj.path, lastUploadedBgObj.mode);
+                }
             };
         }
     };
