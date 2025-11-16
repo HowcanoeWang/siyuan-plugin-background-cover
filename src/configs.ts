@@ -14,6 +14,9 @@ let ka = new KernelApi();
 class configManager {
     plugin: Plugin;
 
+    // 缓存被修改的key，用于按需保存
+    changedKeys: Set<tps.configKey> = new Set();
+
     // saved locally to /data/storage/local.json by localStorage API
     // 支持不同设备之间的不同配置
     localCfg: any = structuredClone(tps.defaultLocalConfigs);
@@ -51,8 +54,10 @@ class configManager {
     set(key: any, value: any) {
         if (key in this.localCfg) {
             this.localCfg[key] = value;
+            this.changedKeys.add(key);
         } else if (key in this.syncCfg) {
             this.syncCfg[key] = value;
+            this.changedKeys.add(key);
         } else {
             info(`存储键 "${key}" 不存在于默认配置中`);
         }
@@ -62,8 +67,10 @@ class configManager {
     remove(key: any) {
         if (key in this.localCfg) {
             delete this.localCfg[key];
+            this.changedKeys.add(key);
         } else if (key in this.syncCfg) {
             delete this.syncCfg[key];
+            this.changedKeys.add(key);
         } else {
             info(`存储键 "${key}" 不存在于默认配置中`);
         }   
@@ -72,7 +79,10 @@ class configManager {
     async reset() {
         this.localCfg = structuredClone(tps.defaultLocalConfigs);
         this.syncCfg = structuredClone(tps.defaultSyncConfigs);
-        await this.save();
+        // 重置后，所有key都视为已更改，需要全部保存
+        Object.keys(tps.defaultLocalConfigs).forEach(k => this.changedKeys.add(k as tps.configKey));
+        Object.keys(tps.defaultSyncConfigs).forEach(k => this.changedKeys.add(k as tps.configKey));
+        await this.save('[configs][reset]');
     }
 
     /**
@@ -143,9 +153,29 @@ class configManager {
         }
     }
 
-    async save(logHeader?:String) {
-        this._saveLocalCfg(logHeader);
-        this._saveSyncCfg(logHeader);
+    async save(logHeader?: string) {
+        if (this.changedKeys.size === 0) {
+            debug(`${logHeader} No configuration changes, skipping save.`);
+            return;
+        }
+
+        let needsLocalSave = false;
+        let needsSyncSave = false;
+
+        for (const key of this.changedKeys) {
+            if (key in tps.defaultLocalConfigs) needsLocalSave = true;
+            if (key in tps.defaultSyncConfigs) needsSyncSave = true;
+        }
+
+        if (needsLocalSave) {
+            await this._saveLocalCfg(logHeader);
+        }
+        if (needsSyncSave) {
+            await this._saveSyncCfg(logHeader);
+        }
+
+        // 保存完成后，清空变更记录
+        this.changedKeys.clear();
     }
 
     async _saveLocalCfg(logHeader?:String) {
