@@ -12,6 +12,8 @@ import {
     getCurrentThemeInfo
 } from './utils';
 
+let autoRefreshTimer: NodeJS.Timeout | null = null;
+
 export function createBgLayer() {
     var bgLayer = document.createElement('canvas');
     bgLayer.id = "bglayer";
@@ -40,6 +42,7 @@ export function createBgLayer() {
     // </video>
 }
 
+// 添加视频背景
 // export function createBgLayer() {
 //     var bgLayer = document.createElement('video');
 //     bgLayer.id = "bglayer";
@@ -132,6 +135,13 @@ export async function applySettings() {
         bgLayer.style.setProperty('display', 'none');
     }
 
+    // 清除旧的定时器
+    if (autoRefreshTimer) {
+        clearInterval(autoRefreshTimer);
+        autoRefreshTimer = null;
+        debug('[bgRender][applySettings] Cleared existing auto-refresh timer.');
+    }
+
     // 缓存文件夹中没有图片 | 用户刚刚使用这个插件 | 用户刚刚重置了插件数据 | 当前文件404找不到
     const cacheImgNum = fileManagerUI.getCacheImgNum()
     debug(`[bgRender][applySettings] cacheImgNum= ${cacheImgNum}`)
@@ -147,14 +157,24 @@ export async function applySettings() {
         debug(`[bgRender][applySettings] 缓存中有1张以上的图片，bjObj也有内容且图片存在`)
         let crtBgObj = confmngr.get('crtBgObj')
         let fileidx = confmngr.get('fileidx')
-        // 没有开启启动自动更换图片，则直接显示该图片
-        if (crtBgObj.hash in fileidx && !confmngr.get('autoRefresh')) {
-            debug(`[bgRender][applySettings] 没有开启启动自动更换图片，则直接显示当前图片`)
+        // 如果当前背景图有效，并且没有开启自动刷新功能，则加载config中记录的crtBgObj
+        if (crtBgObj && crtBgObj.hash in fileidx) {
+            debug(`[bgRender][applySettings] 当前背景图有效，加载当前图片`)
             changeBackgroundContent(crtBgObj.path, crtBgObj.mode)
         } else {
-            // 当bjObj找不到404 | 用户选择随机图片，则随机调一张作为bjObj
-            debug(`[bgRender][applySettings] 用户选择随机图片，则随机调一张作为bjObj`)
+            // 当bjObj找不到404或不存在时，则随机选一张替换作为bjObj
+            debug(`[bgRender][applySettings] 当前背景图无效或丢失，随机选择一张替换`)
             await topbarUI.selectPictureRandom();
+        }
+
+        // 如果开启了自动刷新且时间不为0，则设置新的定时器
+        debug(confmngr.get('autoRefreshTime'), `judgement result:`, confmngr.get('autoRefreshTime') > 0)
+        if (confmngr.get('autoRefresh') && confmngr.get('autoRefreshTime') > 0) {
+            const refreshTime = confmngr.get('autoRefreshTime') * 60 * 1000; // convert minutes to seconds to ms
+            autoRefreshTimer = setInterval(() => {
+                topbarUI.selectPictureRandom(false); // pass false to avoid notice on auto-refresh
+            }, refreshTime);
+            debug(`[bgRender][applySettings] Set up auto-refresh timer for every ${refreshTime / 1000} seconds.`);
         }
     }
 
