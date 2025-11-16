@@ -163,7 +163,20 @@ export async function applySettings() {
     if (confmngr.get('crtBgObj') === undefined){
         changeBgPosition(null, null)
     }else{
-        changeBgPosition(confmngr.get('crtBgObj').offx, confmngr.get('crtBgObj').offy)
+        // 0.5.0版本后数据结构重构，放弃直接修改crtBgObj的.offx offy
+        // 因为需要考虑到不同的设备有不同的设置，而这个设置不应该同步
+        // 所以使用存在local配置中的'bgObjCfg' -> [img.hash].offx offy来进行记录和控制
+        let bgObjCfg = confmngr.get('bgObjCfg')
+        let crtbgObjHash = confmngr.get('crtBgObj').hash
+
+        var offx: string = '50'  // 默认居中
+        var offy: string = '50'
+        if (crtbgObjHash in bgObjCfg) {
+            offx = bgObjCfg[crtbgObjHash].offx
+            offy = bgObjCfg[crtbgObjHash].offy
+        }
+
+        changeBgPosition(offx, offy)
     }
     
     settingsUI.updateSettingPanelElementStatus()

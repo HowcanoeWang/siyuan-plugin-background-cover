@@ -4,6 +4,7 @@ import BgCoverPlugin from "./index"
 import { Dialog, getBackend, getFrontend, showMessage} from "siyuan";
 import { confmngr } from "./configs";
 
+import * as tps from "./types";
 import * as cst from "./constants";
 import * as fileManagerUI from "./fileManagerUI";
 import * as topbarUI from "./topbarUI";
@@ -26,6 +27,22 @@ let cv2 = new CloseCV();
 
 export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     const cacheImgNum = fileManagerUI.getCacheImgNum();
+
+    // 当前显示的bgOb信息
+    let crtBgObj = confmngr.get('crtBgObj')
+
+    var crtBgObjName: string = cst.demoImgURL
+    if (crtBgObj !== undefined) {
+        crtBgObjName = crtBgObj.name
+    }
+
+    let crtBgObjCfg = confmngr.get('bgObjCfg')
+    var crtOffx = '50'
+    var crtOffy = '50'
+    if (crtBgObjCfg[crtBgObj.hash] !== undefined) {
+        crtOffx = crtBgObjCfg[crtBgObj.hash].offx
+        crtOffy = crtBgObjCfg[crtBgObj.hash].offy
+    }
 
     const dialog = new Dialog({
         // title: `${window.bgCoverPlugin.i18n.addTopBarIcon}(v${packageInfo.version}) ${window.bgCoverPlugin.i18n.settingLabel}`,
@@ -75,17 +92,17 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                         <div class="fn__flex-1">
                             ${window.bgCoverPlugin.i18n.imgPathLabel}
                             <div class="b3-label__text">
-                                <code id="crtImgName" class="fn__code">${confmngr.get('crtBgObj') === undefined ? cst.demoImgURL : confmngr.get('crtBgObj').name}</code>
+                                <code id="crtImgName" class="fn__code">${crtBgObjName}</code>
                             </div>
                         </div>
                         <div class="fn__flex-center">  
                             <div>
                                 <label for="cx">X</label> 
-                                <input id="cx" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${confmngr.get('crtBgObj') === undefined ? '50' : confmngr.get('crtBgObj').offx}>
+                                <input id="cx" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${crtOffx}>
                             </div>
                             <div>
                                 <label for="cy">Y</label> 
-                                <input id="cy" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${confmngr.get('crtBgObj') === undefined ? '50' : confmngr.get('crtBgObj').offy}>
+                                <input id="cy" class="b3-slider fn__size50"  max="100" min="0" step="5" type="range" value=${crtOffy}>
                             </div>
                         </div>
                     </label>
@@ -367,20 +384,32 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         // 停止拖动的时候，保存图片的位置
         elementsArray[i].addEventListener("change", () => {
             //
-            let bgObj = confmngr.get('crtBgObj')
+            let crtBgObj = confmngr.get('crtBgObj')
 
             // 使用默认的了了图，此时bgObj为undefined，没有下面这些属性，跳过
-            if (bgObj !== undefined) {
+            if (crtBgObj !== undefined) {
 
-                bgObj.offx = cxElement.value
-                bgObj.offy = cyElement.value
+                // 0.5.0版本后数据结构重构，放弃直接修改crtBgObj的.offx offy
+                // 因为需要考虑到不同的设备有不同的设置，而这个设置不应该同步
+                // 所以使用存在local配置中的'bgObjCfg' -> [img.hash].offx offy来进行记录和控制
+                let crtbgObjHash = crtBgObj.hash
 
-                confmngr.set('crtBgObj', bgObj)
+                let bgObjCfg = confmngr.get('bgObjCfg')
+                let crtBjObjCfg = bgObjCfg[crtbgObjHash]
 
-                let fileidx = confmngr.get('fileidx')
-                fileidx[bgObj.hash] = bgObj
+                if (crtBjObjCfg === undefined) {
+                    crtBjObjCfg = {
+                        offx: '50',
+                        offy: '50',
+                    }
+                }
 
-                confmngr.set('fileidx', fileidx)
+                crtBjObjCfg.offx = cxElement.value
+                crtBjObjCfg.offy = cyElement.value
+
+                bgObjCfg[crtbgObjHash] = crtBjObjCfg
+
+                confmngr.set('bgObjCfg', bgObjCfg)
 
                 confmngr.save('[settingsUI][openSettingDialog][cxyElement.change]');
             }

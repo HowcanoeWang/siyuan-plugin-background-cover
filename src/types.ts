@@ -23,7 +23,7 @@ export interface bgObj {
     mode: bgMode, height: number, width: number,
 }
 
-export interface bgCfg {
+export interface bgObjCfg {
     // key: bgObj.hash
     [key: string]: { offx: number, offy: number }
 }
@@ -44,6 +44,8 @@ export var defaultLocalConfigs = {
     'version': packageInfo.version as string,
     // 当前配置的背景图路径
     'crtBgObj': undefined as any,
+    // 设置当前图片在当前设备下的独有配置，如位置xy等
+    'bgObjCfg': {} as bgObjCfg,
     // 用于判断是否进行了背景更改
     'prevTheme': '' as string,
     // 启动时随机更改图片
