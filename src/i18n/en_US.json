@@ -30,6 +30,7 @@
   "addDirectoryLabelError1": "The image number of current folder exceeds ",
   "addDirectoryLabelError2": ", abort following images considering the pluin performance",
   "addNoteAssetsDirectoryLabel": "Add folder in note assets",
+  "folderBgCountLabel": "Usable background count",
   "closeBackgroundLabel": "Closing Background",
   "openBackgroundLabel": "Opening Background",
   "openBackgroundLabelDes": "Not display the background when clsoing (but the element still exists in the html code)",

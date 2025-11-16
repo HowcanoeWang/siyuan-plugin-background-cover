@@ -533,7 +533,7 @@ export function generateCacheImgList(){
             <div class="b3-dialog__action">
                 <button class="b3-button b3-button--cancel">${window.bgCoverPlugin.i18n.cancel}</button>
                 <div class="fn__space"></div>
-                <button class="b3-button b3-button--text" id="folderPickerSelect">${window.bgCoverPlugin.i18n.select}</button>
+                <button class="b3-button b3-button--text" id="folderPickerSelect">${window.bgCoverPlugin.i18n.confirm}</button>
             </div>
             `,
             destroyCallback: () => {
@@ -544,34 +544,55 @@ export function generateCacheImgList(){
         const renderSubfolderNode = async (path: string, parentElement: HTMLElement, level: number = 0) => {
             // 预先读取目录内容以确定是否有子文件夹
             let subDirs: { isDir: boolean; name: string }[] = [];
+            let imageCount = 0;
             let hasSubDirs = false;
             try {
                 const res = await ka.readDir(path);
                 if (res.code === 0 && res.data) {
-                    subDirs = (res.data as { isDir: boolean; name: string }[]).filter(item => item.isDir);
+                    const items = res.data as { isDir: boolean; name: string }[];
+                    debug(`ka.readDir -> items:`, items);
+
+                    subDirs = items.filter(item => item.isDir);
+                    debug(`读取文件夹${path}的子文件夹内容:`, subDirs)
+
+                    // 计算图片数量
+                    // let fileext = os.splitext('ea95f7576f32674cd.jfif')[1].toLowerCase()
+                    // fileext => 'jfif' 缺少前面的'.'
+                    // debug(`计算图片后缀是否符合`, fileext, cst.supportedImageSuffix.includes(fileext) )
+                    imageCount = items.filter(item => 
+                        !item.isDir && cst.supportedImageSuffix.includes(`.${os.splitext(item.name)[1].toLowerCase()}`)
+                    ).length;
                     hasSubDirs = subDirs.length > 0;
                 }
             } catch (err) {
-                console.error(`[fileManagerUI] Failed to pre-read directory ${path}:`, err);
+                console.error(`[fileManagerUI] 读取路径失败 ${path}:`, err);
             }
 
             const nodeElement = document.createElement('div');
             const folderName = path.split('/').pop() || path;
-            debug(`folderName:`, folderName)
 
             // 根据是否存在子文件夹，条件性地渲染展开/折叠的箭头
-            const toggleHTML = hasSubDirs
-                ? `<span class="b3-list-item__toggle b3-list-item__toggle--hl" style="margin-left: ${level * 20}px;">
+            const arrowHTML = hasSubDirs
+                // 如果有子文件夹：
+                ? `<span class="b3-list-item__toggle b3-list-item__toggle--hl">
                        <svg class="b3-list-item__arrow"><use xlink:href="#iconRight"></use></svg>
                    </span>`
+                // 如果没有子文件夹
                 : `<span class="b3-list-item__toggle"></span>`; // 使用一个空的span来保持对齐
+            
+            const badgeHTML = `
+            <span class="counter counter--bg fn__flex-center b3-tooltips b3-tooltips__w" 
+                aria-label="${window.bgCoverPlugin.i18n.folderBgCountLabel}">
+                ${imageCount}
+            </span>`
 
             nodeElement.innerHTML = `
             <div class="b3-list-item b3-list-item--narrow toggle">
-                ${toggleHTML}
+                ${arrowHTML}
                 <span class="b3-list-item__text ft__on-surface" >${folderName}</span>
                 <span class="fn__space"></span>
-                <input class="b3-switch fn__flex-center" type="checkbox" data-path="${path}">
+                <input class="b3-switch fn__flex-center" type="checkbox" data-path="${path}" ${imageCount === 0 ? 'disabled' : ''}>
+                ${badgeHTML}
             </div>
             <div class="b3-list__panel" style="display: none;"></div>
             `;
