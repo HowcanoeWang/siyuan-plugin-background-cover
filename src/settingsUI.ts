@@ -29,8 +29,8 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
     const dialog = new Dialog({
         // title: `${window.bgCoverPlugin.i18n.addTopBarIcon}(v${packageInfo.version}) ${window.bgCoverPlugin.i18n.settingLabel}`,
-        width: window.bgCoverPlugin.isMobileLayout ? "92vw" : "max(520px, 50vw)",
-        height: "max(520px, 90vh)",
+        width: window.bgCoverPlugin.isMobileLayout ? "92vw" : "max(520px, 60vw)",
+        height: "max(520px, 60vh)",
         content: `
         <div class="fn__flex-1 fn__flex config__panel" style="overflow: hidden;position: relative">
             <ul class="b3-tab-bar b3-list b3-list--background">
@@ -190,32 +190,41 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                 <!-- 屏蔽主题Tab -->
 
                 <div class="config__tab-container fn__none" data-name="theme">
-                    <!--
-                    // theme black list
-                    -->
 
-                    <div class="b3-label config__item">
-                        ${window.bgCoverPlugin.i18n.disabledThemeTitle}
-                        <!-- light theme block -->
-                        <div class="b3-label__text">${window.bgCoverPlugin.i18n.themeAdaptEditorMode0}</div>
-                        <div class="b3-label">
-                            <div class="config-query" id="lightThemeBlockContainer">
+                    <div class="config-bazaar__panel">
+                    
+                        <div class="fn__flex config-bazaar__title">
 
-                                <!-- label item add by for loop -->
-
-                            </div>
-                        </div>
-
-                        <!-- dark theme block -->
-                        <div class="b3-label__text">${window.bgCoverPlugin.i18n.themeAdaptEditorMode1}</div>
-                        <div class="b3-label">
-                            <div class="config-query" id="darkThemeBlockContainer">
-                                
-                                <!-- label item add by for loop -->
-
-                            </div>
-                        </div>
+                            <div>${window.bgCoverPlugin.i18n.themeAdaptEditorMode0}</div>
                         
+                        </div>
+
+                        <div class="config-bazaar__content">
+
+                            <div class="b3-cards" id="lightThemeBlockContainer">
+
+                                <!-- label item add by for loop -->
+                            
+                            </div>
+                        
+                        </div>
+
+                        <div class="fn__flex config-bazaar__title">
+
+                            <div>${window.bgCoverPlugin.i18n.themeAdaptEditorMode1}</div>
+                        
+                        </div>
+
+                        <div class="config-bazaar__content">
+
+                            <div class="b3-cards" id="darkThemeBlockContainer">
+
+                                <!-- label item add by for loop -->
+                            
+                            </div>
+                        
+                        </div>
+
                     </div>
 
                 </div>
@@ -532,23 +541,33 @@ export function generatedisabledThemeElement(){
              */ 
             let parser = new DOMParser();
             var blockLabelItem = parser.parseFromString(`
-            <label class="fn__flex">
-                <div class="fn__flex-1">
-                    ${itheme['label']}
+            <div class="b3-card b3-card--wrap">
+                <div class="fn__flex-1 fn__flex-column">
+                    <div class="b3-card__info b3-card__info--left fn__flex-1">
+                        <span class="crt_plugin-placeholder">${itheme['name']}</span>
+                        <!-- span class="ft__on-surface ft__smaller"></span -->
+                        <div class="b3-card__desc">
+                            ${itheme['label']}
+                        </div>
+                    </div>
                 </div>
-                <span class="fn__space"></span>
-                <input class="b3-switch" data-mode="${themeModeText[i]}" data-theme="${itheme['name']}" type="checkbox">
-            </label>`, 
-            'text/html').body.firstChild as HTMLDivElement
+                <div class="b3-card__actions b3-card__actions--right">
+                    <span class="fn__space"></span>
+                    <input class="b3-switch fn__flex-center" data-mode="${themeModeText[i]}" data-theme="${itheme['name']}" type="checkbox"></input>
+                </div>
+            </div>
+            `, 'text/html').body.firstChild as HTMLDivElement
             
             ThemeBlockContainer[i].appendChild(blockLabelItem);
 
             // 高亮当前主题
+            debug(`添加当前主题的蓝色高亮`, itheme["name"], themeName)
             if (themeMode === i && itheme["name"] === themeName) {
-                let textItem = blockLabelItem.querySelectorAll('div')[0]
+                debug(`      => 匹配到一致的主题`)
+                let textSpan = blockLabelItem.querySelector('span.crt_plugin-placeholder') as HTMLElement;
 
-                textItem.style.setProperty('color', 'var(--b3-theme-primary)');
-                textItem.textContent += `[${window.bgCoverPlugin.i18n.crtThemeText}]`
+                textSpan.style.setProperty('color', 'var(--b3-theme-primary)');
+                textSpan.textContent += `[${window.bgCoverPlugin.i18n.crtThemeText}]`
             }
 
             /**
