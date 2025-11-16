@@ -50,6 +50,7 @@ export var defaultLocalConfigs = {
     'prevTheme': '' as string,
     // 启动时随机更改图片
     'autoRefresh': true as boolean,
+    'autoRefreshTime': 30 as number,
     // 全局背景图透明度
     'opacity': 0.5 as number,
     // 全局背景图模糊度

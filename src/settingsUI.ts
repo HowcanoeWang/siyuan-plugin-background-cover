@@ -4,7 +4,6 @@ import BgCoverPlugin from "./index"
 import { Dialog, getBackend, getFrontend, showMessage} from "siyuan";
 import { confmngr } from "./configs";
 
-import * as tps from "./types";
 import * as cst from "./constants";
 import * as fileManagerUI from "./fileManagerUI";
 import * as topbarUI from "./topbarUI";
@@ -129,24 +128,34 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
                     
                     <!--
-                    // 自动更新按钮
+                    // 自动更换背景按钮
                     -->
+                    <div class="b3-label">
+                        <div>${window.bgCoverPlugin.i18n.autoRefreshLabel}</div>
+                        <div class="fn__hr"></div>
 
-                    <label class="fn__flex b3-label config__item">
-                        <div class="fn__flex-1">
-                            ${window.bgCoverPlugin.i18n.autoRefreshLabel}
-                            <div class="b3-label__text">
-                                ${window.bgCoverPlugin.i18n.autoRefreshDes}
-                            </div>
+                        <div class="fn__flex config__item">
+                            <div class="fn__flex-center fn__flex-1 ft__on-surface">${window.bgCoverPlugin.i18n.autoRefreshDes}</div>
+                            <span class="fn__space"></span>
+                            <input
+                                id="autoRefreshInput"
+                                class="b3-switch fn__flex-center"
+                                type="checkbox"
+                                value="${confmngr.get('autoRefresh')}"
+                            />
                         </div>
-                        <span class="fn__flex-center" />
-                        <input
-                            id="autoRefreshInput"
-                            class="b3-switch fn__flex-center"
-                            type="checkbox"
-                            value="${confmngr.get('autoRefresh')}"
-                        />
-                    </label>
+
+                        <div class="fn__hr"></div>
+
+                        <div class="fn__flex config__item">
+                            <div class="fn__flex-center fn__flex-1 ft__on-surface">${window.bgCoverPlugin.i18n.autoRefreshTimeDes}</div>
+                            <span class="fn__space"></span>
+                            <input class="b3-text-field fn__flex-center fn__size200" id="autoRefreshTimeInput" type="number" min="0" max="36000" value="${confmngr.get('autoRefreshTime')}">
+                            <span class="fn__space"></span>
+                            <span class="ft__on-surface fn__flex-center">${window.bgCoverPlugin.i18n.autoRefreshTimeUnit}</span>
+                        </div>
+
+                    </div>
 
                     <!--
                     // slider part Input[4] - Input [5]
@@ -366,7 +375,9 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         }
     });
 
-    // image position slider
+    //=================
+    // 图片偏移的相关设置
+    //=================
     const cxElement = document.getElementById('cx') as HTMLInputElement;
     const cyElement = document.getElementById('cy') as HTMLInputElement;
 
@@ -417,14 +428,18 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         })
     }
 
-    // cacheManger button
+    //==============================
+    // cacheManger button弹出管理面板
+    //==============================
     const cacheManagerElement = document.getElementById('cacheManagerBtn') as HTMLButtonElement;
     cacheManagerElement.addEventListener("click", async () => {
         dialog.destroy();
         topbarUI.selectPictureByHand();
     })
 
+    //=====================
     // plugin onoff switch
+    //=====================
     const activateElement = document.getElementById('onoffInput') as HTMLInputElement;
     activateElement.checked = confmngr.get('activate');
 
@@ -435,17 +450,36 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
         bgRender.applySettings();
     })
 
-    // block theme
+    //=========
+    // 屏蔽主题
+    //=========
     generatedisabledThemeElement();
 
-    // the Auto refresh switch
+    //============
+    // 自动刷新设置
+    //============
     const autoRefreshElement = document.getElementById('autoRefreshInput') as HTMLInputElement;
     autoRefreshElement.checked = confmngr.get('autoRefresh');
 
+    // 自动更新时间
+    const autoRefreshTimeElement = document.getElementById('autoRefreshTimeInput') as HTMLInputElement;
+    autoRefreshTimeElement.value = `${confmngr.get('autoRefreshTime')}`;
+    updateAutoFreshStatus();  // 更新disabled
+
+    // 自动刷新开关
     autoRefreshElement.addEventListener("click", () => {
         confmngr.set('autoRefresh', !confmngr.get('autoRefresh'));
         autoRefreshElement.value = `${confmngr.get('autoRefresh')}`;
         confmngr.save('[settingsUI][openSettingDialog][autoRefreshElement.change]');
+        updateAutoFreshStatus();
+        bgRender.applySettings();
+    })
+
+    // 自动更新时间输入栏
+    autoRefreshTimeElement.addEventListener("change", () => {
+        confmngr.set('autoRefreshTime', autoRefreshTimeElement.value);
+        confmngr.save('[settingsUI][openSettingDialog][autoRefreshTimeElement.change]');
+        bgRender.applySettings();
     })
 
     // transparency/opacity slider
@@ -717,8 +751,8 @@ export function updateSettingPanelElementStatus() {
     // update onoff switch button
     updateCheckedElement('onoffInput', confmngr.get('activate'))
 
-    // 更新autorefresh按钮
-    updateCheckedElement('autoRefreshInput', confmngr.get('autoRefresh'))
+    // 更新autorefresh相关按钮
+    updateAutoFreshStatus()
 
     // 更新opacity滑动条
     updateSliderElement('opacityInput', confmngr.get('opacity'))
@@ -777,5 +811,21 @@ export function updateOffsetSwitch() {
             cyElement.style.setProperty('opacity', '0.1')
             cxElement.style.setProperty('opacity', '0.1')
         }
+    }
+}
+
+export function updateAutoFreshStatus() {
+    updateCheckedElement('autoRefreshInput', confmngr.get('autoRefresh'))
+
+    // 如果auto refresh 是 off的情况，需要更新一下定时切换时间的状态为disabled
+    const autoRefreshTimeElement = document.getElementById('autoRefreshTimeInput') as HTMLInputElement;
+    if (!confmngr.get('autoRefresh')) {
+        autoRefreshTimeElement.disabled = true;
+        autoRefreshTimeElement.style.setProperty('background-color', 'var(--b3-theme-surface-lighter)');
+        autoRefreshTimeElement.style.setProperty('color', 'var(--b3-theme-disabled)');
+    } else {
+        autoRefreshTimeElement.disabled = false;
+        autoRefreshTimeElement.style.removeProperty('background-color');
+        autoRefreshTimeElement.style.removeProperty('color');
     }
 }

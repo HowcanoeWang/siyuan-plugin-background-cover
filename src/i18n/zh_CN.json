@@ -40,6 +40,8 @@
   "tabAboutLabel": "关于",
   "autoRefreshLabel": "启动时自动更换背景",
   "autoRefreshDes": "勾选之后每次启动思源都会随机更换背景图，若要固定某一张图片请取消勾选",
+  "autoRefreshTimeDes": "定时自动切换时间，设置为0则不定时切换",
+  "autoRefreshTimeUnit": "分钟",
   "imgPathLabel":"当前背景图片",
   "opacityLabel": "前景透明度",
   "opacityDes": "范围(0-1), 鼠标拖动后更新。值为0时不启用前景透明，以适配部分透明主题(如<code>Cliff-Dark</code>, <code>暗色+</code>)",
