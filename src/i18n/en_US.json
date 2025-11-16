@@ -29,6 +29,7 @@
   "addDirectoryLabelConfirm2": "images, are you sure upload all of them? This may takes up a long time and a large storage.",
   "addDirectoryLabelError1": "The image number of current folder exceeds ",
   "addDirectoryLabelError2": ", abort following images considering the pluin performance",
+  "addNoteAssetsDirectoryLabel": "Add folder in note assets",
   "closeBackgroundLabel": "Closing Background",
   "openBackgroundLabel": "Opening Background",
   "openBackgroundLabelDes": "Not display the background when clsoing (but the element still exists in the html code)",

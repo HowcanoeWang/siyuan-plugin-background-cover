@@ -89,7 +89,8 @@ export async function checkAssetsDir() {
                     hash: hash_name,
                     mode: tps.bgMode.image,
                     height: imageSize.height,
-                    width: imageSize.width
+                    width: imageSize.width,
+                    parent: cst.pluginAssetsId
                 }
 
                 fileidx[hash_name] = bgObj
@@ -245,7 +246,8 @@ export async function uploadOneImage(file: File) {
                 mode: tps.bgMode.image,
                 path: imgPath,
                 width: imageSize.width,
-                height: imageSize.height
+                height: imageSize.height,
+                parent: cst.pluginAssetsId
             }
 
             fileidx[bgObj.hash] = bgObj;
@@ -491,4 +493,162 @@ export function generateCacheImgList(){
     }
 
     return listHtml;
+}
+
+
+//////////////////////
+// Asset UI Manager //
+//////////////////////
+
+ export function openAssetsFolderPickerDialog(): Promise<string[] | null> {
+    const rootPath = 'data/assets';
+    const selectedPaths: Set<string> = new Set();
+    
+    // siyuan file tree:
+    //
+    // <div class="b3-list b3-list--border b3-list--background">
+    //     <div class="b3-list-item b3-list-item--narrow toggle">
+    //         <span class="b3-list-item__toggle b3-list-item__toggle--hl">
+    //             <svg class="b3-list-item__arrow b3-list-item__arrow--open">
+    //                 <use xlink:href="#iconRight"></use>
+    //             </svg>
+    //         </span>
+    //         <span class="b3-list-item__text ft__on-surface">插件</span>
+    //     </div>
+    //     <div class="b3-list__panel">
+    //         <!-- repeat -->
+    //         <div class="b3-list-item b3-list-item--narrow toggle">
+
+    return new Promise((resolve) => {
+        const dialog = new Dialog({
+            title: window.bgCoverPlugin.i18n.addNoteAssetsDirectoryLabel,
+            width: window.bgCoverPlugin.isMobileLayout ? "92vw" : "600px",
+            height: "70vh",
+            content: `
+            <div class="b3-dialog__content" style="height: calc(100% - 62px);">
+                <div id="folderTreeContainer" class="b3-label file-tree" style="height: 100%;">
+                    <!-- Tree will be rendered here -->
+                </div>
+            </div>
+            <div class="b3-dialog__action">
+                <button class="b3-button b3-button--cancel">${window.bgCoverPlugin.i18n.cancel}</button>
+                <div class="fn__space"></div>
+                <button class="b3-button b3-button--text" id="folderPickerSelect">${window.bgCoverPlugin.i18n.select}</button>
+            </div>
+            `,
+            destroyCallback: () => {
+                resolve(null);
+            }
+        });
+
+        const renderSubfolderNode = async (path: string, parentElement: HTMLElement, level: number = 0) => {
+            // 预先读取目录内容以确定是否有子文件夹
+            let subDirs: { isDir: boolean; name: string }[] = [];
+            let hasSubDirs = false;
+            try {
+                const res = await ka.readDir(path);
+                if (res.code === 0 && res.data) {
+                    subDirs = (res.data as { isDir: boolean; name: string }[]).filter(item => item.isDir);
+                    hasSubDirs = subDirs.length > 0;
+                }
+            } catch (err) {
+                console.error(`[fileManagerUI] Failed to pre-read directory ${path}:`, err);
+            }
+
+            const nodeElement = document.createElement('div');
+            const folderName = path.split('/').pop() || path;
+            debug(`folderName:`, folderName)
+
+            // 根据是否存在子文件夹，条件性地渲染展开/折叠的箭头
+            const toggleHTML = hasSubDirs
+                ? `<span class="b3-list-item__toggle b3-list-item__toggle--hl" style="margin-left: ${level * 20}px;">
+                       <svg class="b3-list-item__arrow"><use xlink:href="#iconRight"></use></svg>
+                   </span>`
+                : `<span class="b3-list-item__toggle"></span>`; // 使用一个空的span来保持对齐
+
+            nodeElement.innerHTML = `
+            <div class="b3-list-item b3-list-item--narrow toggle">
+                ${toggleHTML}
+                <span class="b3-list-item__text ft__on-surface" >${folderName}</span>
+                <span class="fn__space"></span>
+                <input class="b3-switch fn__flex-center" type="checkbox" data-path="${path}">
+            </div>
+            <div class="b3-list__panel" style="display: none;"></div>
+            `;
+            parentElement.appendChild(nodeElement);
+
+            const panel = nodeElement.querySelector('.b3-list__panel') as HTMLElement;
+            const checkbox = nodeElement.querySelector('.b3-switch') as HTMLInputElement;
+
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    selectedPaths.add(path);
+                } else {
+                    selectedPaths.delete(path);
+                }
+            });
+
+            // 仅当存在子文件夹时，才添加展开/折叠功能
+            if (hasSubDirs) {
+                const toggle = nodeElement.querySelector('.b3-list-item__toggle') as HTMLElement;
+                const arrow = nodeElement.querySelector('.b3-list-item__arrow') as SVGElement;
+
+                toggle.addEventListener('click', async () => {
+                    const isOpen = arrow.classList.toggle('b3-list-item__arrow--open');
+                    panel.style.display = isOpen ? '' : 'none';
+
+                    // 仅在第一次展开时加载内容
+                    if (isOpen && panel.childElementCount === 0) {
+                        // 我们已经预加载了subDirs，现在直接使用它们来渲染
+                        for (const item of subDirs) {
+                            await renderSubfolderNode(`${path}/${item.name}`, panel, level + 1);
+                        }
+                    }
+                });
+            }
+        };
+
+        const treeContainer = dialog.element.querySelector('#folderTreeContainer') as HTMLDivElement;
+        
+        // Main function to initialize the tree view
+        const initTree = async () => {
+            treeContainer.innerHTML = `<div class="fn__loading" style="text-align: center; padding: 20px;"><img src="/stage/loading-pure.svg"></div>`;
+            try {
+                const res = await ka.readDir(rootPath);
+                treeContainer.innerHTML = ''; // Clear loading
+                if (res.code === 0 && res.data) {
+                    const rootDirs = (res.data as { isDir: boolean; name: string }[]).filter(item => item.isDir);
+                    if (rootDirs.length > 0) {
+                        for (const dir of rootDirs) {
+                            const listContainer = document.createElement('div');
+                            listContainer.className = 'b3-list b3-list--border b3-list--background';
+                            treeContainer.appendChild(listContainer);
+                            await renderSubfolderNode(`${rootPath}/${dir.name}`, listContainer, 0);
+                        }
+                    } else {
+                        treeContainer.innerHTML = `<div class="b3-list-item b3-list-item--narrow"><span class="b3-list-item__text ft__on-surface ft__smaller">${window.bgCoverPlugin.i18n.emptyFolder}</span></div>`;
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to read root assets directory:", err);
+                treeContainer.innerHTML = `<div class="b3-list-item"><span class="b3-list-item__text" style="color: var(--b3-theme-error);">Failed to load assets directory.</span></div>`;
+            }
+        };
+
+        initTree();
+
+        // 确认选择按钮
+        const confirmButton = dialog.element.querySelector('#folderPickerSelect') as HTMLButtonElement;
+        confirmButton.addEventListener('click', () => {
+            resolve(Array.from(selectedPaths));
+            dialog.destroy();
+        });
+        
+        // 取消按钮
+        const cancelButton = dialog.element.querySelector('.b3-button--cancel') as HTMLButtonElement;
+        cancelButton.addEventListener('click', () => {
+            dialog.destroy();
+        });
+ 
+    });
 }

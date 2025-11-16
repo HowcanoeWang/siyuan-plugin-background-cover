@@ -21,6 +21,7 @@ export enum bgMode {
 export interface bgObj {
     name: string, path: string, hash: string,
     mode: bgMode, height: number, width: number,
+    parent: string,
 }
 
 export interface bgObjCfg {
@@ -32,6 +33,10 @@ export interface bgObjCfg {
 export interface fileIdx {
     // key: bgObj.hash
     [key: string]: bgObj;
+}
+
+export interface noteAssetsFolder {
+    [key: string]: string
 }
 
 export interface disabledThemeConfig {
@@ -65,6 +70,7 @@ export var defaultLocalConfigs = {
 
 export var defaultSyncConfigs = {
     'fileidx': {} as fileIdx,
+    'noteAssetsFolder': {} as noteAssetsFolder,
 }
 
 export type localConfigKey = keyof typeof defaultLocalConfigs;

@@ -85,6 +85,13 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                     addDirectory();
                 }
             },
+            {
+                icon: "iconFilesRoot",
+                label: `${window.bgCoverPlugin.i18n.addNoteAssetsDirectoryLabel}`,
+                click: () => {
+                    addNoteAssetsDirectory();
+                }
+            },
         ];
 
         if (window.bgCoverPlugin.isAndroid && !window.bgCoverPlugin.isBrowser) {
@@ -268,5 +275,20 @@ export async function addDirectory() {
     }else{
          // 要上传的数量比较少，直接开始批量上传
         await fileManagerUI.batchUploadImages(fileContainer, true);
+    }
+}
+
+export async function addNoteAssetsDirectory() {
+    const selectedPath = await fileManagerUI.openAssetsFolderPickerDialog();
+
+    if (selectedPath) {
+        debug(`[topbarUI][addNoteAssetsDirectory] User selected folder: ${selectedPath}`);
+        // TODO: 在这里处理后续逻辑
+        // 1. 计算路径的哈希作为ID
+        // 2. 将 {id: path} 保存到配置中
+        // 3. 触发文件索引同步
+        showMessage(`已选择文件夹: ${selectedPath}`);
+    } else {
+        debug('[topbarUI][addNoteAssetsDirectory] User cancelled folder selection.');
     }
 }

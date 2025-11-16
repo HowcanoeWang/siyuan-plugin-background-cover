@@ -29,6 +29,7 @@
   "addDirectoryLabelConfirm2": "张图片，确定将她们全部上传吗？这将会花费很长时间上传并且会消耗大量的储存空间。",
   "addDirectoryLabelError1": "即将达到缓存文件夹",
   "addDirectoryLabelError2": "张性能上限，为了保证插件的性能，后续图片停止上传",
+  "addNoteAssetsDirectoryLabel": "添加笔记资源内的文件夹",
   "closeBackgroundLabel": "关闭图片背景",
   "openBackgroundLabel": "打开图片背景",
   "openBackgroundLabelDes": "关闭后背景图片不显示(但背景元素还存在于html代码中)",

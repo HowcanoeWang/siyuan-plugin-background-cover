@@ -6,6 +6,7 @@ export const hashLength = 2097152;
 
 export const synConfigFile = 'configs.json'
 export const pluginAssetsDir = `/data/public/${packageInfo.name}`
+export const pluginAssetsId = 'pluginAssetsDir'
 
 
 export let pluginAssetsDirOS = ''
