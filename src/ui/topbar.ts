@@ -7,16 +7,17 @@ import {
     IMenuItemOption
 } from "siyuan";
 
-import { debug, OS } from './utils';
+import { debug, OS } from '../utils';
 
-import BgCoverPlugin from "./index"
-import { confmngr } from './configs';
-import * as cst from './constants';
-import * as noticeUI from "./noticeUI";
-import * as settingsUI from "./settingsUI";
-import * as fileManagerUI from "./fileManagerUI";
-import * as bgRender from "./bgRender";
-import * as topbarUI from "./topbarUI";
+import BgCoverPlugin from "../index"
+import { confmngr } from '../configs';
+import * as cst from '../constants';
+import * as bgRender from "../bgRender";
+
+import * as topbarUI from "./topbar";
+import * as noticeUI from "./notice";
+import * as fileManagerUI from "./fileManager";
+import * as settingsUI from "./settings";
 
 let os = new OS();
 

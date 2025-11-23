@@ -1,19 +1,19 @@
-import packageInfo from '../plugin.json'
-import BgCoverPlugin from "./index"
+import packageInfo from '../../plugin.json'
+import BgCoverPlugin from "../index"
 
 import { Dialog, getBackend, getFrontend, showMessage} from "siyuan";
-import { confmngr } from "./configs";
+import { confmngr } from "../configs";
+import * as bgRender from "../bgRender";
 
-import * as cst from "./constants";
-import * as fileManagerUI from "./fileManagerUI";
-import * as topbarUI from "./topbarUI";
-import * as bgRender from "./bgRender";
+import * as cst from "../constants";
+import * as fileManagerUI from "./fileManager";
+import * as topbarUI from "./topbar";
 
 import { 
     debug,
     CloseCV, OS,
     getCurrentThemeInfo, getInstalledThemes
-} from './utils';
+} from '../utils';
 
 // pythonic style
 let os = new OS();

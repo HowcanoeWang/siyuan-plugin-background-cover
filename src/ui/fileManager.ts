@@ -1,18 +1,17 @@
-import packageInfo from '../plugin.json'
-
 import { Dialog, showMessage } from "siyuan";
-import { KernelApi } from "./siyuanAPI";
-import { confmngr } from "./configs";
-import * as tps from "./types";
-import * as cst from "./constants";
-import * as settingsUI from "./settingsUI";
-import * as bgRender from "./bgRender";
-import * as topbarUI from "./topbarUI";
+import { KernelApi } from "../siyuanAPI";
+import { confmngr } from "../configs";
+import * as tps from "../types";
+import * as cst from "../constants";
+import * as bgRender from "../bgRender";
+
+import * as settingsUI from "./settings";
+import * as topbarUI from "./topbar";
 
 import {
     error, info, debug,
     CloseCV, OS,
-} from './utils';
+} from '../utils';
 import { Md5 } from 'ts-md5';
 
 // pythonic style

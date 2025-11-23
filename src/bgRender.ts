@@ -2,10 +2,11 @@ import { confmngr } from "./configs";
 
 import * as tps from "./types";
 import * as cst from "./constants";
-import * as fileManagerUI from "./fileManagerUI";
-import * as noticeUI from "./noticeUI";
-import * as settingsUI from "./settingsUI";
-import * as topbarUI from "./topbarUI";
+
+import * as fileManagerUI from "./ui/fileManager";
+import * as noticeUI from "./ui/notice";
+import * as settingsUI from "./ui/settings";
+import * as topbarUI from "./ui/topbar";
 
 import {
     error, debug,

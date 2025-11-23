@@ -11,11 +11,12 @@ import {
 } from './utils';
 
 import * as cst from './constants';
-import * as topbarUI from "./topbarUI";
-import * as noticeUI from "./noticeUI";
-import * as settingsUI from "./settingsUI";
-import * as fileManagerUI from "./fileManagerUI"
 import * as bgRender from "./bgRender"
+
+import * as topbarUI from "./ui/topbar";
+import * as noticeUI from "./ui/notice";
+import * as settingsUI from "./ui/settings";
+import * as fileManagerUI from "./ui/fileManager"
 
 export default class BgCoverPlugin extends Plugin {
 
