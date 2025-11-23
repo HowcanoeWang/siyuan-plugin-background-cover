@@ -8,6 +8,7 @@ declare global {
             isMobileLayout: boolean,
             isBrowser: boolean,
             isAndroid?: boolean,
+            isDev?: boolean,
         }
     }
 }

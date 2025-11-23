@@ -1,17 +1,16 @@
-import { confmngr } from "./configs";
+import { confmngr } from "../utils/configs";
 
-import * as tps from "./types";
-import * as cst from "./constants";
+import * as tps from "../types";
+import * as cst from "../constants";
 
-import * as fileManagerUI from "./ui/fileManager";
-import * as noticeUI from "./ui/notice";
-import * as settingsUI from "./ui/settings";
-import * as topbarUI from "./ui/topbar";
+import * as fileManagerUI from "../ui/fileManager";
+import * as noticeUI from "../ui/notice";
+import * as settingsUI from "../ui/settings";
+import * as topbarUI from "../ui/topbar";
 
-import {
-    error, debug,
-    getCurrentThemeInfo
-} from './utils';
+import { error, debug } from "../utils/logger";
+
+import { getCurrentThemeInfo } from "../utils/theme";
 
 let autoRefreshTimer: NodeJS.Timeout | null = null;
 
@@ -127,6 +126,8 @@ export function changeBgPosition(x: string, y: string) {
 }
 
 export async function applySettings() {
+    window.bgCoverPlugin.isDev = confmngr.get('inDev');
+    
     var bgLayer = document.getElementById('bglayer');
     debug(bgLayer);
 

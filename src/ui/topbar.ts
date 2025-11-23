@@ -7,12 +7,14 @@ import {
     IMenuItemOption
 } from "siyuan";
 
-import { debug, OS } from '../utils';
+import { debug } from '../utils/logger';
+import { OS } from '../utils/pythonic';
 
 import BgCoverPlugin from "../index"
-import { confmngr } from '../configs';
+import { confmngr } from '../utils/configs';
 import * as cst from '../constants';
-import * as bgRender from "../bgRender";
+
+import * as bgRender from "../services/bgRender";
 
 import * as topbarUI from "./topbar";
 import * as noticeUI from "./notice";

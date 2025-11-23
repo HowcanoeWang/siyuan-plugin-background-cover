@@ -4,14 +4,13 @@ import {
     getBackend,
 } from "siyuan";
 
-import { confmngr } from './configs';
-import {
-    info, debug,
-    getCurrentThemeInfo
-} from './utils';
+import { confmngr } from './utils/configs';
+
+import { info, debug} from './utils/logger'
+import { getCurrentThemeInfo} from './utils/theme';
 
 import * as cst from './constants';
-import * as bgRender from "./bgRender"
+import * as bgRender from "./services/bgRender"
 
 import * as topbarUI from "./ui/topbar";
 import * as noticeUI from "./ui/notice";
@@ -38,6 +37,7 @@ export default class BgCoverPlugin extends Plugin {
             isMobileLayout: this.isMobileLayout,
             isBrowser: this.isBrowser,
             isAndroid: this.isAndroidBackend,
+            isDev: false,
         };
         debug(`设置全局变量window.bgCoverPlugin`, window.bgCoverPlugin)
 

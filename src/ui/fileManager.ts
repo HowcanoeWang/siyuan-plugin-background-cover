@@ -1,17 +1,16 @@
 import { Dialog, showMessage } from "siyuan";
-import { KernelApi } from "../siyuanAPI";
-import { confmngr } from "../configs";
+import { confmngr } from "../utils/configs";
 import * as tps from "../types";
 import * as cst from "../constants";
-import * as bgRender from "../bgRender";
+import * as bgRender from "../services/bgRender";
 
 import * as settingsUI from "./settings";
 import * as topbarUI from "./topbar";
 
-import {
-    error, info, debug,
-    CloseCV, OS,
-} from '../utils';
+import { error, info, debug } from '../utils/logger';
+import { KernelApi } from "../utils/api";
+
+import { CloseCV, OS } from '../utils/pythonic';
 import { Md5 } from 'ts-md5';
 
 // pythonic style

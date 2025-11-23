@@ -2,18 +2,21 @@ import packageInfo from '../../plugin.json'
 import BgCoverPlugin from "../index"
 
 import { Dialog, getBackend, getFrontend, showMessage} from "siyuan";
-import { confmngr } from "../configs";
-import * as bgRender from "../bgRender";
+import { confmngr } from "../utils/configs";
+import * as bgRender from "../services/bgRender";
 
 import * as cst from "../constants";
 import * as fileManagerUI from "./fileManager";
 import * as topbarUI from "./topbar";
 
+import { error, info, debug } from '../utils/logger';
+import { KernelApi } from "../utils/api";
+
+import { CloseCV, OS } from '../utils/pythonic';
+
 import { 
-    debug,
-    CloseCV, OS,
     getCurrentThemeInfo, getInstalledThemes
-} from '../utils';
+} from '../utils/theme';
 
 // pythonic style
 let os = new OS();
@@ -552,9 +555,7 @@ export function generatedisabledThemeElement(){
     const [themeMode, themeName] = getCurrentThemeInfo();
 
     const installedThemes = getInstalledThemes();
-    /** 
-     in siyan 2.1.30, theme data structure changed to:
-     不需要加载缓存就能直接获取主题字段和对应的名字了
+    /**
      installedThemes = [lightThemes, darkThemes]
      lightThemes = [
         {

@@ -4,10 +4,10 @@
  */
 
 import { Plugin } from 'siyuan';
-import { info, debug, error} from './utils'
-import * as tps from './types'
-import * as cst from './constants'
-import { KernelApi } from './siyuanAPI';
+import { info, debug, error} from '../utils/logger'
+import * as tps from '../types'
+import * as cst from '../constants'
+import { KernelApi } from '../utils/api';
 
 let ka = new KernelApi();
 
