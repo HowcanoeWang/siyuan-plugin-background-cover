@@ -4,12 +4,12 @@ import * as tps from "../types";
 import * as cst from "../constants";
 
 import * as fileManagerUI from "../ui/fileManager";
-import * as noticeUI from "../ui/notice";
 import * as settingsUI from "../ui/settings";
 import * as topbarUI from "../ui/topbar";
 
-import { error, debug } from "../utils/logger";
+import {showNotImplementDialog} from "../ui/notice";
 
+import { error, debug } from "../utils/logger";
 import { getCurrentThemeInfo } from "../utils/theme";
 
 let autoRefreshTimer: NodeJS.Timeout | null = null;
@@ -79,9 +79,7 @@ export function changeBackgroundContent(background: string, mode: tps.bgMode) {
         debug(`[bgRender][changeBackgroundContent] 替换当前背景图片为${background}`)
         bgLayer.style.setProperty('background-image', `url('${background}')`);
     } else if (mode == tps.bgMode.video) {
-        noticeUI.showIndev();
-    } else if (mode == tps.bgMode.live2d) {
-        noticeUI.showIndev();
+        showNotImplementDialog();
     } else {
         error(`[SwitchBgCover Plugin][Error] Background type [${mode}] is not supported, `, 7000, "error");
     }

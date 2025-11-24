@@ -1,66 +1,35 @@
 import { Dialog } from "siyuan";
 
-export function showIndev(msg: string = '') {
-    const dialog = new Dialog({
-        title: `${window.bgCoverPlugin.i18n.inDevTitle}`,
-        content: `<div class="b3-dialog__content">${window.bgCoverPlugin.i18n.inDev}<span>${msg}</span></div>`,
-        width: window.bgCoverPlugin.isMobileLayout ? "92vw" : "520px",
+import { showConfirmationDialog, showNoticeDialog } from "./components/dialogs";
+
+export function showNotImplementDialog() {
+    showNoticeDialog({
+        title: window.bgCoverPlugin.i18n.notImplementTitle,
+        message: window.bgCoverPlugin.i18n.notImplementMsg,
     });
 }
 
 export function bugReportDialog() {
-    const dialog = new Dialog({
-        title: `${window.bgCoverPlugin.i18n.bugReportLabel}`,
-        content: `
-        <div class="b3-dialog__content">${window.bgCoverPlugin.i18n.bugReportConfirmText}</div>
-        <div class="b3-dialog__action">
-            <button class="b3-button b3-button--cancel">${window.bgCoverPlugin.i18n.cancel}</button><div class="fn__space"></div>
-            <button class="b3-button b3-button--text">${window.bgCoverPlugin.i18n.confirmBugReport}</button>
-        </div>
-        <div class="b3-dialog__action">
-        `,
-        width: window.bgCoverPlugin.isMobileLayout ? "92vw" : `520px`,
-    });
-
-    const btnsElement = dialog.element.querySelectorAll(".b3-button");
-
-    // cancel button
-    btnsElement[0].addEventListener("click", () => {
-        dialog.destroy();
-    });
-
-    // still report
-    btnsElement[1].addEventListener("click", () => {
-        window.open('https://github.com/HowcanoeWang/siyuan-plugin-background-cover/issues', '_blank');
-        dialog.destroy();
+    showConfirmationDialog({
+        title: window.bgCoverPlugin.i18n.bugReportLabel,
+        message: window.bgCoverPlugin.i18n.bugReportConfirmText,
+        confirmText: window.bgCoverPlugin.i18n.confirmBugReport,
+        onConfirm: () => {
+            // 这里是这个对话框独有的逻辑
+            window.open('https://github.com/HowcanoeWang/siyuan-plugin-background-cover/issues', '_blank');
+        }
     });
 }
 
 export function themeRefreshDialog() {
-    const dialog = new Dialog({
-        title: `${window.bgCoverPlugin.i18n.themeOnChangeTitle}`,
-        content: `
-        <div class="b3-dialog__content">${window.bgCoverPlugin.i18n.themeOnChangeMsg}</div>
-        <div class="b3-dialog__action">
-            <button class="b3-button b3-button--cancel">${window.bgCoverPlugin.i18n.cancel}</button><div class="fn__space"></div>
-            <button class="b3-button b3-button--text">${window.bgCoverPlugin.i18n.themeRefresh}</button>
-        </div>
-        <div class="b3-dialog__action">
-        `,
-        width: window.bgCoverPlugin.isMobileLayout ? "92vw" : `520px`,
-    });
-
-    const btnsElement = dialog.element.querySelectorAll(".b3-button");
-
-    // cancel button
-    btnsElement[0].addEventListener("click", () => {
-        dialog.destroy();
-    });
-
-    // still report
-    btnsElement[1].addEventListener("click", () => {
-        dialog.destroy();
-        window.location.reload();
+    showConfirmationDialog({
+        title: window.bgCoverPlugin.i18n.themeOnChangeTitle,
+        message: window.bgCoverPlugin.i18n.themeOnChangeMsg,
+        confirmText: window.bgCoverPlugin.i18n.themeRefresh,
+        onConfirm: () => {
+            // 这里是这个对话框独有的逻辑
+            window.location.reload();
+        }
     });
 }
 

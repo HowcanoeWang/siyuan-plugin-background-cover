@@ -21,6 +21,8 @@ import * as noticeUI from "./notice";
 import * as fileManagerUI from "./fileManager";
 import * as settingsUI from "./settings";
 
+import { showNotImplementDialog } from "./notice";
+
 let os = new OS();
 
 
@@ -282,6 +284,9 @@ export async function addDirectory() {
 }
 
 export async function addNoteAssetsDirectory() {
+    showNotImplementDialog();
+    return;
+
     const selectedPath = await fileManagerUI.openAssetsFolderPickerDialog();
 
     if (selectedPath) {
