@@ -1,5 +1,8 @@
 import packageInfo from '../plugin.json'
 
+export const packageName = packageInfo.name
+export const packageVersion = packageInfo.version
+
 export const localStorageKey = packageInfo.name
 
 export const hashLength = 2097152;

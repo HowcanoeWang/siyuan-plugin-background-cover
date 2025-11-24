@@ -1,4 +1,3 @@
-import packageInfo from '../../plugin.json'
 import BgCoverPlugin from "../index"
 
 import { Dialog, getBackend, getFrontend, showMessage} from "siyuan";
@@ -315,7 +314,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                         <div class="fn__flex-1"> 
                             ${window.bgCoverPlugin.i18n.crtVersion} 
                             <div class="b3-abel__text"> 
-                                v${packageInfo.version}
+                                v${cst.packageVersion}
                             </div> 
                         </div> 
                     </label>

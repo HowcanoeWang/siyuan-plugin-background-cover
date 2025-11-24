@@ -1,5 +1,5 @@
 import { IObject } from 'siyuan';
-import packageInfo from '../plugin.json'
+import * as cst from './constants';
 
 declare global {
     interface Window {
@@ -47,7 +47,7 @@ export interface disabledThemeConfig {
 
 // 不进行云同步，当前设备的独有配置
 export var defaultLocalConfigs = {
-    'version': packageInfo.version as string,
+    'version': cst.packageVersion as string,
     // 当前配置的背景图路径
     'crtBgObj': undefined as any,
     // 设置当前图片在当前设备下的独有配置，如位置xy等
