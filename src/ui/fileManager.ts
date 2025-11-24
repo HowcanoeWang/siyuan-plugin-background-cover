@@ -7,6 +7,8 @@ import * as bgRender from "../services/bgRender";
 import * as settingsUI from "./settings";
 import * as topbarUI from "./topbar";
 
+import { showConfirmationDialog, showNoticeDialog } from "./components/dialogs";
+
 import { error, info, debug } from '../utils/logger';
 import { KernelApi } from "../utils/api";
 
@@ -35,6 +37,40 @@ export function getCacheImgNum() {
 }
 
 export async function checkAssetsDir() {
+
+    debug(`[fileManagerUI][checkAssetsDir] 进入函数`)
+
+    // check if older version:
+    const oldAssetsDir =  `/data/public/${cst.packageName}/assets`
+    if ( await os.folderExists(oldAssetsDir) ) {
+        debug(`[fileManagerUI][checkAssetsDir] 检测到旧版本的文件路径，提示用户重置设置以及清除assets文件`);
+
+        // 使用 setTimeout 将对话框的显示推迟到下一个事件循环
+        // 这可以确保在调用时，思源的UI已经完全准备好渲染对话框
+        setTimeout(async () => {
+            await showConfirmationDialog({
+                title: window.bgCoverPlugin.i18n.updateNoticeTitle,
+                message: window.bgCoverPlugin.i18n.updateNoticeMsg,
+                confirmText: window.bgCoverPlugin.i18n.updateNoticeConfirmBtn,
+                // cancelText: window.bgCoverPlugin.i18n.updateNoticeCancelBtn,
+                cancelText: `<a href="file:///${cst.pluginAssetsDirOS}/" style="word-break: break-all">${window.bgCoverPlugin.i18n.updateNoticeCancelBtn}</a>`,
+                onConfirm: () => {
+                    debug(`[fileManagerUI][checkAssetsDir] 用户点击确认，启用重置设置`)
+                    os.rmtree(oldAssetsDir);
+                    confmngr.reset();
+                    confmngr.save('[fileManagerUI][checkAssetsDir] 自动重置设置');
+                    bgRender.applySettings();
+                },
+                onCancel: () => {
+                    debug(`[fileManagerUI][checkAssetsDir] 用户点击取消，用系统的文件管理器打开assets文件夹`)
+                }
+            });
+        }, 100); // 延迟100毫秒通常足够了
+
+    }
+
+    debug(`[fileManagerUI][checkAssetsDir] 完成${oldAssetsDir}判断`)
+
 
     // check if folder exists or not
     if (!(await os.folderExists(cst.pluginAssetsDir))) {
@@ -96,7 +132,7 @@ export async function checkAssetsDir() {
         } else {
             // 非法缓存图片
             notCorrectCacheImgs.push(item.name)
-            ka.removeFile(`${cst.pluginAssetsDir}/${item.name}`)
+            // ka.removeFile(`${cst.pluginAssetsDir}/${item.name}`)
         }
     }
 
@@ -112,19 +148,19 @@ export async function checkAssetsDir() {
 
     // raise warning to users
     if (notCorrectCacheImgs.length !== 0) {
-        let msgInfo = `${window.bgCoverPlugin.i18n.cacheImgWrongName}<br>[${notCorrectCacheImgs}]<br>${window.bgCoverPlugin.i18n.doNotOperateCacheFolder}`
+        let msgInfo = `${window.bgCoverPlugin.i18n.cacheImgWrongName}<br/>[${notCorrectCacheImgs}]<br/>${window.bgCoverPlugin.i18n.doNotOperateCacheFolder}`
         showMessage(msgInfo, 7000, "info")
         info(msgInfo)
     }
 
     if (extraCacheImgs.length !== 0) {
-        let msgInfo = `${window.bgCoverPlugin.i18n.cacheImgExtra}<br>[${extraCacheImgs}]<br>${window.bgCoverPlugin.i18n.doNotOperateCacheFolder}`
+        let msgInfo = `${window.bgCoverPlugin.i18n.cacheImgExtra}<br/>[${extraCacheImgs}]<br/>${window.bgCoverPlugin.i18n.doNotOperateCacheFolder}`
         showMessage(msgInfo, 7000, "info")
         info(msgInfo)
     }
 
     if (missingCacheImgs.length !== 0) {
-        let msgInfo = `${window.bgCoverPlugin.i18n.cacheImgMissing}<br>[${missingCacheImgs}]<br>${window.bgCoverPlugin.i18n.doNotOperateCacheFolder}`
+        let msgInfo = `${window.bgCoverPlugin.i18n.cacheImgMissing}<br/>[${missingCacheImgs}]<br/>${window.bgCoverPlugin.i18n.doNotOperateCacheFolder}`
         showMessage(msgInfo, 7000, "info")
         info(msgInfo)
     }
