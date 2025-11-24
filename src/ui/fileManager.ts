@@ -42,6 +42,7 @@ export async function checkAssetsDir() {
 
     // check if older version:
     const oldAssetsDir =  `/data/public/${cst.packageName}/assets`
+    const oldConfigPath = `/data/storage/petal/${cst.packageName}/bg-cover-setting.json`
     if ( await os.folderExists(oldAssetsDir) ) {
         debug(`[fileManagerUI][checkAssetsDir] 检测到旧版本的文件路径，提示用户重置设置以及清除assets文件`);
 
@@ -52,17 +53,18 @@ export async function checkAssetsDir() {
                 title: window.bgCoverPlugin.i18n.updateNoticeTitle,
                 message: window.bgCoverPlugin.i18n.updateNoticeMsg,
                 confirmText: window.bgCoverPlugin.i18n.updateNoticeConfirmBtn,
-                // cancelText: window.bgCoverPlugin.i18n.updateNoticeCancelBtn,
                 cancelText: `<a href="file:///${cst.pluginAssetsDirOS}/" style="word-break: break-all">${window.bgCoverPlugin.i18n.updateNoticeCancelBtn}</a>`,
                 onConfirm: () => {
                     debug(`[fileManagerUI][checkAssetsDir] 用户点击确认，启用重置设置`)
                     os.rmtree(oldAssetsDir);
+                    ka.removeFile(oldConfigPath);
                     confmngr.reset();
                     confmngr.save('[fileManagerUI][checkAssetsDir] 自动重置设置');
                     bgRender.applySettings();
                 },
                 onCancel: () => {
-                    debug(`[fileManagerUI][checkAssetsDir] 用户点击取消，用系统的文件管理器打开assets文件夹`)
+                    debug(`[fileManagerUI][checkAssetsDir] 用户点击取消，用系统的文件管理器打开assets文件夹, 但还是要移除之前的就配置文件${oldConfigPath}`);
+                    ka.removeFile(oldConfigPath);
                 }
             });
         }, 100); // 延迟100毫秒通常足够了
@@ -81,53 +83,43 @@ export async function checkAssetsDir() {
     // check image files
     let imgFiles = await os.listdir(cst.pluginAssetsDir)
 
-    let fileidx: tps.fileIdx = {}
-    let fileidx_db: tps.fileIdx = confmngr.get('fileidx')
+    const fileidx: tps.fileIdx = confmngr.get('fileidx') || {};
+    const fileidx_check: tps.fileIdx = {};
+    const remainingCache = { ...fileidx };
+
     let notCorrectCacheImgs = []
     let extraCacheImgs = []
-    let missingCacheImgs = []
-
-    if (fileidx_db === undefined || fileidx_db === null) {
-        debug(`The settings.fileidx is empty {}`)
-    }
 
     for (let i in imgFiles) {
         let item = imgFiles[i]
 
-        // 背景图片
         debug(`[fileManagerUI][checkImgAssets] Check ${item.name} in cached dir`)
         if (item.name.slice(0, 5) === 'hash-') {
             const [hash_name, suffix] = os.splitext(item.name.split('-')[1])
 
-            debug(`[fileManagerUI][checkImgAssets] hash_name: `, hash_name, fileidx_db, extraCacheImgs)
+            debug(`[fileManagerUI][checkImgAssets] hash_name: `, hash_name, fileidx, extraCacheImgs)
 
-            if (hash_name in fileidx_db) {
-                let bgObj_old = fileidx_db[hash_name]
-
-                fileidx[hash_name] = bgObj_old
-
+            if (hash_name in fileidx) {
+                // 文件与缓存一致
+                fileidx_check[hash_name] = fileidx[hash_name];
+                delete remainingCache[hash_name];
             } else {
-                // 在缓存文件夹中，但图片并不在fileidx中（图片多余了）
-                // 更新版本：把多余的图片添加到缓存中而不是删除
+                // 本地存在，但缓存中没有 (extra)
                 extraCacheImgs.push(item.name)
-                // ka.removeFile(`${cst.pluginImgDataDir}/${item.name}`)
-                // slice(5) to remove '/data' prefix
                 const imgPath = `${cst.pluginAssetsDir.slice(5)}/${item.name}`
                 const imageSize = await cv2.getImageSize(imgPath)
 
                 debug(`[fileManagerUI][checkImgAssets] the cached local file ${item.name} has md5: ${hash_name}`)
 
-                let bgObj: tps.bgObj = {
+                fileidx_check[hash_name] = {
                     name: item.name,
                     path: imgPath,
                     hash: hash_name,
                     mode: tps.bgMode.image,
                     height: imageSize.height,
                     width: imageSize.width,
-                    parent: cst.pluginAssetsId
-                }
-
-                fileidx[hash_name] = bgObj
+                    parent: cst.pluginAssetsId,
+                };
             }
         } else {
             // 非法缓存图片
@@ -136,15 +128,16 @@ export async function checkAssetsDir() {
         }
     }
 
-    // 在缓存文件夹中不存在，更新缓存文件夹
-    for (let k in fileidx_db) {
-        if (!(k in fileidx)) {
-            missingCacheImgs.push(fileidx_db[k].name)
-        }
-    }
+    // 遍历结束后，remainingCache中剩下的就是缓存中有但本地没有的图片 (missing)
+    const missingCacheImgs = Object.values(remainingCache).map(bgObj => bgObj.name);
 
-    confmngr.set('fileidx', fileidx)
-    await confmngr.save('[fileManagerUI][checkCacheImgDir]')
+    if (extraCacheImgs.length > 0 || missingCacheImgs.length > 0) {
+        debug(`[fileManagerUI][checkCacheImgDir] 检测到extra数量${extraCacheImgs.length}missing数量${missingCacheImgs.length}, 更新的fileidx:`, fileidx_check)
+        confmngr.set('fileidx', fileidx_check)
+        await confmngr.save(`[fileManagerUI][checkCacheImgDir] 发现和config中记录的fileidx不同的背景记录, missing: ${missingCacheImgs} and extra ${extraCacheImgs}`)
+    } else {
+        debug(`[fileManagerUI][checkCacheImgDir] fileidx检查一致性通过, fileidx: `, fileidx, `fileidx_check: `, fileidx_check)
+    }
 
     // raise warning to users
     if (notCorrectCacheImgs.length !== 0) {
