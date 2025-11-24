@@ -1,6 +1,7 @@
-import { Dialog } from "siyuan";
-
-import { showConfirmationDialog, showNoticeDialog } from "./components/dialogs";
+import { 
+    showConfirmationDialog, 
+    showNoticeDialog 
+} from "./components/dialogs";
 
 export function showNotImplementDialog() {
     showNoticeDialog({

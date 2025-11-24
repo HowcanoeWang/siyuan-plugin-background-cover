@@ -112,6 +112,7 @@ export default class BgCoverPlugin extends Plugin {
         
         //初始化数据
         await confmngr.load();
+        window.bgCoverPlugin.isDev = confmngr.get('inDev');
 
         bgRender.createBgLayer();
         

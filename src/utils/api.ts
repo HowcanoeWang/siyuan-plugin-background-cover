@@ -76,13 +76,12 @@ export class BaseApi {
       })
     }
 
-    debug("开始向思源请求数据，reqUrl=>", reqUrl)
-    debug("开始向思源请求数据，fetchOps=>", fetchOps)
+    debug("[utils][api.ts][siyuanRequest] 开始向思源请求数据，reqUrl=>", reqUrl, "fetchOps=>", fetchOps)
 
     const response = await fetch(reqUrl, fetchOps)
     const resJson = (await response.json()) as SiyuanData
 
-    debug("思源请求数据返回，resJson=>", resJson)
+    debug("[utils][api.ts][siyuanRequest] 思源请求数据返回，resJson=>", resJson)
 
     if (resJson.code === -1) {
       throw new Error(resJson.msg)

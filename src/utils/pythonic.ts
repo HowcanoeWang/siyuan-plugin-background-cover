@@ -100,18 +100,22 @@ export class OS {
     public async folderExists(dir: string): Promise<boolean> {
         try {
             const out = await this.ka.readDir(dir);
+            debug(`[utils][pythonic.ts][OS.folderExists] 返回 out =>`, out)
             // 成功返回且code为0表示文件夹存在
             if (out && out.code === 0) {
+                debug(`[utils][pythonic.ts][OS.folderExists] 成功返回且code为0表示文件夹存在 => true`)
                 return true;
             }
             // 404错误表示文件夹不存在
             if (out && out.code === 404) {
+                debug(`[utils][pythonic.ts][OS.folderExists] 404错误表示文件夹不存在 => false`)
                 return false;
             }
             // 其他错误情况也视为不存在
+            debug(`[utils][pythonic.ts][OS.folderExists] 遇到了其他错误 => false`)
             return false;
         } catch (error) {
-            debug("[os.pathExists] error:", error);
+            debug("[utils][pythonic.ts][OS.folderExists] 捕捉到报错:", error);
             return false;
         }
     }
