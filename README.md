@@ -47,6 +47,21 @@
 ## 更新日志
 
 <details open>
+<summary><b>Nov 2025</b></summary>
+
+**25.11.24**
+
+* <b style='color:red'>破坏性更新</b>：更改配置储存数据结构，解决跨设备同步异常导致的笔记冲突
+* 更新插件图标(powered by Gemini)
+* 更新设置面板
+* 支持不同设备拥有独立的设置
+* 支持设置随机更换背景时间
+* 支持上传多张本地图片
+* 代码结构与逻辑部分重构（仍在施工中）
+
+</details>
+
+<details>
 <summary><b>April 2025</b></summary>
 
 **25.04.11**
