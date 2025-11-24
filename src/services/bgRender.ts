@@ -156,9 +156,14 @@ export async function applySettings() {
         // 缓存中有1张以上的图片，bjObj也有内容且图片存在
         debug(`[bgRender][applySettings] 缓存中有1张以上的图片，bjObj也有内容且图片存在`)
         let crtBgObj = confmngr.get('crtBgObj')
+        let crtHash = crtBgObj?.hash ?? '';
+        if (crtHash === '') {
+            crtHash = "emptyCrtObj"
+        }
+
         let fileidx = confmngr.get('fileidx')
         // 如果当前背景图有效，并且没有开启自动刷新功能，则加载config中记录的crtBgObj
-        if (crtBgObj && crtBgObj.hash in fileidx) {
+        if (crtBgObj && crtHash in fileidx) {
             debug(`[bgRender][applySettings] 当前背景图有效，加载当前图片`)
             changeBackgroundContent(crtBgObj.path, crtBgObj.mode)
         } else {
@@ -187,13 +192,15 @@ export async function applySettings() {
         // 因为需要考虑到不同的设备有不同的设置，而这个设置不应该同步
         // 所以使用存在local配置中的'bgObjCfg' -> [img.hash].offx offy来进行记录和控制
         let bgObjCfg = confmngr.get('bgObjCfg')
-        let crtbgObjHash = confmngr.get('crtBgObj').hash
+
+        let crtBgObj = confmngr.get('crtBgObj');
+        let crtBgObjHash = crtBgObj?.hash ?? '';
 
         var offx: string = '50'  // 默认居中
         var offy: string = '50'
-        if (crtbgObjHash in bgObjCfg) {
-            offx = bgObjCfg[crtbgObjHash].offx
-            offy = bgObjCfg[crtbgObjHash].offy
+        if (crtBgObjHash in bgObjCfg) {
+            offx = bgObjCfg[crtBgObjHash].offx
+            offy = bgObjCfg[crtBgObjHash].offy
         }
 
         changeBgPosition(offx, offy)

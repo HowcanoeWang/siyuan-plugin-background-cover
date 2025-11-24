@@ -31,6 +31,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
     // 当前显示的bgOb信息
     let crtBgObj = confmngr.get('crtBgObj')
+    let crtBgObjHash = crtBgObj?.hash ?? '';
 
     var crtBgObjName: string = cst.demoImgURL
     if (crtBgObj !== undefined) {
@@ -38,11 +39,12 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     }
 
     let crtBgObjCfg = confmngr.get('bgObjCfg')
+
     var crtOffx = '50'
     var crtOffy = '50'
-    if (crtBgObjCfg[crtBgObj.hash] !== undefined) {
-        crtOffx = crtBgObjCfg[crtBgObj.hash].offx
-        crtOffy = crtBgObjCfg[crtBgObj.hash].offy
+    if (crtBgObjCfg[crtBgObjHash] !== undefined) {
+        crtOffx = crtBgObjCfg[crtBgObjHash].offx
+        crtOffy = crtBgObjCfg[crtBgObjHash].offy
     }
 
     const dialog = new Dialog({
@@ -405,10 +407,10 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                 // 0.5.0版本后数据结构重构，放弃直接修改crtBgObj的.offx offy
                 // 因为需要考虑到不同的设备有不同的设置，而这个设置不应该同步
                 // 所以使用存在local配置中的'bgObjCfg' -> [img.hash].offx offy来进行记录和控制
-                let crtbgObjHash = crtBgObj.hash
+                let crtBgObjHash = crtBgObj.hash
 
                 let bgObjCfg = confmngr.get('bgObjCfg')
-                let crtBjObjCfg = bgObjCfg[crtbgObjHash]
+                let crtBjObjCfg = bgObjCfg[crtBgObjHash]
 
                 if (crtBjObjCfg === undefined) {
                     crtBjObjCfg = {
@@ -420,7 +422,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                 crtBjObjCfg.offx = cxElement.value
                 crtBjObjCfg.offy = cyElement.value
 
-                bgObjCfg[crtbgObjHash] = crtBjObjCfg
+                bgObjCfg[crtBgObjHash] = crtBjObjCfg
 
                 confmngr.set('bgObjCfg', bgObjCfg)
 

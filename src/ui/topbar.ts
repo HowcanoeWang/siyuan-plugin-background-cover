@@ -175,30 +175,40 @@ export async function selectPictureRandom(manualPress: boolean = false) {
         if (manualPress) {
             showMessage(`${window.bgCoverPlugin.i18n.selectPictureRandomNotice}`, 3000, "info")
         }
+
         let belayerElement = document.getElementById('bglayer')
+        // 如果当前背景不存在任何图片
         if (belayerElement.style.getPropertyValue('background-image') === '') {
-            // 如果当前背景不存在任何图片
-            let bgObj = confmngr.get('crtBgObj')
+            let bgObj = confmngr.get('fileidx')[0]
             bgRender.changeBackgroundContent(bgObj.path, bgObj.mode)
         }
     } else {
         // 随机选择一张图
         let fileidx = confmngr.get('fileidx')
-        let crt_hash = confmngr.get('crtBgObj').hash
-        let r_hash = ''
+
+        let crtBgObj = confmngr.get('crtBgObj');
+
+        // 使用可选链 ?. 和空值合并 ?? 来安全地获取 crt_hash
+        let crtHash = crtBgObj?.hash ?? '';
+        if (crtHash === '') {
+            crtHash = "emptyCrtObj"
+        }
+
+        let rndHash = ''
+
         while (true) {
             let r = Math.floor(Math.random() * cacheImgNum)
-            r_hash = Object.keys(fileidx)[r]
-            debug(`[topbarUI][selectPictureRandom] 随机抽一张，之前：${crt_hash}，随机到：${r_hash}`)
-            if (r_hash !== crt_hash) {
+            rndHash = Object.keys(fileidx)[r]
+            debug(`[topbarUI][selectPictureRandom] 随机抽一张，之前：${crtHash}，随机到：${rndHash}`)
+            if (rndHash !== crtHash) {
                 // 确保随机到另一张图而不是当前的图片
-                debug(`[topbarUI][selectPictureRandom] 已抽到不同的背景图${r_hash}，进行替换`)
+                debug(`[topbarUI][selectPictureRandom] 已抽到不同的背景图${rndHash}，进行替换`)
                 break
             }
         }
-        debug('[topbarUI][selectPictureRandom] 跳出抽卡死循环,前景图为：', fileidx[r_hash])
-        bgRender.changeBackgroundContent(fileidx[r_hash].path, fileidx[r_hash].mode)
-        confmngr.set('crtBgObj', fileidx[r_hash])
+        debug('[topbarUI][selectPictureRandom] 跳出抽卡死循环,前景图为：', fileidx[rndHash])
+        bgRender.changeBackgroundContent(fileidx[rndHash].path, fileidx[rndHash].mode)
+        confmngr.set('crtBgObj', fileidx[rndHash])
     }
     await confmngr.save('[topbarUI][selectPictureRandom]')
     settingsUI.updateSettingPanelElementStatus()
