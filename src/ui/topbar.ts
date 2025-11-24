@@ -90,13 +90,13 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                     addDirectory();
                 }
             },
-            {
-                icon: "iconFilesRoot",
-                label: `${window.bgCoverPlugin.i18n.addNoteAssetsDirectoryLabel}`,
-                click: () => {
-                    addNoteAssetsDirectory();
-                }
-            },
+            // {
+            //     icon: "iconFilesRoot",
+            //     label: `${window.bgCoverPlugin.i18n.addNoteAssetsDirectoryLabel}`,
+            //     click: () => {
+            //         addNoteAssetsDirectory();
+            //     }
+            // },
         ];
 
         if (window.bgCoverPlugin.isAndroid && !window.bgCoverPlugin.isBrowser) {
