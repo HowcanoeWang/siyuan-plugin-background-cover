@@ -1,38 +1,21 @@
 import {
     Plugin,
-    showMessage,
-    confirm,
-    Dialog,
-    Menu,
-    // openTab,
-    // adaptHotkey,
     getFrontend,
     getBackend,
-    // IModel,
-    // Setting, fetchPost
 } from "siyuan";
 
-import { KernelApi } from "./siyuanAPI";
-import { configs } from './configs';
-import {
-    error, warn, info, debug,
-    CloseCV, MD5, OS, Numpy,
-    getCurrentThemeInfo
-} from './utils';
+import { confmngr } from './utils/configs';
+
+import { info, debug} from './utils/logger'
+import { getCurrentThemeInfo} from './utils/theme';
+
 import * as cst from './constants';
-import * as topbarUI from "./topbarUI";
-import * as noticeUI from "./noticeUI";
-import * as settingsUI from "./settingsUI";
-import * as fileManagerUI from "./fileManagerUI"
-import * as bgRender from "./bgRender"
+import * as bgRender from "./services/bgRender"
 
-import packageInfo from '../plugin.json'
-
-// pythonic style
-let os = new OS();
-let ka = new KernelApi();
-let cv2 = new CloseCV();
-let np = new Numpy();
+import * as topbarUI from "./ui/topbar";
+import * as noticeUI from "./ui/notice";
+import * as settingsUI from "./ui/settings";
+import * as fileManagerUI from "./ui/fileManager"
 
 export default class BgCoverPlugin extends Plugin {
 
@@ -54,27 +37,13 @@ export default class BgCoverPlugin extends Plugin {
             isMobileLayout: this.isMobileLayout,
             isBrowser: this.isBrowser,
             isAndroid: this.isAndroidBackend,
+            isDev: false,
         };
+        debug(`设置全局变量window.bgCoverPlugin`, window.bgCoverPlugin)
 
-        ///////////////////////////////////////////////
-        // 载入scss修复思源笔记v3.1.26重载插件会丢失的bug //
-        ///////////////////////////////////////////////
-        const style = document.createElement('style');
-        style.id = 'snippetCSS-pluginsStylesiyuan-plugin-background-cover';
-        // 加载CSS内容
-        const cssResponse = await fetch('./index.scss');
-        const cssText = await cssResponse.text();
-        style.textContent = cssText;
-        // 添加到head
-        document.head.appendChild(style);
-        ///////////////////////////////////////////////
-        
         // 图标的制作参见帮助文档
         this.addIcons(cst.diyIcon.iconLogo);
 
-        configs.setPlugin(this);
-        //初始化数据
-        await configs.load();
         await topbarUI.initTopbar(this);
 
         // 绑定快捷键
@@ -133,19 +102,25 @@ export default class BgCoverPlugin extends Plugin {
         });
 
         // 侦测theme主题有没有发生变化
-        const themeChangeObserver = new MutationObserver(await this.themeOnChange.bind(this));
-        themeChangeObserver.observe(this.htmlThemeNode, { attributes: true });
+        // const themeChangeObserver = new MutationObserver(await this.themeOnChange.bind(this));
+        // themeChangeObserver.observe(this.htmlThemeNode, { attributes: true });
         info(this.i18n.helloPlugin);
     }
 
     async onLayoutReady() {
+        confmngr.setParent(this);
+        
+        //初始化数据
+        await confmngr.load();
+        window.bgCoverPlugin.isDev = confmngr.get('inDev');
+
         bgRender.createBgLayer();
         
-        await fileManagerUI.checkCacheDirctory();
+        await fileManagerUI.checkAssetsDir();
 
         // load the user setting data
         const [themeMode, themeName] = getCurrentThemeInfo();
-        configs.set('prevTheme', themeName);
+        confmngr.set('prevTheme', themeName);
 
         await bgRender.applySettings();
 
@@ -156,29 +131,27 @@ export default class BgCoverPlugin extends Plugin {
     }
 
     onunload() {
-        info(`${this.i18n.byePlugin}`);
-        configs.save('[index.ts][onunload]');
+        // solve cloud sync conflicts
+        // configs.save('[index.ts][onunload]');
 
         // remove changes when deactivate plugin
         var bgLayer = document.getElementById('bglayer');
         bgLayer.remove();
         document.body.style.removeProperty('opacity');
-    }
 
-    // private eventBusLog({detail}: any) {
-    //     info(detail);
-    // }
+        info(`${this.i18n.byePlugin}`);
+    }
 
     private async themeOnChange() {
         const [themeMode, themeName] = getCurrentThemeInfo();
-        let prevTheme = configs.get('prevTheme')
+        let prevTheme = confmngr.get('prevTheme')
 
         debug(`Theme changed! from ${prevTheme} to ${themeMode} | ${themeName}`)
 
         if (prevTheme !== themeName) {
             // 更换主题时且没有重载时，提示需要刷新笔记页面
-            configs.set('prevTheme', themeName);
-            await configs.save('[index][themeOnChange]')
+            confmngr.set('prevTheme', themeName);
+            await confmngr.save('[index][themeOnChange]')
             noticeUI.themeRefreshDialog();
             // 如果重载了，这个界面会在onLoadReady时被去掉
         }

@@ -1,32 +1,27 @@
 import {
-    Plugin,
     showMessage,
     confirm,
-    Dialog,
     Menu,
-    // openTab,
-    // adaptHotkey,
     getFrontend,
     getBackend,
     IMenuItemOption
-    // IModel,
-    // Setting, fetchPost
 } from "siyuan";
 
-import {
-    error, warn, info, debug,
-    CloseCV, MD5, OS, Numpy,
-    getCurrentThemeInfo
-} from './utils';
+import { debug } from '../utils/logger';
+import { OS } from '../utils/pythonic';
 
-import BgCoverPlugin from "./index"
-import { configs } from './configs';
-import * as cst from './constants';
-import * as noticeUI from "./noticeUI";
-import * as settingsUI from "./settingsUI";
-import * as fileManagerUI from "./fileManagerUI";
-import * as bgRender from "./bgRender";
-import * as topbarUI from "./topbarUI";
+import BgCoverPlugin from "../index"
+import { confmngr } from '../utils/configs';
+import * as cst from '../constants';
+
+import * as bgRender from "../services/bgRender";
+
+import * as topbarUI from "./topbar";
+import * as noticeUI from "./notice";
+import * as fileManagerUI from "./fileManager";
+import * as settingsUI from "./settings";
+
+import { showNotImplementDialog } from "./notice";
 
 let os = new OS();
 
@@ -83,9 +78,9 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
         let submenu: IMenuItemOption[] = [
             {
                 icon: "iconImage",
-                label: `${window.bgCoverPlugin.i18n.addSingleImageLabel}`,
+                label: `${window.bgCoverPlugin.i18n.addSeveralImagesLabel}`,
                 click: () => {
-                    addSingleLocalImageFile();
+                    addSeveralLocalImagesFile();
                 }
             },
             {
@@ -95,9 +90,14 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                     addDirectory();
                 }
             },
+            // {
+            //     icon: "iconFilesRoot",
+            //     label: `${window.bgCoverPlugin.i18n.addNoteAssetsDirectoryLabel}`,
+            //     click: () => {
+            //         addNoteAssetsDirectory();
+            //     }
+            // },
         ];
-        const frontEnd = getFrontend();
-        const backEnd = getBackend();
 
         if (window.bgCoverPlugin.isAndroid && !window.bgCoverPlugin.isBrowser) {
             submenu.unshift(
@@ -108,6 +108,7 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                 }
             )
         }
+        
         menu.addItem({
             icon: "iconAdd",
             label: `${window.bgCoverPlugin.i18n.addImageLabel}`,
@@ -116,8 +117,8 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
         });
         menu.addItem({
             id: 'pluginOnOffMenu',
-            icon: `${configs.get('activate') ? 'iconClose' : 'iconSelect'}`,
-            label: `${configs.get('activate') ? window.bgCoverPlugin.i18n.closeBackgroundLabel : window.bgCoverPlugin.i18n.openBackgroundLabel}`,
+            icon: `${confmngr.get('activate') ? 'iconClose' : 'iconSelect'}`,
+            label: `${confmngr.get('activate') ? window.bgCoverPlugin.i18n.closeBackgroundLabel : window.bgCoverPlugin.i18n.openBackgroundLabel}`,
             accelerator: pluginInstance.commands[2].customHotkey,
             click: () => {
                 topbarUI.pluginOnOff();
@@ -154,8 +155,8 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
 };
 
 export async function pluginOnOff() {
-    configs.set('activate', !configs.get('activate'))
-    configs.save('[topbarUI][pluginOnOff]');
+    confmngr.set('activate', !confmngr.get('activate'))
+    confmngr.save('[topbarUI][pluginOnOff]');
     bgRender.applySettings();
 }
 
@@ -174,36 +175,46 @@ export async function selectPictureRandom(manualPress: boolean = false) {
         if (manualPress) {
             showMessage(`${window.bgCoverPlugin.i18n.selectPictureRandomNotice}`, 3000, "info")
         }
+
         let belayerElement = document.getElementById('bglayer')
+        // 如果当前背景不存在任何图片
         if (belayerElement.style.getPropertyValue('background-image') === '') {
-            // 如果当前背景不存在任何图片
-            let bgObj = configs.get('bgObj')
+            let bgObj = confmngr.get('fileidx')[0]
             bgRender.changeBackgroundContent(bgObj.path, bgObj.mode)
         }
     } else {
         // 随机选择一张图
-        let fileidx = configs.get('fileidx')
-        let crt_hash = configs.get('bgObj').hash
-        let r_hash = ''
+        let fileidx = confmngr.get('fileidx')
+
+        let crtBgObj = confmngr.get('crtBgObj');
+
+        // 使用可选链 ?. 和空值合并 ?? 来安全地获取 crt_hash
+        let crtHash = crtBgObj?.hash ?? '';
+        if (crtHash === '') {
+            crtHash = "emptyCrtObj"
+        }
+
+        let rndHash = ''
+
         while (true) {
             let r = Math.floor(Math.random() * cacheImgNum)
-            r_hash = Object.keys(fileidx)[r]
-            debug(`[topbarUI][selectPictureRandom] 随机抽一张，之前：${crt_hash}，随机到：${r_hash}`)
-            if (r_hash !== crt_hash) {
+            rndHash = Object.keys(fileidx)[r]
+            debug(`[topbarUI][selectPictureRandom] 随机抽一张，之前：${crtHash}，随机到：${rndHash}`)
+            if (rndHash !== crtHash) {
                 // 确保随机到另一张图而不是当前的图片
-                debug(`[topbarUI][selectPictureRandom] 已抽到不同的背景图${r_hash}，进行替换`)
+                debug(`[topbarUI][selectPictureRandom] 已抽到不同的背景图${rndHash}，进行替换`)
                 break
             }
         }
-        debug('[topbarUI][selectPictureRandom] 跳出抽卡死循环,前景图为：', fileidx[r_hash])
-        bgRender.changeBackgroundContent(fileidx[r_hash].path, fileidx[r_hash].mode)
-        configs.set('bgObj', fileidx[r_hash])
+        debug('[topbarUI][selectPictureRandom] 跳出抽卡死循环,前景图为：', fileidx[rndHash])
+        bgRender.changeBackgroundContent(fileidx[rndHash].path, fileidx[rndHash].mode)
+        confmngr.set('crtBgObj', fileidx[rndHash])
     }
-    await configs.save('[topbarUI][selectPictureRandom]')
+    await confmngr.save('[topbarUI][selectPictureRandom]')
     settingsUI.updateSettingPanelElementStatus()
 }
 
-export async function addSingleLocalImageFile() {
+export async function addSeveralLocalImagesFile() {
 
     const cacheImgNum = fileManagerUI.getCacheImgNum();
 
@@ -211,18 +222,25 @@ export async function addSingleLocalImageFile() {
         showMessage(window.bgCoverPlugin.i18n.addSingleImageExceed1 + cst.cacheMaxNum + window.bgCoverPlugin.i18n.addSingleImageExceed2, 7000, 'error');
     }else{
         // return an Array
-        const fileHandle = await os.openFilePicker(cst.supportedImageSuffix.toString())
+        const fileHandle = await os.openFilePicker(cst.supportedImageSuffix.toString(), true)
+        let lastUploadedBgObj: any;
 
-        let file = fileHandle[0];
+        for (const [index, file] of fileHandle.entries()) {
+            const isLast = (index === fileHandle.length - 1);
 
-        let bgObj = await fileManagerUI.uploadOneImage(file);
+            let bgObj = await fileManagerUI.uploadOneImage(file);
 
-        // 文件不重复且上传成功
-        if (bgObj !== undefined) {
-            await configs.save('[topbarUI][addSinglelocalImageFile]');
-            bgRender.changeBackgroundContent(bgObj.path, bgObj.mode);
-            settingsUI.updateSettingPanelElementStatus();
-        };
+            // 文件不重复且上传成功
+            if (bgObj !== undefined) {
+                lastUploadedBgObj = bgObj; // 记录最后一次成功上传的对象
+                // 只在最后一次循环时保存和更新UI，减少开销
+                if (isLast) {
+                    await confmngr.save('[topbarUI][addSeveralLocalImagesFile]');
+                    settingsUI.updateSettingPanelElementStatus();
+                    bgRender.changeBackgroundContent(lastUploadedBgObj.path, lastUploadedBgObj.mode);
+                }
+            };
+        }
     };
 };
 
@@ -272,5 +290,23 @@ export async function addDirectory() {
     }else{
          // 要上传的数量比较少，直接开始批量上传
         await fileManagerUI.batchUploadImages(fileContainer, true);
+    }
+}
+
+export async function addNoteAssetsDirectory() {
+    showNotImplementDialog();
+    return;
+
+    const selectedPath = await fileManagerUI.openAssetsFolderPickerDialog();
+
+    if (selectedPath) {
+        debug(`[topbarUI][addNoteAssetsDirectory] User selected folder: ${selectedPath}`);
+        // TODO: 在这里处理后续逻辑
+        // 1. 计算路径的哈希作为ID
+        // 2. 将 {id: path} 保存到配置中
+        // 3. 触发文件索引同步
+        showMessage(`已选择文件夹: ${selectedPath}`);
+    } else {
+        debug('[topbarUI][addNoteAssetsDirectory] User cancelled folder selection.');
     }
 }

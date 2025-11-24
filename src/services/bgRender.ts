@@ -1,22 +1,18 @@
-import packageInfo from '../plugin.json'
-import BgCoverPlugin from "./index"
+import { confmngr } from "../utils/configs";
 
-import { Dialog, showMessage } from "siyuan";
-import { configs } from "./configs";
+import * as tps from "../types";
+import * as cst from "../constants";
 
-import * as cst from "./constants";
-import * as fileManagerUI from "./fileManagerUI";
-import * as noticeUI from "./noticeUI";
-import * as settingsUI from "./settingsUI";
-import * as topbarUI from "./topbarUI";
+import * as fileManagerUI from "../ui/fileManager";
+import * as settingsUI from "../ui/settings";
+import * as topbarUI from "../ui/topbar";
 
-import {
-    error, warn, info, debug,
-    CloseCV, MD5, OS, Numpy,
-    getCurrentThemeInfo
-} from './utils';
+import {showNotImplementDialog} from "../ui/notice";
 
-let cv2 = new CloseCV();
+import { error, debug } from "../utils/logger";
+import { getCurrentThemeInfo } from "../utils/theme";
+
+let autoRefreshTimer: NodeJS.Timeout | null = null;
 
 export function createBgLayer() {
     var bgLayer = document.createElement('canvas');
@@ -46,6 +42,7 @@ export function createBgLayer() {
     // </video>
 }
 
+// 添加视频背景
 // export function createBgLayer() {
 //     var bgLayer = document.createElement('video');
 //     bgLayer.id = "bglayer";
@@ -71,32 +68,30 @@ export function createBgLayer() {
 
 export function useDefaultLiaoLiaoBg() {
     debug(`[bgRender][applySettings] 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图`)
-    changeBackgroundContent(cst.demoImgURL, cst.bgMode.image)
-    configs.set('bgObj', undefined);
+    changeBackgroundContent(cst.demoImgURL, tps.bgMode.image)
+    confmngr.set('crtBgObj', undefined);
 }
 
-export function changeBackgroundContent(background: string, mode: cst.bgMode) {
+export function changeBackgroundContent(background: string, mode: tps.bgMode) {
     var bgLayer = document.getElementById('bglayer');
 
-    if (mode === cst.bgMode.image) {
+    if (mode === tps.bgMode.image) {
         debug(`[bgRender][changeBackgroundContent] 替换当前背景图片为${background}`)
         bgLayer.style.setProperty('background-image', `url('${background}')`);
-    } else if (mode == cst.bgMode.video) {
-        noticeUI.showIndev();
-    } else if (mode == cst.bgMode.live2d) {
-        noticeUI.showIndev();
+    } else if (mode == tps.bgMode.video) {
+        showNotImplementDialog();
     } else {
         error(`[SwitchBgCover Plugin][Error] Background type [${mode}] is not supported, `, 7000, "error");
     }
 };
 
-export function isBlockTheme(){
-    var blockTheme = configs.get('blockTheme')
+export function isdisabledTheme(){
+    var disabledTheme = confmngr.get('disabledTheme')
     const themeModeText = ['light', 'dark']
     const [themeMode, themeName] = getCurrentThemeInfo();
 
-    var result = blockTheme[themeModeText[themeMode]][themeName];
-    debug(`[bgRender][isBlockTheme] search mode='${themeModeText[themeMode]}', name='${themeName}' result is ${result}`)
+    var result = disabledTheme[themeModeText[themeMode]][themeName];
+    debug(`[bgRender][isdisabledTheme] search mode='${themeModeText[themeMode]}', name='${themeName}' result is ${result}`)
 
     return result;
 }
@@ -104,7 +99,7 @@ export function isBlockTheme(){
 export function changeOpacity(alpha: number) {
     let opacity = 0.99 - 0.25 * alpha;
 
-    if (configs.get('activate') && !isBlockTheme() && alpha !== 0) {
+    if (confmngr.get('activate') && !isdisabledTheme() && alpha !== 0) {
         document.body.style.setProperty('opacity', opacity.toString());
     } else {
         document.body.style.removeProperty('opacity');
@@ -129,13 +124,22 @@ export function changeBgPosition(x: string, y: string) {
 }
 
 export async function applySettings() {
+    window.bgCoverPlugin.isDev = confmngr.get('inDev');
+    
     var bgLayer = document.getElementById('bglayer');
     debug(bgLayer);
 
-    if (configs.get('activate') && !isBlockTheme() ) {
+    if (confmngr.get('activate') && !isdisabledTheme() ) {
         bgLayer.style.removeProperty('display');
     } else {
         bgLayer.style.setProperty('display', 'none');
+    }
+
+    // 清除旧的定时器
+    if (autoRefreshTimer) {
+        clearInterval(autoRefreshTimer);
+        autoRefreshTimer = null;
+        debug('[bgRender][applySettings] Cleared existing auto-refresh timer.');
     }
 
     // 缓存文件夹中没有图片 | 用户刚刚使用这个插件 | 用户刚刚重置了插件数据 | 当前文件404找不到
@@ -144,32 +148,62 @@ export async function applySettings() {
     if (cacheImgNum === 0) {
         // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
         useDefaultLiaoLiaoBg();
-    } else if (configs.get('bgObj') === undefined) {
+    } else if (confmngr.get('crtBgObj') === undefined) {
         // 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张
         debug(`[bgRender][applySettings] 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张`)
         await topbarUI.selectPictureRandom();
     } else {
         // 缓存中有1张以上的图片，bjObj也有内容且图片存在
         debug(`[bgRender][applySettings] 缓存中有1张以上的图片，bjObj也有内容且图片存在`)
-        let bgObj = configs.get('bgObj')
-        let fileidx = configs.get('fileidx')
-        // 没有开启启动自动更换图片，则直接显示该图片
-        if (bgObj.hash in fileidx && !configs.get('autoRefresh')) {
-            debug(`[bgRender][applySettings] 没有开启启动自动更换图片，则直接显示当前图片`)
-            changeBackgroundContent(bgObj.path, bgObj.mode)
+        let crtBgObj = confmngr.get('crtBgObj')
+        let crtHash = crtBgObj?.hash ?? '';
+        if (crtHash === '') {
+            crtHash = "emptyCrtObj"
+        }
+
+        let fileidx = confmngr.get('fileidx')
+        // 如果当前背景图有效，并且没有开启自动刷新功能，则加载config中记录的crtBgObj
+        if (crtBgObj && crtHash in fileidx) {
+            debug(`[bgRender][applySettings] 当前背景图有效，加载当前图片`)
+            changeBackgroundContent(crtBgObj.path, crtBgObj.mode)
         } else {
-            // 当bjObj找不到404 | 用户选择随机图片，则随机调一张作为bjObj
-            debug(`[bgRender][applySettings] 用户选择随机图片，则随机调一张作为bjObj`)
+            // 当bjObj找不到404或不存在时，则随机选一张替换作为bjObj
+            debug(`[bgRender][applySettings] 当前背景图无效或丢失，随机选择一张替换`)
             await topbarUI.selectPictureRandom();
+        }
+
+        // 如果开启了自动刷新且时间不为0，则设置新的定时器
+        debug(confmngr.get('autoRefreshTime'), `judgement result:`, confmngr.get('autoRefreshTime') > 0)
+        if (confmngr.get('autoRefresh') && confmngr.get('autoRefreshTime') > 0) {
+            const refreshTime = confmngr.get('autoRefreshTime') * 60 * 1000; // convert minutes to seconds to ms
+            autoRefreshTimer = setInterval(() => {
+                topbarUI.selectPictureRandom(false); // pass false to avoid notice on auto-refresh
+            }, refreshTime);
+            debug(`[bgRender][applySettings] Set up auto-refresh timer for every ${refreshTime / 1000} seconds.`);
         }
     }
 
-    changeOpacity(configs.get('opacity'))
-    changeBlur(configs.get('blur'))
-    if (configs.get('bgObj') === undefined){
+    changeOpacity(confmngr.get('opacity'))
+    changeBlur(confmngr.get('blur'))
+    if (confmngr.get('crtBgObj') === undefined){
         changeBgPosition(null, null)
     }else{
-        changeBgPosition(configs.get('bgObj').offx, configs.get('bgObj').offy)
+        // 0.5.0版本后数据结构重构，放弃直接修改crtBgObj的.offx offy
+        // 因为需要考虑到不同的设备有不同的设置，而这个设置不应该同步
+        // 所以使用存在local配置中的'bgObjCfg' -> [img.hash].offx offy来进行记录和控制
+        let bgObjCfg = confmngr.get('bgObjCfg')
+
+        let crtBgObj = confmngr.get('crtBgObj');
+        let crtBgObjHash = crtBgObj?.hash ?? '';
+
+        var offx: string = '50'  // 默认居中
+        var offy: string = '50'
+        if (crtBgObjHash in bgObjCfg) {
+            offx = bgObjCfg[crtBgObjHash].offx
+            offy = bgObjCfg[crtBgObjHash].offy
+        }
+
+        changeBgPosition(offx, offy)
     }
     
     settingsUI.updateSettingPanelElementStatus()

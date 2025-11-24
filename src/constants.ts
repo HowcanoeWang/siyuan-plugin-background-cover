@@ -1,51 +1,16 @@
-import { IObject } from 'siyuan';
 import packageInfo from '../plugin.json'
 
-declare global {
-    interface Window { 
-        bgCoverPlugin : {
-            i18n: IObject,
-            isMobileLayout: boolean,
-            isBrowser: boolean,
-            isAndroid?: boolean
-        } 
-    }
-}
+export const packageName = packageInfo.name
+export const packageVersion = packageInfo.version
 
-export enum bgMode {
-    image = 0,
-    video = 1,
-    live2d = 2,
-}
-
-export interface bgObj {
-    name:string, path:string, hash:string, 
-    mode: bgMode, offx: number, offy: number,
-    height: number, width: number
-}
-
-export interface fileIndex {
-    [key: string]: bgObj;
-}
-
-export interface installedThemeNames {
-    [key: string]: string;
-}
-
-export interface blockThemeConfig {
-    dark: blockThemeItem,
-    light: blockThemeItem
-}
-
-export interface blockThemeItem {
-    [key: string]: boolean,
-}
+export const localStorageKey = packageInfo.name
 
 export const hashLength = 2097152;
 
-export const pluginAssetsDir = `/data/public/${packageInfo.name}/assets`
-export const pluginImgDataDir = `${pluginAssetsDir}/images`.toString()
-export const pluginLive2DataDir = `${pluginAssetsDir}/live2d`.toString()
+export const synConfigFile = 'configs.json'
+export const pluginAssetsDir = `/data/public/${packageInfo.name}`
+export const pluginAssetsId = 'pluginAssetsDir'
+
 
 export let pluginAssetsDirOS = ''
 let dataDir = (window as any).siyuan.config.system.workspaceDir
@@ -60,31 +25,7 @@ export const cacheMaxNum = 198;
 
 export const supportedImageSuffix = [".png", ".jpeg", ".jpg", ".jiff", ".jfif"]
 
-export const configFile = 'bg-cover-setting.json';
-
-export type configKey = (
-    'autoRefresh' |'opacity' | 'blur' | 'activate' | 'bgObj' |
-    'version' | 'prevTheme' | 'fileidx' | 'inDev' | 'blockTheme'
-);
-
 export const demoImgURL = './plugins/siyuan-plugin-background-cover/static/FyBE0bUakAELfeF.jpg'
-
-export var defaultConfigs = {
-    // 启动时随机更改图片
-    'autoRefresh': true as boolean,
-    // 当前配置的背景图路径
-    'bgObj': undefined as any,
-    // 当前配置的背景图透明度
-    'opacity': 0.5 as number,
-    'blur': 5 as number,
-    // 图片类型 1:本地文件，2：https
-    'activate': true as boolean,
-    'prevTheme': '' as string,
-    'fileidx': {} as fileIndex,
-    'version': packageInfo.version as string,
-    'inDev': false as boolean,
-    'blockTheme': {light:{}, dark:{}} as blockThemeConfig,
-};
 
 export const diyIcon = {
     iconLogo: `<symbol id="iconLogo" viewBox="0 0 32 32">
