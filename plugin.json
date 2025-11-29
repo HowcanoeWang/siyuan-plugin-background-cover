@@ -2,7 +2,7 @@
   "name": "siyuan-plugin-background-cover",
   "author": "HowcanoeWang",
   "url": "https://github.com/HowcanoeWang/siyuan-plugin-background-cover",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "minAppVersion": "3.2.1",
   "backends": ["all"],
   "frontends": ["desktop", "mobile", "desktop-window", "browser-desktop", "browser-mobile"],
