@@ -1,7 +1,7 @@
 import { confmngr } from "../utils/configs";
 
-import * as tps from "../types";
-import * as cst from "../constants";
+import * as tps from "../utils/types";
+import * as cst from "../utils/constants";
 
 import * as fileManagerUI from "../ui/fileManager";
 import * as settingsUI from "../ui/settings";

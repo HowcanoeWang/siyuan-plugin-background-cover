@@ -1,7 +1,7 @@
 import { Dialog, showMessage } from "siyuan";
 import { confmngr } from "../utils/configs";
-import * as tps from "../types";
-import * as cst from "../constants";
+import * as tps from "../utils/types";
+import * as cst from "../utils/constants";
 import * as bgRender from "../services/bgRender";
 
 import * as settingsUI from "./settings";

@@ -12,7 +12,7 @@ import { OS } from '../utils/pythonic';
 
 import BgCoverPlugin from "../index"
 import { confmngr } from '../utils/configs';
-import * as cst from '../constants';
+import * as cst from '../utils/constants';
 
 import * as bgRender from "../services/bgRender";
 

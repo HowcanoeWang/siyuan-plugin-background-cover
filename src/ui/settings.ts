@@ -4,7 +4,7 @@ import { Dialog, getBackend, getFrontend, showMessage} from "siyuan";
 import { confmngr } from "../utils/configs";
 import * as bgRender from "../services/bgRender";
 
-import * as cst from "../constants";
+import * as cst from "../utils/constants";
 import * as fileManagerUI from "./fileManager";
 import * as topbarUI from "./topbar";
 

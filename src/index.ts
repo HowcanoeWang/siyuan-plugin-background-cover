@@ -9,7 +9,7 @@ import { confmngr } from './utils/configs';
 import { info, debug} from './utils/logger'
 import { getCurrentThemeInfo} from './utils/theme';
 
-import * as cst from './constants';
+import * as cst from './utils/constants';
 import * as bgRender from "./services/bgRender"
 
 import * as topbarUI from "./ui/topbar";
