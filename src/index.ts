@@ -5,8 +5,8 @@ import {
     IObject
 } from "siyuan";
 
-import { confmngr } from './utils/configs';
-// import { configStore } from '@/services/configStore';
+import { configStore } from '@/services/configStore';
+import { pluginStore } from './services/pluginStore';
 
 import { info, debug} from './utils/logger'
 import { getCurrentThemeInfo} from './utils/theme';
@@ -38,11 +38,10 @@ export default class BgCoverPlugin extends Plugin {
         this.isBrowser = frontEnd.includes("browser");
         this.isAndroid = backEnd === "android";
 
-        // 暴露给 confmngr 实例
-        confmngr.plugin = this;
-
         // 图标的制作参见帮助文档
         this.addIcons(cst.diyIcon.iconLogo);
+
+        pluginStore.set(this);
 
         await topbarUI.initTopbar(this);
 
@@ -110,8 +109,7 @@ export default class BgCoverPlugin extends Plugin {
     async onLayoutReady() {
         
         //初始化数据
-        // configStore.load();
-        await confmngr.load();
+        configStore.load();
 
         bgRender.createBgLayer();
         
@@ -137,6 +135,8 @@ export default class BgCoverPlugin extends Plugin {
         var bgLayer = document.getElementById('bglayer');
         bgLayer.remove();
         document.body.style.removeProperty('opacity');
+
+        pluginStore.set(null); // [4] 插件卸载时清空 Store，是个好习惯
 
         info(`${this.i18n.byePlugin}`);
     }

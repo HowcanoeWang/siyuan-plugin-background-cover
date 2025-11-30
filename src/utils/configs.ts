@@ -10,10 +10,11 @@ import * as tps from './types'
 import * as cst from './constants'
 import { KernelApi } from '../utils/api';
 
+import { getPlugin } from '../services/pluginStore';
+
 let ka = new KernelApi();
 
 class configManager {
-    plugin: BgCoverPlugin;
 
     // 缓存被修改的key，用于按需保存
     changedKeys: Set<tps.configKey> = new Set();
@@ -22,8 +23,8 @@ class configManager {
     // 支持不同设备之间的不同配置
     localCfg: any = structuredClone(tps.defaultLocalConfigs);
 
-    // saved publically to /data/publish/{plugin-name}/{cst.pluginFileIdx}
-    // 存储用户上传的public中的数据库文件
+    // saved publically to /data/storage/petal/{plugin-name}/{cst.pluginFileIdx}
+    // 存储用户上传的petal中的数据库文件
     // 用于数据重建和索引
     syncCfg: any = structuredClone(tps.defaultSyncConfigs);
 
@@ -122,7 +123,7 @@ class configManager {
     async _loadSyncCfg() {
         debug(`[configs][_loadFileIdx] 读取 /data/publish/插件目录/ 中的背景文件索引信息`)
 
-        let loaded = await this.plugin.loadData(cst.synConfigFile)
+        let loaded = await getPlugin().loadData(cst.synConfigFile)
         debug(` synconfig.json 原始读取数据：`, loaded)
 
         if (loaded == null || loaded == undefined || loaded == '') {
@@ -195,7 +196,7 @@ class configManager {
             debug(`写入Sync配置文件${cst.synConfigFile}:`, json);
         }
         
-        this.plugin.saveData(cst.synConfigFile, json);
+        await getPlugin().saveData(cst.synConfigFile, json);
 
     }
 }

@@ -1,3 +1,6 @@
+import { get } from 'svelte/store';
+import { configStore } from '@/services/configStore';
+
 function getTimestamp(): string {
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, '0');
@@ -13,7 +16,9 @@ export function info(...msg: any[]): void {
 }
 
 export function debug(...msg: any[]): void {
-    if (window.bgCoverPlugin.isDev) {
+    const currentConfig = get(configStore);
+
+    if (currentConfig.inDev)  {
         console.log(`[BgCover Plugin]${getTimestamp()}[DEBUG]`, ...msg);
     }
 }
