@@ -9,13 +9,11 @@ import { configStore } from '@/services/configStore';
 import { pluginStore } from './services/pluginStore';
 
 import { info, debug} from './utils/logger'
-import { getCurrentThemeInfo} from './utils/theme';
 
 import * as cst from './utils/constants';
 import * as bgRender from "./services/bgRender"
 
 import * as topbarUI from "./ui/topbar";
-import * as noticeUI from "./ui/notice";
 import * as settingsUI from "./ui/settings";
 import * as fileManagerUI from "./ui/fileManager"
 
@@ -115,16 +113,9 @@ export default class BgCoverPlugin extends Plugin {
         
         await fileManagerUI.checkAssetsDir();
 
-        // load the user setting data
-        const [themeMode, themeName] = getCurrentThemeInfo();
-        confmngr.set('prevTheme', themeName);
-
         await bgRender.applySettings();
 
         debug(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
-
-        // 去除检测到主题变化的提示(因为此时已经刷新了)
-        noticeUI.removeThemeRefreshDialog();
     }
 
     onunload() {
@@ -139,21 +130,6 @@ export default class BgCoverPlugin extends Plugin {
         pluginStore.set(null); // [4] 插件卸载时清空 Store，是个好习惯
 
         info(`${this.i18n.byePlugin}`);
-    }
-
-    private async themeOnChange() {
-        const [themeMode, themeName] = getCurrentThemeInfo();
-        let prevTheme = confmngr.get('prevTheme')
-
-        debug(`Theme changed! from ${prevTheme} to ${themeMode} | ${themeName}`)
-
-        if (prevTheme !== themeName) {
-            // 更换主题时且没有重载时，提示需要刷新笔记页面
-            confmngr.set('prevTheme', themeName);
-            await confmngr.save('[index][themeOnChange]')
-            noticeUI.themeRefreshDialog();
-            // 如果重载了，这个界面会在onLoadReady时被去掉
-        }
     }
 
     public openSetting() {
