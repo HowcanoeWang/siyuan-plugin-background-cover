@@ -108,12 +108,13 @@ export default class BgCoverPlugin extends Plugin {
         
         //初始化数据
         configStore.load();
-
-        bgRender.createBgLayer();
         
-        await fileManagerUI.checkAssetsDir();
+        // await fileManagerUI.checkAssetsDir();
 
-        await bgRender.applySettings();
+        // 初始化背景渲染服务
+        // 它会自动订阅 configStore 的后续变化
+        bgRender.initBgRenderService(); // [2] 调用初始化
+
 
         debug(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
     }
@@ -122,10 +123,8 @@ export default class BgCoverPlugin extends Plugin {
         // solve cloud sync conflicts
         // configs.save('[index.ts][onunload]');
 
-        // remove changes when deactivate plugin
-        var bgLayer = document.getElementById('bglayer');
-        bgLayer.remove();
-        document.body.style.removeProperty('opacity');
+        // 销毁服务，清理所有副作用
+        bgRender.destroyBgRenderService(); // [3] 调用销毁
 
         pluginStore.set(null); // [4] 插件卸载时清空 Store，是个好习惯
 

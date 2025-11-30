@@ -1,21 +1,90 @@
-import { confmngr } from "../utils/configs";
 
 import * as tps from "../utils/types";
 import * as cst from "../utils/constants";
 
-import * as fileManagerUI from "../ui/fileManager";
-import * as settingsUI from "../ui/settings";
 import * as topbarUI from "../ui/topbar";
+
+import { configStore } from "./configStore";
+import { Unsubscriber } from "svelte/store";
 
 import {showNotImplementDialog} from "../ui/notice";
 
 import { error, debug } from "../utils/logger";
 import { getCurrentThemeInfo } from "../utils/theme";
 
-let autoRefreshTimer: NodeJS.Timeout | null = null;
+let bgLayer: HTMLElement | null = null;
+let unsubscribeFromConfig: Unsubscriber | null = null; // [3] 用于保存取消订阅的函数
+let autoRefreshTimer: NodeJS.Timeout | null = null;  // 顶视切换背景的计时器
+
+/**
+ * 初始化背景渲染服务
+ * 创建图层并开始监听配置变化
+ */
+export function initBgRenderService() {
+    if (bgLayer) {
+        // 防止重复初始化
+        return;
+    }
+
+    // 1. 创建背景图层
+    createBgLayer();
+
+    // 2. 订阅 configStore 的变化
+    unsubscribeFromConfig = configStore.subscribe(config => {
+        // 每当配置变化，这个函数就会被调用
+        debug('[bgRender] Config changed, applying new settings:', config);
+        // 第一步：判断服务是否应该激活
+        const isActive = config.activate && !isdisabledTheme(config);
+        debug(`[BeRender] current active status is ${isActive}`)
+
+        // 第二步：根据激活状态，应用或清理视觉样式
+        if (isActive) {
+            debug(`[BeRender] -> applyAllVisuals()`)
+            applyAllVisuals(config);
+        } else {
+            debug(`[BeRender] -> cleanupAllVisuals()`)
+            cleanupAllVisuals();
+        }
+
+        // 第三步：管理非视觉的副作用，比如定时器
+        debug(`[BeRender] -> manageSideEffects()`)
+        manageSideEffects(config, isActive);
+    });
+
+    debug('Background Render Service Initialized.');
+}
+
+/**
+ * 销毁背景渲染服务
+ * 清理图层和监听器，防止内存泄漏
+ */
+export function destroyBgRenderService() {
+    // 1. 取消订阅 store
+    if (unsubscribeFromConfig) {
+        unsubscribeFromConfig();
+        unsubscribeFromConfig = null;
+        debug('[bgRender] Unsubscribed from config store.');
+    }
+
+    // 2. 清除定时器
+    removeAutoRefreshTimer();
+
+    // 3. 从 DOM 中移除图层
+    if (bgLayer) {
+        bgLayer.remove();
+        bgLayer = null;
+        debug('[bgRender] Background layer removed from DOM.');
+    }
+
+    // 恢复 body 的不透明度
+    document.body.style.removeProperty('opacity');
+
+    console.log('Background Render Service Destroyed.');
+}
+
 
 export function createBgLayer() {
-    var bgLayer = document.createElement('canvas');
+    bgLayer = document.createElement('canvas');
     bgLayer.id = "bglayer";
     
     ///////////////////////////////////////////////
@@ -66,10 +135,103 @@ export function createBgLayer() {
 // }
 
 
-export function useDefaultLiaoLiaoBg() {
-    debug(`[bgRender][applySettings] 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图`)
-    changeBackgroundContent(cst.demoImgURL, tps.bgMode.image)
-    confmngr.set('crtBgObj', undefined);
+/**
+ * 应用所有视觉相关的配置。
+ * 这个函数假设服务是激活状态。
+ */
+function applyAllVisuals(config) {
+    debug(`[bgRender][applyAllVisuals] start, config:`, config, 'bgLayer:', bgLayer)
+    if (!bgLayer) return;
+
+    // 1. 确保图层可见
+    bgLayer.style.display = 'block';
+    debug(`[bgRender][applyAllVisuals] set bgLayer.style.display = ${bgLayer.style.display}`)
+
+    // 2. 计算并应用 Body 透明度
+    const bodyOpacity = 0.99 - 0.25 * config.opacity;
+    document.body.style.opacity = bodyOpacity.toString();
+    debug(`[bgRender][applyAllVisuals] set document.body.style.opacity = ${document.body.style.opacity}`)
+
+    // 3. 应用背景内容 (图片/视频)
+    const bgPath = config.crtBgObj?.path ?? cst.demoImgURL; // 默认是了了背景图
+    const bgMode = config.crtBgObj?.mode ?? tps.bgMode.image;  // 了了背景图模式为image
+    changeBackgroundContent(bgPath, bgMode);
+
+    // 4. 应用滤镜 (模糊)
+    bgLayer.style.filter = `blur(${config.blur}px)`;
+
+    // 5. 计算并应用背景位置
+    const [offx, offy] = getBgPositionForCurrent(config.crtBgObj, config.bgObjCfg);
+    bgLayer.style.backgroundPosition = `${offx}% ${offy}%`;
+}
+
+/**
+ * 当服务停用时，清理所有视觉样式和副作用。
+ */
+function cleanupAllVisuals() {
+    if (bgLayer) {
+        bgLayer.style.display = 'none';
+        // 清理可能残留的样式，确保完全干净
+        bgLayer.style.backgroundImage = '';
+        bgLayer.style.filter = '';
+    }
+    // 恢复 body 的默认状态
+    document.body.style.removeProperty('opacity');
+}
+
+/**
+ * 管理与视觉无关的副作用，如定时器。
+ */
+function manageSideEffects(config, isActive: boolean) {
+    // 清除旧的定时器
+    if (autoRefreshTimer) {
+        clearInterval(autoRefreshTimer);
+        autoRefreshTimer = null;
+    }
+
+    // 如果服务激活且配置开启，则设置新的定时器
+    if (isActive && config.autoRefresh && config.autoRefreshTime > 0) {
+        const refreshInterval = config.autoRefreshTime * 60 * 1000;
+        autoRefreshTimer = setInterval(() => {
+            topbarUI.selectPictureRandom(false);
+        }, refreshInterval);
+        debug(`[bgRender] Auto-refresh timer set for ${config.autoRefreshTime} minutes.`);
+    }
+}
+
+
+export function isdisabledTheme(config){
+    var disabledTheme = config.disabledTheme
+    const themeModeText = ['light', 'dark']
+    const [themeMode, themeName] = getCurrentThemeInfo();
+
+    var result = disabledTheme[themeModeText[themeMode]][themeName];
+    debug(`[bgRender][isdisabledTheme] search mode='${themeModeText[themeMode]}', name='${themeName}' result is ${result}`)
+
+    return result;
+}
+
+export function removeAutoRefreshTimer() {
+    // 清除旧的定时器
+    if (autoRefreshTimer) {
+        clearInterval(autoRefreshTimer);
+        autoRefreshTimer = null;
+        debug('[bgRender][applySettings] Cleared existing auto-refresh timer.');
+    }
+}
+
+export function applyAutoRefreshTimer(autoRefresh, autoRefreshTime) {
+    // 如果开启了自动刷新且时间不为0，则设置新的定时器
+    debug(autoRefreshTime, `judgement result:`, autoRefreshTime > 0)
+    if (autoRefresh && autoRefreshTime > 0) {
+        const refreshTime = autoRefreshTime * 60 * 1000; // convert minutes to seconds to ms
+        autoRefreshTimer = setInterval(() => {
+            topbarUI.selectPictureRandom(false); // pass false to avoid notice on auto-refresh
+        }, refreshTime);
+        debug(`[bgRender][applySettings] Set up auto-refresh timer for every ${refreshTime / 1000} seconds.`);
+    } else {
+        removeAutoRefreshTimer();
+    }
 }
 
 export function changeBackgroundContent(background: string, mode: tps.bgMode) {
@@ -85,125 +247,18 @@ export function changeBackgroundContent(background: string, mode: tps.bgMode) {
     }
 };
 
-export function isdisabledTheme(){
-    var disabledTheme = confmngr.get('disabledTheme')
-    const themeModeText = ['light', 'dark']
-    const [themeMode, themeName] = getCurrentThemeInfo();
+export function getBgPositionForCurrent(crtBgObj: tps.bgObj, bgObjCfg: tps.bgObjCfg) {
+    // 0.5.0版本后数据结构重构，放弃直接修改crtBgObj的.offx offy
+    // 因为需要考虑到不同的设备有不同的设置，而这个设置不应该同步
+    // 所以使用存在local配置中的'bgObjCfg' -> [img.hash].offx offy来进行记录和控制
+    let crtBgObjHash = crtBgObj?.hash ?? '';
 
-    var result = disabledTheme[themeModeText[themeMode]][themeName];
-    debug(`[bgRender][isdisabledTheme] search mode='${themeModeText[themeMode]}', name='${themeName}' result is ${result}`)
-
-    return result;
-}
-
-export function changeOpacity(alpha: number) {
-    let opacity = 0.99 - 0.25 * alpha;
-
-    if (confmngr.get('activate') && !isdisabledTheme() && alpha !== 0) {
-        document.body.style.setProperty('opacity', opacity.toString());
-    } else {
-        document.body.style.removeProperty('opacity');
-    }
-}
-
-export function changeBlur(blur: number) {
-    var bgLayer = document.getElementById('bglayer');
-    bgLayer.style.setProperty('filter', `blur(${blur}px)`)
-}
-
-export function changeBgPosition(x: string, y: string) {
-    var bgLayer = document.getElementById('bglayer');
-
-    if (x == null || x == undefined) {
-        debug(`[bgRender][changeBgPosition] xy未定义，不进行改变`)
-        bgLayer.style.setProperty('background-position', `center`);
-    } else {
-        debug(`[bgRender][changeBgPosition] 修改background-position为${x}% ${y}%`)
-        bgLayer.style.setProperty('background-position', `${x}% ${y}%`);
-    }
-}
-
-export async function applySettings() {
-   
-    var bgLayer = document.getElementById('bglayer');
-    debug(bgLayer);
-
-    if (confmngr.get('activate') && !isdisabledTheme() ) {
-        bgLayer.style.removeProperty('display');
-    } else {
-        bgLayer.style.setProperty('display', 'none');
+    var offx: number = 50  // 默认居中
+    var offy: number = 50
+    if (crtBgObjHash in bgObjCfg) {
+        offx = bgObjCfg[crtBgObjHash].offx
+        offy = bgObjCfg[crtBgObjHash].offy
     }
 
-    // 清除旧的定时器
-    if (autoRefreshTimer) {
-        clearInterval(autoRefreshTimer);
-        autoRefreshTimer = null;
-        debug('[bgRender][applySettings] Cleared existing auto-refresh timer.');
-    }
-
-    // 缓存文件夹中没有图片 | 用户刚刚使用这个插件 | 用户刚刚重置了插件数据 | 当前文件404找不到
-    const cacheImgNum = fileManagerUI.getCacheImgNum()
-    debug(`[bgRender][applySettings] cacheImgNum= ${cacheImgNum}`)
-    if (cacheImgNum === 0) {
-        // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
-        useDefaultLiaoLiaoBg();
-    } else if (confmngr.get('crtBgObj') === undefined) {
-        // 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张
-        debug(`[bgRender][applySettings] 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张`)
-        await topbarUI.selectPictureRandom();
-    } else {
-        // 缓存中有1张以上的图片，bjObj也有内容且图片存在
-        debug(`[bgRender][applySettings] 缓存中有1张以上的图片，bjObj也有内容且图片存在`)
-        let crtBgObj = confmngr.get('crtBgObj')
-        let crtHash = crtBgObj?.hash ?? '';
-        if (crtHash === '') {
-            crtHash = "emptyCrtObj"
-        }
-
-        let fileidx = confmngr.get('fileidx')
-        // 如果当前背景图有效，并且没有开启自动刷新功能，则加载config中记录的crtBgObj
-        if (crtBgObj && crtHash in fileidx) {
-            debug(`[bgRender][applySettings] 当前背景图有效，加载当前图片`)
-            changeBackgroundContent(crtBgObj.path, crtBgObj.mode)
-        } else {
-            // 当bjObj找不到404或不存在时，则随机选一张替换作为bjObj
-            debug(`[bgRender][applySettings] 当前背景图无效或丢失，随机选择一张替换`)
-            await topbarUI.selectPictureRandom();
-        }
-
-        // 如果开启了自动刷新且时间不为0，则设置新的定时器
-        debug(confmngr.get('autoRefreshTime'), `judgement result:`, confmngr.get('autoRefreshTime') > 0)
-        if (confmngr.get('autoRefresh') && confmngr.get('autoRefreshTime') > 0) {
-            const refreshTime = confmngr.get('autoRefreshTime') * 60 * 1000; // convert minutes to seconds to ms
-            autoRefreshTimer = setInterval(() => {
-                topbarUI.selectPictureRandom(false); // pass false to avoid notice on auto-refresh
-            }, refreshTime);
-            debug(`[bgRender][applySettings] Set up auto-refresh timer for every ${refreshTime / 1000} seconds.`);
-        }
-    }
-
-    changeOpacity(confmngr.get('opacity'))
-    changeBlur(confmngr.get('blur'))
-    if (confmngr.get('crtBgObj') === undefined){
-        changeBgPosition(null, null)
-    }else{
-        // 0.5.0版本后数据结构重构，放弃直接修改crtBgObj的.offx offy
-        // 因为需要考虑到不同的设备有不同的设置，而这个设置不应该同步
-        // 所以使用存在local配置中的'bgObjCfg' -> [img.hash].offx offy来进行记录和控制
-        let bgObjCfg = confmngr.get('bgObjCfg')
-
-        let crtBgObj = confmngr.get('crtBgObj');
-        let crtBgObjHash = crtBgObj?.hash ?? '';
-
-        var offx: string = '50'  // 默认居中
-        var offy: string = '50'
-        if (crtBgObjHash in bgObjCfg) {
-            offx = bgObjCfg[crtBgObjHash].offx
-            offy = bgObjCfg[crtBgObjHash].offy
-        }
-
-        changeBgPosition(offx, offy)
-    }
-    
-    settingsUI.updateSettingPanelElementStatus()
+    return [offx, offy]
 }
