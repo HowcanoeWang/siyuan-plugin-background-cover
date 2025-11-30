@@ -8,9 +8,15 @@
  */
 // make_dev_link.js
 import fs from 'fs';
+import os from 'node:os';
 import { log, error, getSiYuanDir, chooseTarget, getThisPluginName, makeSymbolicLink } from './utils.js';
 
-let targetDir = 'C:/Users/hwang/Documents/SiYuanDev/data/plugins';
+let targetDir = '';
+if (os.platform() === 'win32') {
+    targetDir = 'C:/Users/hwang/Documents/SiYuanDev/data/plugins';
+} else if (os.platform() === 'linux') {
+    targetDir = '/home/hwang/Documents/SiYuanDev/data/plugins/';
+}
 
 /**
  * 1. Get the parent directory to install the plugin
