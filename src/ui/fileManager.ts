@@ -7,6 +7,8 @@ import * as bgRender from "../services/bgRender";
 import * as settingsUI from "./settings";
 import * as topbarUI from "./topbar";
 
+import BgCoverPlugin from "../index";
+
 import { showConfirmationDialog, showNoticeDialog } from "./components/dialogs";
 
 import { error, info, debug } from '../utils/logger';
@@ -37,6 +39,7 @@ export function getCacheImgNum() {
 }
 
 export async function checkAssetsDir() {
+    let i18n = BgCoverPlugin.i18n;
 
     debug(`[fileManagerUI][checkAssetsDir] 进入函数`)
 
@@ -50,10 +53,10 @@ export async function checkAssetsDir() {
         // 这可以确保在调用时，思源的UI已经完全准备好渲染对话框
         setTimeout(async () => {
             await showConfirmationDialog({
-                title: window.bgCoverPlugin.i18n.updateNoticeTitle,
-                message: window.bgCoverPlugin.i18n.updateNoticeMsg,
-                confirmText: window.bgCoverPlugin.i18n.updateNoticeConfirmBtn,
-                cancelText: `<a href="file:///${cst.pluginAssetsDirOS}/" style="word-break: break-all">${window.bgCoverPlugin.i18n.updateNoticeCancelBtn}</a>`,
+                title: i18n.updateNoticeTitle,
+                message: i18n.updateNoticeMsg,
+                confirmText: i18n.updateNoticeConfirmBtn,
+                cancelText: `<a href="file:///${cst.pluginAssetsDirOS}/" style="word-break: break-all">${i18n.updateNoticeCancelBtn}</a>`,
                 onConfirm: () => {
                     debug(`[fileManagerUI][checkAssetsDir] 用户点击确认，启用重置设置`)
                     os.rmtree(oldAssetsDir);
@@ -141,19 +144,19 @@ export async function checkAssetsDir() {
 
     // raise warning to users
     if (notCorrectCacheImgs.length !== 0) {
-        let msgInfo = `${window.bgCoverPlugin.i18n.cacheImgWrongName}<br/>[${notCorrectCacheImgs}]<br/>${window.bgCoverPlugin.i18n.doNotOperateCacheFolder}`
+        let msgInfo = `${i18n.cacheImgWrongName}<br/>[${notCorrectCacheImgs}]<br/>${i18n.doNotOperateCacheFolder}`
         showMessage(msgInfo, 7000, "info")
         info(msgInfo)
     }
 
     if (extraCacheImgs.length !== 0) {
-        let msgInfo = `${window.bgCoverPlugin.i18n.cacheImgExtra}<br/>[${extraCacheImgs}]<br/>${window.bgCoverPlugin.i18n.doNotOperateCacheFolder}`
+        let msgInfo = `${i18n.cacheImgExtra}<br/>[${extraCacheImgs}]<br/>${i18n.doNotOperateCacheFolder}`
         showMessage(msgInfo, 7000, "info")
         info(msgInfo)
     }
 
     if (missingCacheImgs.length !== 0) {
-        let msgInfo = `${window.bgCoverPlugin.i18n.cacheImgMissing}<br/>[${missingCacheImgs}]<br/>${window.bgCoverPlugin.i18n.doNotOperateCacheFolder}`
+        let msgInfo = `${i18n.cacheImgMissing}<br/>[${missingCacheImgs}]<br/>${i18n.doNotOperateCacheFolder}`
         showMessage(msgInfo, 7000, "info")
         info(msgInfo)
     }
@@ -213,6 +216,8 @@ export async function clearCacheFolder(mode: tps.bgMode){
 }
 
 export async function imgExistsInCache(file: File, notice: boolean = true): Promise<string> {
+    let i18n = BgCoverPlugin.i18n;
+
     let fileidx = confmngr.get('fileidx')
 
     const blobSlice = File.prototype.slice
@@ -227,9 +232,9 @@ export async function imgExistsInCache(file: File, notice: boolean = true): Prom
     if (fileidx !== undefined && md5_slice in fileidx) {
         if (notice) {
             const dialog = new Dialog({
-                title: `${window.bgCoverPlugin.i18n.inDevTitle}`,
-                content: `<div class="b3-dialog__content">${window.bgCoverPlugin.i18n.imageFileExist}</div>`,
-                width: window.bgCoverPlugin.isMobileLayout ? "92vw" : "520px",
+                title: `${i18n.inDevTitle}`,
+                content: `<div class="b3-dialog__content">${i18n.imageFileExist}</div>`,
+                width: this.isMobile ? "92vw" : "520px",
             });
         }else{
             debug(`[fileManagerUI][imgIsInCache] 当前图片${file.name}已存在`)
@@ -241,12 +246,14 @@ export async function imgExistsInCache(file: File, notice: boolean = true): Prom
 }
 
 export async function uploadOneImage(file: File) {
+    let i18n = BgCoverPlugin.i18n;
+
     let fileSizeMB: number = (file.size / 1024 / 1024);
 
     let md5_slice = await imgExistsInCache(file);
 
     if (md5_slice !== 'exists') {
-        showMessage(`${file.name}-${fileSizeMB.toFixed(2)}MB<br>${window.bgCoverPlugin.i18n.addSingleImageUploadNotice}`, 3000, "info");
+        showMessage(`${file.name}-${fileSizeMB.toFixed(2)}MB<br>${i18n.addSingleImageUploadNotice}`, 3000, "info");
     }
 
     let fileidx = confmngr.get('fileidx');
@@ -325,9 +332,11 @@ export async function batchUploadImages(
 /////////////////////
 
 export async function selectPictureDialog() {
+    let i18n = BgCoverPlugin.i18n;
+
     const cacheManagerDialog = new Dialog({
-        title: window.bgCoverPlugin.i18n.selectPictureManagerTitle,
-        width: window.bgCoverPlugin.isMobileLayout ? "92vw" : "520px",
+        title: i18n.selectPictureManagerTitle,
+        width: BgCoverPlugin.instance.isMobile ? "92vw" : "520px",
         height: "92vh",
         content: `
         <div class="fn__flex-column" style="height: 100%">
@@ -336,14 +345,14 @@ export async function selectPictureDialog() {
                 <!-- tab 1 title -->
                 <div class="item item--full item--focus" data-type="remove">
                     <span class="fn__flex-1"></span>
-                    <span class="item__text">${window.bgCoverPlugin.i18n.selectPictureManagerTab1}</span>
+                    <span class="item__text">${i18n.selectPictureManagerTab1}</span>
                     <span class="fn__flex-1"></span>
                 </div>
 
                 <!-- tab 2 title -->
                 <!--div class="item item--full" data-type="missing">
                     <span class="fn__flex-1"></span>
-                    <span class="item__text">${window.bgCoverPlugin.i18n.selectPictureManagerTab2}</span>
+                    <span class="item__text">${i18n.selectPictureManagerTab2}</span>
                     <span class="fn__flex-1"></span>
                 </div-->
             </div>
@@ -357,7 +366,7 @@ export async function selectPictureDialog() {
                     <label class="fn__flex" style="justify-content: flex-end;">
                         <button id="removeAllImgs" class="b3-button b3-button--outline fn__flex-center fn__size200">
                             <svg class="svg"><use xlink:href="#iconTrashcan"></use></svg>
-                            ${window.bgCoverPlugin.i18n.deleteAll}
+                            ${i18n.deleteAll}
                         </button>
                         <div class="fn__space"></div>
                     </label>
@@ -370,10 +379,10 @@ export async function selectPictureDialog() {
                             <span class="b3-list-item__text">
                                 20230609230328-7vp057x.png
                             </span>
-                            <span data-type="open" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${window.bgCoverPlugin.i18n.setAsBg}">
+                            <span data-type="open" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${i18n.setAsBg}">
                                 <svg><use xlink:href="#iconHideDock"></use></svg>
                             </span>
-                            <span data-type="clear" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${window.bgCoverPlugin.i18n.delete}">
+                            <span data-type="clear" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${i18n.delete}">
                                 <svg><use xlink:href="#iconTrashcan"></use></svg>
                             </span>
                         </li>
@@ -435,6 +444,8 @@ export function generateCacheImgList(){
     //     </span>
     // </li>
 
+    let i18n = BgCoverPlugin.i18n;
+
     let listHtml:Array<HTMLLIElement> = []
     let fileidx = confmngr.get('fileidx')
     for (const i in fileidx) {
@@ -447,10 +458,10 @@ export function generateCacheImgList(){
             <span class="b3-list-item__text">
                 ${bgObj.name}
             </span>
-            <span data-type="open" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${window.bgCoverPlugin.i18n.setAsBg}">
+            <span data-type="open" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${i18n.setAsBg}">
                 <svg><use xlink:href="#iconHideDock"></use></svg>
             </span>
-            <span data-type="clear" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${window.bgCoverPlugin.i18n.delete}">
+            <span data-type="clear" class="b3-tooltips b3-tooltips__w b3-list-item__action" aria-label="${i18n.delete}">
                 <svg><use xlink:href="#iconTrashcan"></use></svg>
             </span>
         </li>
@@ -528,6 +539,8 @@ export function generateCacheImgList(){
 //////////////////////
 
  export function openAssetsFolderPickerDialog(): Promise<string[] | null> {
+    let i18n = BgCoverPlugin.i18n;
+
     const rootPath = 'data/assets';
     const selectedPaths: Set<string> = new Set();
     
@@ -548,8 +561,8 @@ export function generateCacheImgList(){
 
     return new Promise((resolve) => {
         const dialog = new Dialog({
-            title: window.bgCoverPlugin.i18n.addNoteAssetsDirectoryLabel,
-            width: window.bgCoverPlugin.isMobileLayout ? "92vw" : "600px",
+            title: i18n.addNoteAssetsDirectoryLabel,
+            width: BgCoverPlugin.instance.isMobile ? "92vw" : "600px",
             height: "70vh",
             content: `
             <div class="b3-dialog__content" style="height: calc(100% - 62px);">
@@ -558,9 +571,9 @@ export function generateCacheImgList(){
                 </div>
             </div>
             <div class="b3-dialog__action">
-                <button class="b3-button b3-button--cancel">${window.bgCoverPlugin.i18n.cancel}</button>
+                <button class="b3-button b3-button--cancel">${i18n.cancel}</button>
                 <div class="fn__space"></div>
-                <button class="b3-button b3-button--text" id="folderPickerSelect">${window.bgCoverPlugin.i18n.confirm}</button>
+                <button class="b3-button b3-button--text" id="folderPickerSelect">${i18n.confirm}</button>
             </div>
             `,
             destroyCallback: () => {
@@ -609,7 +622,7 @@ export function generateCacheImgList(){
             
             const badgeHTML = `
             <span class="counter counter--bg fn__flex-center b3-tooltips b3-tooltips__w" 
-                aria-label="${window.bgCoverPlugin.i18n.folderBgCountLabel}">
+                aria-label="${i18n.folderBgCountLabel}">
                 ${imageCount}
             </span>`
 
@@ -674,7 +687,7 @@ export function generateCacheImgList(){
                             await renderSubfolderNode(`${rootPath}/${dir.name}`, listContainer, 0);
                         }
                     } else {
-                        treeContainer.innerHTML = `<div class="b3-list-item b3-list-item--narrow"><span class="b3-list-item__text ft__on-surface ft__smaller">${window.bgCoverPlugin.i18n.emptyFolder}</span></div>`;
+                        treeContainer.innerHTML = `<div class="b3-list-item b3-list-item--narrow"><span class="b3-list-item__text ft__on-surface ft__smaller">${i18n.emptyFolder}</span></div>`;
                     }
                 }
             } catch (err) {

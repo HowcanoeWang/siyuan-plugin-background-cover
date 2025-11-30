@@ -3,7 +3,8 @@
  * https://github.com/frostime/siyuan-dailynote-today/blob/main/src/global-status.ts
  */
 
-import { Plugin } from 'siyuan';
+import BgCoverPlugin from "../index"
+
 import { info, debug, error} from '../utils/logger'
 import * as tps from './types'
 import * as cst from './constants'
@@ -12,7 +13,7 @@ import { KernelApi } from '../utils/api';
 let ka = new KernelApi();
 
 class configManager {
-    plugin: Plugin;
+    plugin: BgCoverPlugin;
 
     // 缓存被修改的key，用于按需保存
     changedKeys: Set<tps.configKey> = new Set();
@@ -29,10 +30,6 @@ class configManager {
     // 虽然这边分成了LocalConfig和SyncConfig，存储到不同的图片路径下
     // 但是希望这个configManger的api, 能提供一个良好且无感的读写体验
     // 直接设置config['key']的值，自动处理保存为local还是sync
-
-    setParent(plugin: Plugin) {
-        this.plugin = plugin;
-    }
 
     get(key?: tps.configKey) {
 
@@ -124,6 +121,7 @@ class configManager {
 
     async _loadSyncCfg() {
         debug(`[configs][_loadFileIdx] 读取 /data/publish/插件目录/ 中的背景文件索引信息`)
+
         let loaded = await this.plugin.loadData(cst.synConfigFile)
         debug(` synconfig.json 原始读取数据：`, loaded)
 

@@ -1,4 +1,7 @@
 import { Dialog } from "siyuan";
+
+import BgCoverPlugin from "../../index";
+
 import { createConfirmDialogTemplate, createNoticeDialogTemplate } from "./templates"; // 假设模板在新文件中
 
 /**
@@ -14,7 +17,7 @@ export function showNoticeDialog(options: NoticeOptions): void {
     const dialog = new Dialog({
         title: options.title,
         content: contentHTML,
-        width: window.bgCoverPlugin.isMobileLayout ? "92vw" : "520px",
+        width: BgCoverPlugin.instance.isMobile ? "92vw" : "520px",
     });
 }
 
@@ -31,10 +34,12 @@ interface ConfirmationOptions {
     onCancel?: () => void; // 可选的取消回调
 }
 export function showConfirmationDialog(options: ConfirmationOptions): void {
+    let i18n = BgCoverPlugin.i18n;
+    
     // 1. 提供默认值
     const finalOptions = {
-        cancelText: options.cancelText || window.bgCoverPlugin.i18n.cancel,
-        confirmText: options.confirmText || window.bgCoverPlugin.i18n.confirm,
+        cancelText: options.cancelText || i18n.cancel,
+        confirmText: options.confirmText || i18n.confirm,
         ...options
     };
 
@@ -45,7 +50,7 @@ export function showConfirmationDialog(options: ConfirmationOptions): void {
     const dialog = new Dialog({
         title: finalOptions.title,
         content: contentHTML,
-        width: window.bgCoverPlugin.isMobileLayout ? "92vw" : "520px",
+        width: BgCoverPlugin.instance.isMobile ? "92vw" : "520px",
     });
 
     // 4. 绑定逻辑

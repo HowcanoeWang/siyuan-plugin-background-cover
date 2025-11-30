@@ -1,10 +1,7 @@
 import {
     showMessage,
     confirm,
-    Menu,
-    getFrontend,
-    getBackend,
-    IMenuItemOption
+    Menu
 } from "siyuan";
 
 import { debug } from '../utils/logger';
@@ -25,15 +22,16 @@ import { showNotImplementDialog } from "./notice";
 
 let os = new OS();
 
-
 /**
  * 顶栏按钮UI
  */
 export async function initTopbar(pluginInstance: BgCoverPlugin) {
 
+    let i18n = pluginInstance.i18n;
+
     const topBarElement = pluginInstance.addTopBar({
         icon: "iconLogo",
-        title: window.bgCoverPlugin.i18n.addTopBarIcon,
+        title: i18n.addTopBarIcon,
         position: "right",
         callback: () => {
             debug(`[topbarUI][initTopbar] click and open toolbar`);
@@ -53,12 +51,12 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
         const menu = new Menu("topBarSample", () => { });
         menu.addItem({
             icon: "iconIndent",
-            label: `${window.bgCoverPlugin.i18n.selectPictureLabel}`,
+            label: `${i18n.selectPictureLabel}`,
             type: "submenu",
             submenu: [
                 {
                     icon: "iconHand",
-                    label: `${window.bgCoverPlugin.i18n.selectPictureManualLabel}`,
+                    label: `${i18n.selectPictureManualLabel}`,
                     accelerator: pluginInstance.commands[0].customHotkey,
                     click: () => {
                         selectPictureByHand();
@@ -66,7 +64,7 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                 }, 
                 {
                     icon: "iconMark",
-                    label: `${window.bgCoverPlugin.i18n.selectPictureRandomLabel}`,
+                    label: `${i18n.selectPictureRandomLabel}`,
                     accelerator: pluginInstance.commands[1].customHotkey,
                     click: () => {
                         selectPictureRandom(true);
@@ -74,51 +72,39 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
                 },
             ]
         });
-
-        let submenu: IMenuItemOption[] = [
-            {
-                icon: "iconImage",
-                label: `${window.bgCoverPlugin.i18n.addSeveralImagesLabel}`,
-                click: () => {
-                    addSeveralLocalImagesFile();
-                }
-            },
-            {
-                icon: "iconFolder",
-                label: `${window.bgCoverPlugin.i18n.addDirectoryLabel}`,
-                click: () => {
-                    addDirectory();
-                }
-            },
-            // {
-            //     icon: "iconFilesRoot",
-            //     label: `${window.bgCoverPlugin.i18n.addNoteAssetsDirectoryLabel}`,
-            //     click: () => {
-            //         addNoteAssetsDirectory();
-            //     }
-            // },
-        ];
-
-        if (window.bgCoverPlugin.isAndroid && !window.bgCoverPlugin.isBrowser) {
-            submenu.unshift(
-                {
-                    icon: "iconSparkles",
-                    label: `${window.bgCoverPlugin.i18n.androidLimitNotice}`,
-                    type: "readonly",
-                }
-            )
-        }
         
         menu.addItem({
             icon: "iconAdd",
-            label: `${window.bgCoverPlugin.i18n.addImageLabel}`,
+            label: `${i18n.addImageLabel}`,
             type: "submenu",
-            submenu: submenu,
+            submenu: [
+                {
+                icon: "iconImage",
+                label: `${i18n.addSeveralImagesLabel}`,
+                click: () => {
+                    addSeveralLocalImagesFile();
+                }
+                },
+                {
+                    icon: "iconFolder",
+                    label: `${i18n.addDirectoryLabel}`,
+                    click: () => {
+                        addDirectory();
+                    }
+                },
+                // {
+                //     icon: "iconFilesRoot",
+                //     label: `${i18n.addNoteAssetsDirectoryLabel}`,
+                //     click: () => {
+                //         addNoteAssetsDirectory();
+                //     }
+                // },
+            ]
         });
         menu.addItem({
             id: 'pluginOnOffMenu',
             icon: `${confmngr.get('activate') ? 'iconClose' : 'iconSelect'}`,
-            label: `${confmngr.get('activate') ? window.bgCoverPlugin.i18n.closeBackgroundLabel : window.bgCoverPlugin.i18n.openBackgroundLabel}`,
+            label: `${confmngr.get('activate') ? i18n.closeBackgroundLabel : i18n.openBackgroundLabel}`,
             accelerator: pluginInstance.commands[2].customHotkey,
             click: () => {
                 topbarUI.pluginOnOff();
@@ -129,20 +115,20 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
 
         menu.addItem({
             icon: "iconGithub",
-            label: `${window.bgCoverPlugin.i18n.bugReportLabel}`,
+            label: `${i18n.bugReportLabel}`,
             click: () => {
                 noticeUI.bugReportDialog();
             }
         });
         menu.addItem({
             icon: "iconSettings",
-            label: `${window.bgCoverPlugin.i18n.settingLabel}`,
+            label: `${i18n.settingLabel}`,
             click: () => {
                 settingsUI.openSettingDialog(pluginInstance);
             }
         });
 
-        if (window.bgCoverPlugin.isMobileLayout) {
+        if (pluginInstance.isMobile) {
             menu.fullscreen();
         } else {
             menu.open({
@@ -165,15 +151,17 @@ export async function selectPictureByHand() {
 };
 
 export async function selectPictureRandom(manualPress: boolean = false) {
+    let i18n = BgCoverPlugin.i18n;
+
     const cacheImgNum = fileManagerUI.getCacheImgNum()
     if (cacheImgNum === 0) {
         // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
         bgRender.useDefaultLiaoLiaoBg();
-        showMessage(`${window.bgCoverPlugin.i18n.noCachedImg4random}`, 3000, "info")
+        showMessage(`${i18n.noCachedImg4random}`, 3000, "info")
     } else if (cacheImgNum === 1) {
         // 只有一张图，无法进行随机抽选(无变化)
         if (manualPress) {
-            showMessage(`${window.bgCoverPlugin.i18n.selectPictureRandomNotice}`, 3000, "info")
+            showMessage(`${i18n.selectPictureRandomNotice}`, 3000, "info")
         }
 
         let belayerElement = document.getElementById('bglayer')
@@ -215,11 +203,12 @@ export async function selectPictureRandom(manualPress: boolean = false) {
 }
 
 export async function addSeveralLocalImagesFile() {
+    let i18n = BgCoverPlugin.i18n;
 
     const cacheImgNum = fileManagerUI.getCacheImgNum();
 
     if (cacheImgNum >= cst.cacheMaxNum) {
-        showMessage(window.bgCoverPlugin.i18n.addSingleImageExceed1 + cst.cacheMaxNum + window.bgCoverPlugin.i18n.addSingleImageExceed2, 7000, 'error');
+        showMessage(i18n.addSingleImageExceed1 + cst.cacheMaxNum + i18n.addSingleImageExceed2, 7000, 'error');
     }else{
         // return an Array
         const fileHandle = await os.openFilePicker(cst.supportedImageSuffix.toString(), true)
@@ -251,6 +240,8 @@ export async function addDirectory() {
 
     let fileContainer:Array<File> = [];
 
+    let i18n = BgCoverPlugin.i18n;
+
     // 遍历文件夹中的每个文件
     for await (const file of fileList) {
         // 检查文件类型是否为文件，排除文件夹
@@ -273,15 +264,15 @@ export async function addDirectory() {
         debug(`[topbarUI][addDirectory] fileContainer`, fileContainer)
 
         if (fileContainer.length >= cst.cacheMaxNum - cacheImgNum) {
-            showMessage(window.bgCoverPlugin.i18n.addDirectoryLabelError1 + cst.cacheMaxNum + window.bgCoverPlugin.i18n.addDirectoryLabelError2, 7000, 'error')
+            showMessage(i18n.addDirectoryLabelError1 + cst.cacheMaxNum + i18n.addDirectoryLabelError2, 7000, 'error')
             break
         }
     }
 
     if (fileContainer.length >= 30) {
         confirm(
-            window.bgCoverPlugin.i18n.addDirectoryLabelConfirmTitle,
-            `${window.bgCoverPlugin.i18n.addDirectoryLabelConfirm1} ${fileContainer.length} ${window.bgCoverPlugin.i18n.addDirectoryLabelConfirm2}`,
+            i18n.addDirectoryLabelConfirmTitle,
+            `${i18n.addDirectoryLabelConfirm1} ${fileContainer.length} ${i18n.addDirectoryLabelConfirm2}`,
             async () => {
                 // 同意上传，则开始批量上传
                 await fileManagerUI.batchUploadImages(fileContainer, true);

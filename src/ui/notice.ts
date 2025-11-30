@@ -3,18 +3,24 @@ import {
     showNoticeDialog 
 } from "./components/dialogs";
 
+import BgCoverPlugin from "../index";
+
 export function showNotImplementDialog() {
+    let i18n = BgCoverPlugin.i18n;
+
     showNoticeDialog({
-        title: window.bgCoverPlugin.i18n.notImplementTitle,
-        message: window.bgCoverPlugin.i18n.notImplementMsg,
+        title: i18n.notImplementTitle,
+        message: i18n.notImplementMsg,
     });
 }
 
 export function bugReportDialog() {
+    let i18n = BgCoverPlugin.i18n;
+
     showConfirmationDialog({
-        title: window.bgCoverPlugin.i18n.bugReportLabel,
-        message: window.bgCoverPlugin.i18n.bugReportConfirmText,
-        confirmText: window.bgCoverPlugin.i18n.confirmBugReport,
+        title: i18n.bugReportLabel,
+        message: i18n.bugReportConfirmText,
+        confirmText: i18n.confirmBugReport,
         onConfirm: () => {
             // 这里是这个对话框独有的逻辑
             window.open('https://github.com/HowcanoeWang/siyuan-plugin-background-cover/issues', '_blank');
@@ -23,10 +29,12 @@ export function bugReportDialog() {
 }
 
 export function themeRefreshDialog() {
+    let i18n = BgCoverPlugin.i18n;
+    
     showConfirmationDialog({
-        title: window.bgCoverPlugin.i18n.themeOnChangeTitle,
-        message: window.bgCoverPlugin.i18n.themeOnChangeMsg,
-        confirmText: window.bgCoverPlugin.i18n.themeRefresh,
+        title: i18n.themeOnChangeTitle,
+        message: i18n.themeOnChangeMsg,
+        confirmText: i18n.themeRefresh,
         onConfirm: () => {
             // 这里是这个对话框独有的逻辑
             window.location.reload();

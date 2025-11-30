@@ -2,9 +2,11 @@ import {
     Plugin,
     getFrontend,
     getBackend,
+    IObject
 } from "siyuan";
 
 import { confmngr } from './utils/configs';
+// import { configStore } from '@/services/configStore';
 
 import { info, debug} from './utils/logger'
 import { getCurrentThemeInfo} from './utils/theme';
@@ -19,27 +21,25 @@ import * as fileManagerUI from "./ui/fileManager"
 
 export default class BgCoverPlugin extends Plugin {
 
-    public isMobileLayout: boolean;
+    /** 插件的唯一实例 */
+    static instance: BgCoverPlugin;
+
+    public isMobile: boolean;
     public isBrowser: boolean;
-    public isAndroidBackend: boolean;
+    public isAndroid: boolean;
     public htmlThemeNode = document.getElementsByTagName('html')[0];
+    static i18n: IObject;
 
     async onload() {
         const frontEnd = getFrontend();
         const backEnd = getBackend();
 
-        this.isMobileLayout = frontEnd === "mobile" || frontEnd === "browser-mobile";
+        this.isMobile = frontEnd === "mobile" || frontEnd === "browser-mobile";
         this.isBrowser = frontEnd.includes("browser");
-        this.isAndroidBackend = backEnd === "android";
+        this.isAndroid = backEnd === "android";
 
-        window.bgCoverPlugin = {
-            i18n: this.i18n,
-            isMobileLayout: this.isMobileLayout,
-            isBrowser: this.isBrowser,
-            isAndroid: this.isAndroidBackend,
-            isDev: false,
-        };
-        debug(`设置全局变量window.bgCoverPlugin`, window.bgCoverPlugin)
+        // 暴露给 confmngr 实例
+        confmngr.plugin = this;
 
         // 图标的制作参见帮助文档
         this.addIcons(cst.diyIcon.iconLogo);
@@ -108,11 +108,10 @@ export default class BgCoverPlugin extends Plugin {
     }
 
     async onLayoutReady() {
-        confmngr.setParent(this);
         
         //初始化数据
+        // configStore.load();
         await confmngr.load();
-        window.bgCoverPlugin.isDev = confmngr.get('inDev');
 
         bgRender.createBgLayer();
         

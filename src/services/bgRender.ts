@@ -124,8 +124,7 @@ export function changeBgPosition(x: string, y: string) {
 }
 
 export async function applySettings() {
-    window.bgCoverPlugin.isDev = confmngr.get('inDev');
-    
+   
     var bgLayer = document.getElementById('bglayer');
     debug(bgLayer);
 

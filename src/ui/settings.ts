@@ -27,6 +27,8 @@ let cv2 = new CloseCV();
  */
 
 export function openSettingDialog(pluginInstance: BgCoverPlugin) {
+    this.i18n = pluginInstance.i18n
+
     const cacheImgNum = fileManagerUI.getCacheImgNum();
 
     // 当前显示的bgOb信息
@@ -48,8 +50,8 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
     }
 
     const dialog = new Dialog({
-        // title: `${window.bgCoverPlugin.i18n.addTopBarIcon}(v${packageInfo.version}) ${window.bgCoverPlugin.i18n.settingLabel}`,
-        width: window.bgCoverPlugin.isMobileLayout ? "92vw" : "max(520px, 60vw)",
+        // title: `${this.i18n.addTopBarIcon}(v${packageInfo.version}) ${this.i18n.settingLabel}`,
+        width: pluginInstance.isMobile ? "92vw" : "max(520px, 60vw)",
         height: "max(520px, 60vh)",
         content: `
         <div class="fn__flex-1 fn__flex config__panel" style="overflow: hidden;position: relative">
@@ -57,27 +59,27 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
                 <li data-name="config" class="b3-list-item b3-list-item--focus">
                     <svg class="b3-list-item__graphic"><use xlink:href="#iconEdit"></use></svg>
-                    <span class="b3-list-item__text">${window.bgCoverPlugin.i18n.tabConfigLabel}</span>
+                    <span class="b3-list-item__text">${this.i18n.tabConfigLabel}</span>
                 </li>
 
                 <li data-name="assets" class="b3-list-item">
                     <svg class="b3-list-item__graphic"><use xlink:href="#iconImage"></use></svg>
-                    <span class="b3-list-item__text">${window.bgCoverPlugin.i18n.tabAssetsLabel}</span>
+                    <span class="b3-list-item__text">${this.i18n.tabAssetsLabel}</span>
                 </li>
 
                 <li data-name="theme" class="b3-list-item">
                     <svg class="b3-list-item__graphic"><use xlink:href="#iconTheme"></use></svg>
-                    <span class="b3-list-item__text">${window.bgCoverPlugin.i18n.tabThemeLabel}</span>
+                    <span class="b3-list-item__text">${this.i18n.tabThemeLabel}</span>
                 </li>
 
                 <li data-name="advance" class="b3-list-item">
                     <svg class="b3-list-item__graphic"><use xlink:href="#iconRiffCard"></use></svg>
-                    <span class="b3-list-item__text">${window.bgCoverPlugin.i18n.tabAdvanceLabel}</span>
+                    <span class="b3-list-item__text">${this.i18n.tabAdvanceLabel}</span>
                 </li>
 
                 <li data-name="about" class="b3-list-item">
                     <svg class="b3-list-item__graphic"><use xlink:href="#iconInfo"></use></svg>
-                    <span class="b3-list-item__text">${window.bgCoverPlugin.i18n.tabAboutLabel}</span>
+                    <span class="b3-list-item__text">${this.i18n.tabAboutLabel}</span>
                 </li>
 
             </ul>
@@ -93,7 +95,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                     
                     <label class="fn__flex b3-label">
                         <div class="fn__flex-1">
-                            ${window.bgCoverPlugin.i18n.imgPathLabel}
+                            ${this.i18n.imgPathLabel}
                             <div class="b3-label__text">
                                 <code id="crtImgName" class="fn__code">${crtBgObjName}</code>
                             </div>
@@ -116,9 +118,9 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
                     <label class="fn__flex b3-label config__item">
                         <div class="fn__flex-1">
-                            ${window.bgCoverPlugin.i18n.openBackgroundLabel}
+                            ${this.i18n.openBackgroundLabel}
                             <div class="b3-label__text">
-                                ${window.bgCoverPlugin.i18n.openBackgroundLabelDes}
+                                ${this.i18n.openBackgroundLabelDes}
                             </div>
                         </div>
                         <span class="fn__flex-center" />
@@ -135,11 +137,11 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                     // 自动更换背景按钮
                     -->
                     <div class="b3-label">
-                        <div>${window.bgCoverPlugin.i18n.autoRefreshLabel}</div>
+                        <div>${this.i18n.autoRefreshLabel}</div>
                         <div class="fn__hr"></div>
 
                         <div class="fn__flex config__item">
-                            <div class="fn__flex-center fn__flex-1 ft__on-surface">${window.bgCoverPlugin.i18n.autoRefreshDes}</div>
+                            <div class="fn__flex-center fn__flex-1 ft__on-surface">${this.i18n.autoRefreshDes}</div>
                             <span class="fn__space"></span>
                             <input
                                 id="autoRefreshInput"
@@ -152,11 +154,11 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                         <div class="fn__hr"></div>
 
                         <div class="fn__flex config__item">
-                            <div class="fn__flex-center fn__flex-1 ft__on-surface">${window.bgCoverPlugin.i18n.autoRefreshTimeDes}</div>
+                            <div class="fn__flex-center fn__flex-1 ft__on-surface">${this.i18n.autoRefreshTimeDes}</div>
                             <span class="fn__space"></span>
                             <input class="b3-text-field fn__flex-center fn__size200" id="autoRefreshTimeInput" type="number" min="0" max="36000" value="${confmngr.get('autoRefreshTime')}">
                             <span class="fn__space"></span>
-                            <span class="ft__on-surface fn__flex-center">${window.bgCoverPlugin.i18n.autoRefreshTimeUnit}</span>
+                            <span class="ft__on-surface fn__flex-center">${this.i18n.autoRefreshTimeUnit}</span>
                         </div>
 
                     </div>
@@ -167,9 +169,9 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
                     <label class="fn__flex b3-label config__item">
                         <div class="fn__flex-1">
-                            ${window.bgCoverPlugin.i18n.opacityLabel}
+                            ${this.i18n.opacityLabel}
                             <div class="b3-label__text">
-                                ${window.bgCoverPlugin.i18n.opacityDes}
+                                ${this.i18n.opacityDes}
                             </div>
                         </div>
                         <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${confmngr.get('opacity')}">   
@@ -178,9 +180,9 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                     </label>
                     <label class="fn__flex b3-label config__item">
                         <div class="fn__flex-1">
-                            ${window.bgCoverPlugin.i18n.blurLabel}
+                            ${this.i18n.blurLabel}
                             <div class="b3-label__text">
-                                ${window.bgCoverPlugin.i18n.blurDes}
+                                ${this.i18n.blurDes}
                             </div>
                         </div>
                         <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label="${confmngr.get('blur')}">   
@@ -196,9 +198,9 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                     <label class="fn__flex b3-label config__item">
                         <div class="fn__flex-1">
                             <div class="fn__flex">
-                                ${window.bgCoverPlugin.i18n.cacheDirectoryLabel}
+                                ${this.i18n.cacheDirectoryLabel}
                                 <span class="fn__space"></span>
-                                <span style="color: var(--b3-theme-on-surface)">${window.bgCoverPlugin.i18n.cacheDirectoryDes}</span>
+                                <span style="color: var(--b3-theme-on-surface)">${this.i18n.cacheDirectoryDes}</span>
                                 <span id="cacheImgNumElement" class="selected" style="color: rgb(255,0,0)">
                                     [ ${cacheImgNum} ]
                                 </span>
@@ -210,7 +212,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                         <span class="fn__space"></span>
                         <button id="cacheManagerBtn" class="b3-button b3-button--outline fn__flex-center fn__size100" id="appearanceRefresh">
                             <svg><use xlink:href="#iconDatabase"></use></svg>
-                            ${window.bgCoverPlugin.i18n.cacheManager}
+                            ${this.i18n.cacheManager}
                         </button>
                     </label>
                 
@@ -225,7 +227,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                     
                         <div class="fn__flex config-bazaar__title">
 
-                            <div>${window.bgCoverPlugin.i18n.themeAdaptEditorMode0}</div>
+                            <div>${this.i18n.themeAdaptEditorMode0}</div>
                         
                         </div>
 
@@ -241,7 +243,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
                         <div class="fn__flex config-bazaar__title">
 
-                            <div>${window.bgCoverPlugin.i18n.themeAdaptEditorMode1}</div>
+                            <div>${this.i18n.themeAdaptEditorMode1}</div>
                         
                         </div>
 
@@ -269,16 +271,16 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
                     <label class="b3-label config__item fn__flex">
                         <div class="fn__flex-1">
-                        ${window.bgCoverPlugin.i18n.resetConfigLabel}
+                        ${this.i18n.resetConfigLabel}
                             <div class="b3-label__text">
-                                ${window.bgCoverPlugin.i18n.resetConfigDes}<span class="selected" style="color:rgb(255,0,0)">${window.bgCoverPlugin.i18n.resetConfigDes2}
+                                ${this.i18n.resetConfigDes}<span class="selected" style="color:rgb(255,0,0)">${this.i18n.resetConfigDes2}
                                 </span>
                             </div>
                         </div>
                         <span class="fn__space"></span>
                         <button id="resetBtn" class="b3-button b3-button--outline fn__flex-center fn__size100" id="appearanceRefresh">
                             <svg><use xlink:href="#iconRefresh"></use></svg>
-                            ${window.bgCoverPlugin.i18n.reset}
+                            ${this.i18n.reset}
                         </button>
                     </label>
 
@@ -288,13 +290,13 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
                     <label class="fn__flex b3-label config__item">
                         <div class="fn__flex-1">
-                            ${window.bgCoverPlugin.i18n.inDevModeLabel}
+                            ${this.i18n.inDevModeLabel}
                             <div class="b3-label__text">
-                                ${window.bgCoverPlugin.i18n.inDevModeDes} • 
+                                ${this.i18n.inDevModeDes} • 
                                 FrontEnd: <code class="fn__code">${getFrontend()}</code> • BackEnd: <code class="fn__code">${getBackend()}</code> • 
-                                isMobileLayout: <code class="fn__code">${window.bgCoverPlugin.isMobileLayout}</code> • 
-                                isBrowser: <code class="fn__code">${window.bgCoverPlugin.isBrowser}</code> • 
-                                isAndroid: <code class="fn__code">${window.bgCoverPlugin.isAndroid}</code>
+                                isMobileLayout: <code class="fn__code">${pluginInstance.isMobile}</code> • 
+                                isBrowser: <code class="fn__code">${pluginInstance.isBrowser}</code> • 
+                                isAndroid: <code class="fn__code">${pluginInstance.isAndroid}</code>
                             </div>
                         </div>
                         <span class="fn__flex-center" />
@@ -314,7 +316,7 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
 
                     <label class="fn__flex b3-label config__item"> 
                         <div class="fn__flex-1"> 
-                            ${window.bgCoverPlugin.i18n.crtVersion} 
+                            ${this.i18n.crtVersion} 
                             <div class="b3-abel__text"> 
                                 v${cst.packageVersion}
                             </div> 
@@ -326,13 +328,13 @@ export function openSettingDialog(pluginInstance: BgCoverPlugin) {
                     -->
                     <label class="fn__flex b3-label config__item"> 
                         <div class="fn__flex-1"> 
-                            ${window.bgCoverPlugin.i18n.donationTitle} 
+                            ${this.i18n.donationTitle} 
                             <div class="b3-abel__text" style="text-align: center;"> 
                                 <table style="width: 75%; margin-left: auto; margin-right: auto;"> 
                                     <thead> 
                                         <tr> 
-                                            <th>${window.bgCoverPlugin.i18n.donationAlipay}</th> 
-                                            <th>${window.bgCoverPlugin.i18n.donationWechat}</th> 
+                                            <th>${this.i18n.donationAlipay}</th> 
+                                            <th>${this.i18n.donationWechat}</th> 
                                         </tr> 
                                     </thead> 
                                     <tbody> 
@@ -632,7 +634,7 @@ export function generatedisabledThemeElement(){
                 let textSpan = blockLabelItem.querySelector('span.crt_plugin-placeholder') as HTMLElement;
 
                 textSpan.style.setProperty('color', 'var(--b3-theme-primary)');
-                textSpan.textContent += `[${window.bgCoverPlugin.i18n.crtThemeText}]`
+                textSpan.textContent += `[${this.i18n.crtThemeText}]`
             }
 
             /**
@@ -691,7 +693,7 @@ export function opacityShortcut(isAdd:boolean) {
     };
 
     if (opacity > 1 || opacity < 0) {
-        showMessage(`[${window.bgCoverPlugin.i18n.addTopBarIcon}]${window.bgCoverPlugin.i18n.opacityShortcutOverflow}`, 4000, 'info')
+        showMessage(`[${this.i18n.addTopBarIcon}]${this.i18n.opacityShortcutOverflow}`, 4000, 'info')
         return;
     } else {
         confmngr.set('opacity', opacity);
@@ -713,7 +715,7 @@ export function blurShortcut(isAdd:boolean) {
     };
 
     if (blur > 10 || blur < 0) {
-        showMessage(`[${window.bgCoverPlugin.i18n.addTopBarIcon}]${window.bgCoverPlugin.i18n.blurShortcutOverflow}`, 4000, 'info')
+        showMessage(`[${this.i18n.addTopBarIcon}]${this.i18n.blurShortcutOverflow}`, 4000, 'info')
         return;
     } else {
         confmngr.set('blur', blur);
