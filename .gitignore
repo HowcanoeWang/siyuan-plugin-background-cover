@@ -10,3 +10,10 @@ i18n
 *.xcf
 static
 SyncSettings.ffs_gui
+asset
+.agents/references/vscode-background-cover/
+.agents/references/siyuan/
+.agents/references/siyuan-plugin-background-cover/
+.agents/references/plugin-sample/
+.agents/references/plugin-sample-vite-svelte/
+.agents/references/petal/
