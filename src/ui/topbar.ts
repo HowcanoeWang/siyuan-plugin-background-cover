@@ -2,6 +2,7 @@ import {
     showMessage,
     confirm,
     Menu,
+    Dialog,
     getFrontend,
     getBackend,
     IMenuItemOption
@@ -22,6 +23,7 @@ import * as fileManagerUI from "./fileManager";
 import * as settingsUI from "./settings";
 
 import { showNotImplementDialog } from "./notice";
+import { showNoticeDialog } from "./components/dialogs";
 
 let os = new OS();
 
@@ -139,6 +141,13 @@ export async function initTopbar(pluginInstance: BgCoverPlugin) {
             label: `${window.bgCoverPlugin.i18n.settingLabel}`,
             click: () => {
                 settingsUI.openSettingDialog(pluginInstance);
+            }
+        });
+        menu.addItem({
+            icon: "iconCode",
+            label: `${window.bgCoverPlugin.i18n.testWindowFsLabel}`,
+            click: () => {
+                testWindowFs();
             }
         });
 
@@ -291,6 +300,79 @@ export async function addDirectory() {
          // 要上传的数量比较少，直接开始批量上传
         await fileManagerUI.batchUploadImages(fileContainer, true);
     }
+}
+
+async function showFsTestResult(dirPath: string) {
+    const fs = (window as any).fs;
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+    const files = entries.filter((d: any) => d.isFile());
+    const normalizedDir = dirPath.replace(/\\/g, '/');
+
+    const lines: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+        const name = files[i].name;
+        const absPath = normalizedDir.replace(/\/$/, '') + '/' + name;
+        const fileUrl = 'file:///' + absPath.replace(/^\//, '');
+        lines.push(`${i + 1}. ${name}`);
+        lines.push(`   ${fileUrl}`);
+    }
+
+    const output = lines.join('\n');
+    console.log(output);
+
+    showNoticeDialog({
+        title: "window.fs Test Result",
+        message: output.replace(/\n/g, '<br>'),
+    });
+}
+
+export async function testWindowFs() {
+    const fs = (window as any).fs;
+    if (!fs) {
+        showMessage("window.fs is not available", 3000, "error");
+        return;
+    }
+
+    const dialog = new Dialog({
+        title: "Test window.fs",
+        content: `<div style="padding:16px;">
+            <p>Enter folder absolute path:</p>
+            <div class="b3-form__space" style="margin-top:8px;">
+                <input id="testWindowFsInput" class="b3-text-field" type="text"
+                    style="width:100%;padding:6px 10px;border-radius:4px;" />
+            </div>
+            <div style="margin-top:12px;text-align:right;">
+                <button class="b3-button b3-button--cancel" id="testWindowFsCancel">Cancel</button>
+                <button class="b3-button b3-button--text" id="testWindowFsConfirm">Confirm</button>
+            </div>
+        </div>`,
+        width: "480px",
+    });
+
+    const input = dialog.element.querySelector('#testWindowFsInput') as HTMLInputElement;
+    const confirmBtn = dialog.element.querySelector('#testWindowFsConfirm') as HTMLElement;
+    const cancelBtn = dialog.element.querySelector('#testWindowFsCancel') as HTMLElement;
+
+    cancelBtn.addEventListener('click', () => dialog.destroy());
+
+    confirmBtn.addEventListener('click', () => {
+        const dirPath = input.value.trim();
+        if (!dirPath) return;
+
+        try {
+            if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory()) {
+                showMessage(`Invalid path: ${dirPath}`, 3000, "error");
+                dialog.destroy();
+                return;
+            }
+            showFsTestResult(dirPath);
+        } catch (e: any) {
+            showMessage(`Error: ${e.message}`, 3000, "error");
+            console.error(e);
+        }
+
+        dialog.destroy();
+    });
 }
 
 export async function addNoteAssetsDirectory() {

@@ -108,5 +108,6 @@
   "androidLimitNotice": "Due to Android file permissions, images within certain folders cannot be uploaded within the app. Please enable the 'Network Serving' (Settings > About > Network Serving) in the app settings and use a browser to access and upload the images to bypass this restriction.",
   "donationTitle": "Donation",
   "donationAlipay": "Alipay",
-  "donationWechat": "WeChat Pay"
+  "donationWechat": "WeChat Pay",
+  "testWindowFsLabel": "🧪 Test window.fs"
 }
