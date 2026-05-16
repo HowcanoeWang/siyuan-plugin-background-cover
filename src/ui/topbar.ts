@@ -302,9 +302,17 @@ export async function addDirectory() {
     }
 }
 
+function getFsAsync(): any {
+    const w = window as any;
+    if (w.require instanceof Function) {
+        return w.require('fs/promises');
+    }
+    return null;
+}
+
 async function showFsTestResult(dirPath: string) {
-    const fs = (window as any).fs;
-    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+    const fs = getFsAsync();
+    const entries = await fs.readdir(dirPath, { withFileTypes: true });
     const files = entries.filter((d: any) => d.isFile());
     const normalizedDir = dirPath.replace(/\\/g, '/');
 
@@ -321,20 +329,20 @@ async function showFsTestResult(dirPath: string) {
     console.log(output);
 
     showNoticeDialog({
-        title: "window.fs Test Result",
+        title: "require('fs/promises') Test Result",
         message: output.replace(/\n/g, '<br>'),
     });
 }
 
 export async function testWindowFs() {
-    const fs = (window as any).fs;
+    const fs = getFsAsync();
     if (!fs) {
-        showMessage("window.fs is not available", 3000, "error");
+        showMessage("require('fs/promises') is not available (not desktop)", 3000, "error");
         return;
     }
 
     const dialog = new Dialog({
-        title: "Test window.fs",
+        title: "Test require('fs/promises')",
         content: `<div style="padding:16px;">
             <p>Enter folder absolute path:</p>
             <div class="b3-form__space" style="margin-top:8px;">
@@ -355,17 +363,19 @@ export async function testWindowFs() {
 
     cancelBtn.addEventListener('click', () => dialog.destroy());
 
-    confirmBtn.addEventListener('click', () => {
+    confirmBtn.addEventListener('click', async () => {
         const dirPath = input.value.trim();
         if (!dirPath) return;
 
         try {
-            if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory()) {
-                showMessage(`Invalid path: ${dirPath}`, 3000, "error");
+            await fs.access(dirPath);
+            const stat = await fs.stat(dirPath);
+            if (!stat.isDirectory()) {
+                showMessage(`Not a directory: ${dirPath}`, 3000, "error");
                 dialog.destroy();
                 return;
             }
-            showFsTestResult(dirPath);
+            await showFsTestResult(dirPath);
         } catch (e: any) {
             showMessage(`Error: ${e.message}`, 3000, "error");
             console.error(e);

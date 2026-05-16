@@ -109,5 +109,5 @@
   "donationTitle": "捐赠",
   "donationAlipay": "支付宝",
   "donationWechat": "微信支付",
-  "testWindowFsLabel": "🧪 测试 window.fs"
+  "testWindowFsLabel": "🧪 测试 fs/promises"
 }

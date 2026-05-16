@@ -109,5 +109,5 @@
   "donationTitle": "Donation",
   "donationAlipay": "Alipay",
   "donationWechat": "WeChat Pay",
-  "testWindowFsLabel": "🧪 Test window.fs"
+  "testWindowFsLabel": "🧪 Test fs/promises"
 }
