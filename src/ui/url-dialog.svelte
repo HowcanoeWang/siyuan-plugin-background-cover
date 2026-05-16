@@ -12,6 +12,7 @@
     let validExt = $state(false)
     let checking = $state(false)
     let errorMsg = $state("")
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
     const VALID_EXTS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg', '.avif',
         '.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv'])
@@ -22,9 +23,7 @@
         return VALID_EXTS.has(ext)
     }
 
-    async function handleCheck() {
-        const trimmed = url.trim()
-        if (!trimmed) return
+    async function doCheck(trimmed: string) {
         checking = true
         errorMsg = ""
         validExt = false
@@ -59,6 +58,18 @@
         checking = false
     }
 
+    function handleInput() {
+        const trimmed = url.trim()
+        if (!trimmed) {
+            validExt = false
+            errorMsg = ""
+            previewSrc = null
+            return
+        }
+        if (debounceTimer) clearTimeout(debounceTimer)
+        debounceTimer = setTimeout(() => doCheck(trimmed), 500)
+    }
+
     async function handleUpload() {
         const trimmed = url.trim()
         if (!trimmed || !validExt) return
@@ -77,12 +88,13 @@
     }
 </script>
 
-<div style="display: flex; flex-direction: column; gap: 12px; padding: 8px;">
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 8px; width: 100%;">
     <div>
-        <input class="b3-text-field fn__block" type="text"
+        <input class="b3-text-field fn__block" type="text" style="width: 100%;"
             placeholder="https://example.com/background.jpg"
             bind:value={url}
-            onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && handleCheck()}
+            oninput={handleInput}
+            onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && validExt && handleUpload()}
         />
     </div>
 

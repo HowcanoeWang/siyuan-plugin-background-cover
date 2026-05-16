@@ -4,7 +4,9 @@
     import { isDesktop } from "../../utils/fs"
     import { scanSource } from "../../services/sourceManager"
     import { renderImage, renderVideo } from "../../services/bgRender"
+    import { svelteDialog } from "../../libs/dialog"
     import { pluginAssetsDir } from "../../constants"
+    import LocalDirDialog from "../local-dir-dialog.svelte"
     import type { ImageItem } from "../../types"
 
     interface SourceGroup {
@@ -81,24 +83,18 @@
         groups = groups
     }
 
-    function pickLocalFolder() {
-        const input = document.createElement('input')
-        input.type = 'file'
-        input.setAttribute('webkitdirectory', '')
-        input.style.display = 'none'
-        document.body.appendChild(input)
-        input.addEventListener('change', () => {
-            const files = input.files
-            if (files && files.length > 0) {
-                const firstPath = (files[0] as any).path ?? files[0].webkitRelativePath
-                const dir = firstPath.includes('/')
-                    ? firstPath.substring(0, firstPath.lastIndexOf('/'))
-                    : firstPath
-                if (dir) addLocalFolder(dir)
-            }
-            document.body.removeChild(input)
+    function showLocalDirDialog() {
+        svelteDialog({
+            title: "添加本地目录",
+            component: LocalDirDialog,
+            width: "520px",
+            height: "auto",
+            props: {
+                onConfirm: (path: string) => {
+                    addLocalFolder(path)
+                },
+            },
         })
-        input.click()
     }
 
     function addLocalFolder(path: string) {
@@ -183,7 +179,7 @@
 
             <div class="fn__flex" style="padding: 8px 0;">
                 {#if isDesktop()}
-                    <button class="b3-button b3-button--outline" onclick={pickLocalFolder}>
+                    <button class="b3-button b3-button--outline" onclick={showLocalDirDialog}>
                         + 添加本地目录
                     </button>
                 {/if}

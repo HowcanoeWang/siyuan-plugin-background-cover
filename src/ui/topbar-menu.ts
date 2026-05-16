@@ -1,8 +1,10 @@
-import { Menu, getFrontend } from "siyuan"
+import { Menu, getFrontend, fetchPost } from "siyuan"
 import { configStore } from "../stores/config"
 import { isDesktop } from "../utils/fs"
+import { getFileUrl } from "../utils/fs"
 import { svelteDialog } from "../libs/dialog"
 import UrlDialog from "./url-dialog.svelte"
+import LocalDirDialog from "./local-dir-dialog.svelte"
 
 interface MenuCallbacks {
     onOpenSettings: (tab?: string) => void
@@ -18,38 +20,81 @@ export function buildTopBarMenu(
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
     const isMobile = getFrontend() === "mobile" || getFrontend() === "browser-mobile"
 
-    function pickLocalFolder(callback: (dir: string) => void) {
-        const input = document.createElement('input')
-        input.type = 'file'
-        input.setAttribute('webkitdirectory', '')
-        input.style.display = 'none'
-        document.body.appendChild(input)
-        input.addEventListener('change', () => {
-            const files = input.files
-            if (files && files.length > 0) {
-                const firstPath = (files[0] as any).path ?? files[0].webkitRelativePath
-                const dir = firstPath.includes('/')
-                    ? firstPath.substring(0, firstPath.lastIndexOf('/'))
-                    : firstPath
-                callback(dir)
-            }
-            document.body.removeChild(input)
+    function showLocalDirDialog() {
+        svelteDialog({
+            title: "添加本地目录",
+            component: LocalDirDialog,
+            width: "520px",
+            height: "auto",
+            props: {
+                onConfirm: (path: string) => {
+                    const folders = [...configStore.get("localFolders"), path]
+                    configStore.set("localFolders", folders)
+                    configStore.save()
+                    cb.onOpenSettings("sources")
+                },
+            },
         })
-        input.click()
     }
 
-    function pickMultipleFiles(callback: (files: FileList) => void) {
+    function pickMultipleFiles() {
         const input = document.createElement('input')
         input.type = 'file'
         input.multiple = true
         input.accept = 'image/*,video/*'
         input.style.display = 'none'
         document.body.appendChild(input)
-        input.addEventListener('change', () => {
-            if (input.files && input.files.length > 0) {
-                callback(input.files)
+        input.addEventListener('change', async () => {
+            const files = input.files
+            if (!files || files.length === 0) {
+                document.body.removeChild(input)
+                return
             }
+
+            let lastUrl = ""
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i]
+                try {
+                    const dataUrl = await new Promise<string>((resolve, reject) => {
+                        const reader = new FileReader()
+                        reader.onload = () => resolve(reader.result as string)
+                        reader.onerror = () => reject(reader.error)
+                        reader.readAsDataURL(file)
+                    })
+
+                    await new Promise<void>((resolve) => {
+                        fetchPost("/api/file/putFile", {
+                            path: `data/public/siyuan-plugin-background-cover/${file.name}`,
+                            file: dataUrl,
+                        }, (res: any) => {
+                            if (res.code === 0) {
+                                lastUrl = getFileUrl(
+                                    `data/public/siyuan-plugin-background-cover/${file.name}`,
+                                    'upload'
+                                )
+                            }
+                            resolve()
+                        })
+                    })
+                } catch (e) {
+                    console.warn('[topbar-menu] upload failed:', file.name, e)
+                }
+            }
+
+            if (lastUrl) {
+                configStore.set("currentFile", lastUrl)
+                configStore.save()
+                const { renderImage, renderVideo } = await import("../services/bgRender")
+                if (lastUrl.match(/\.(mp4|webm|ogg|mov|avi|mkv)$/i)) {
+                    renderVideo(lastUrl)
+                } else {
+                    renderImage(lastUrl)
+                }
+            }
+
             document.body.removeChild(input)
+            cb.onOpenSettings("sources")
         })
         input.click()
     }
@@ -74,52 +119,14 @@ export function buildTopBarMenu(
             items.push({
                 icon: "iconFolder",
                 label: "添加本地目录",
-                click: () => {
-                    pickLocalFolder((dir: string) => {
-                        const folders = [...configStore.get("localFolders"), dir]
-                        configStore.set("localFolders", folders)
-                        configStore.save()
-                        cb.onOpenSettings("sources")
-                    })
-                },
+                click: showLocalDirDialog,
             })
         }
         items.push(
             {
                 icon: "iconImage",
                 label: "多个本地背景资源",
-                click: () => {
-                    pickMultipleFiles(async (files: FileList) => {
-                        for (let i = 0; i < files.length; i++) {
-                            const file = files[i]
-                            const fsp = (window as any).require?.('fs/promises')
-                            if (isDesktop() && fsp && (file as any).path) {
-                                try {
-                                    const srcPath = (file as any).path
-                                    const wsDir = (window as any).siyuan?.config?.system?.workspaceDir ?? ''
-                                    const dest = `${wsDir}/data/public/siyuan-plugin-background-cover/${file.name}`
-                                    await fsp.copyFile(srcPath, dest)
-                                } catch (e) {
-                                    console.warn('[topbar-menu] copyFile failed:', e)
-                                }
-                            } else {
-                                const reader = new FileReader()
-                                await new Promise<void>((resolve) => {
-                                    reader.onload = () => {
-                                const fetchPost = (window as any).fetchPost
-                                fetchPost?.('/api/file/putFile', {
-                                            path: `data/public/siyuan-plugin-background-cover/${file.name}`,
-                                            file: reader.result,
-                                        }, () => resolve())
-                                    }
-                                    reader.onerror = () => resolve()
-                                    reader.readAsDataURL(file)
-                                })
-                            }
-                        }
-                        cb.onOpenSettings("sources")
-                    })
-                },
+                click: pickMultipleFiles,
             },
             {
                 icon: "iconLink",
