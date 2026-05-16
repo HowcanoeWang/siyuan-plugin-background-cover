@@ -27,8 +27,15 @@ if (targetDir === '') {
             targetDir = env;
             log(`\tGot target directory from environment variable "SIYUAN_PLUGIN_DIR": ${targetDir}`);
         } else {
-            error('\tCan not get SiYuan directory from environment variable "SIYUAN_PLUGIN_DIR", failed!');
-            process.exit(1);
+            log('>>> Try to visit environment variable "SIYUANDEV"....');
+            let devEnv = process.env?.SIYUANDEV;
+            if (devEnv) {
+                targetDir = `${devEnv}/data/plugins`;
+                log(`\tGot target directory from environment variable "SIYUANDEV": ${targetDir}`);
+            } else {
+                error('\tCan not get SiYuan directory from environment variable, failed!');
+                process.exit(1);
+            }
         }
     } else {
         targetDir = await chooseTarget(res);

@@ -21,8 +21,15 @@ if (targetDir === '') {
     let res = await getSiYuanDir();
 
     if (res === null || res === undefined || res.length === 0) {
-        error('>>> Can not get SiYuan directory automatically');
-        process.exit(1);
+        log('>>> Try to visit environment variable "SIYUANDEV"....');
+        let devEnv = process.env?.SIYUANDEV;
+        if (devEnv) {
+            targetDir = `${devEnv}/data/plugins`;
+            log(`\tGot target directory from environment variable "SIYUANDEV": ${targetDir}`);
+        } else {
+            error('>>> Can not get SiYuan directory automatically');
+            process.exit(1);
+        }
     } else {
         targetDir = await chooseTarget(res);
     }
