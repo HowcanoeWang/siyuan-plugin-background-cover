@@ -30,10 +30,9 @@
 │       ├── en_US.json                    [修改] 精简至 Phase 1 需要的最小 keys
 │       └── zh_CN.json                    [修改] 同上
 │
-├── scripts/                              [修改] 替换旧 copy2dev.js
-│   ├── make_dev_link.js                  [新建] 创建 dev 符号链接
-│   ├── make_install.js                   [新建] 复制 dist/ 到插件目录
-│   └── utils.js                          [新建] 通用工具函数
+├── scripts/                           # 开发辅助脚本
+│   ├── copy2dev.js                   # 构建后自动复制到思源插件目录（开发时使用）
+│   └── readme.md                     # 说明如何配置环境变量，让buildd后的文件自动复制到思源插件目录进行测试
 │
 ├── src/                                  [修改] 新架构目录
 │   ├── index.ts                          [修改] Plugin 类骨架 (≤80行)
@@ -57,7 +56,6 @@
 ```
 删除 webpack.config.js
 删除 src/i18n/ (已迁移至 public/i18n/)
-删除 scripts/copy2dev.js (替代为 scripts/make_dev_link.js)
 删除 src/services/ (Phase 1 不需要，后续重建)
 删除 src/utils/ (Phase 1 不需要，后续重建)
 删除 src/ui/ 旧纯 TS 文件 (后续 Svelte 替代)
@@ -442,23 +440,7 @@ export default {
 
 **说明**：因为使用的是 JSON 格式（非 YAML），必须小心确保 JSON 中没有尾随逗号，且键名完全匹配旧版 `index.ts:50-101` 中 `addCommand` 的 `langKey` 参数。
 
-### Step 8: 创建 scripts/ — makelink / makeinstall 脚本
-
-直接复制 `plugin-sample-vite-svelte` 的脚本：
-
-| 文件 | 来源 | 用途 |
-|------|------|------|
-| `scripts/make_dev_link.js` | `plugin-sample-vite-svelte/scripts/make_dev_link.js:1-66` | 将 `dev/` 符号链接到思源插件目录 |
-| `scripts/make_install.js` | `plugin-sample-vite-svelte/scripts/make_install.js:1-57` | 将 `dist/` 复制到思源插件目录 |
-| `scripts/utils.js` | `plugin-sample-vite-svelte/scripts/utils.js:1-182` | 共享工具（SiYuan 工作空间探测、目录复制、符号链接） |
-
-**关键点**：
-- `make_dev_link.js:48` — `dev/` 目录是 dev 构建的输出
-- `make_install.js:40` — `dist/` 目录是 production 构建的输出
-- `utils.js:120-137` — `getThisPluginName()` 从 `plugin.json` 读取 name 字段
-- `utils.js:160-167` — `makeSymbolicLink()` 使用 `fs.symlinkSync(src, target, 'dir')`（Go 1.23+ 兼容）
-
-### Step 9: src/index.ts — Plugin 类骨架
+### Step 8: src/index.ts — Plugin 类骨架
 
 以 `plugin-sample-vite-svelte/src/index.ts:45-398` 为基础，结合旧 `src/index.ts:20-163` 的核心逻辑。
 
@@ -584,27 +566,27 @@ export default class BgCoverPlugin extends Plugin {
 - `addMenu` 使用 `Menu` 类而非手写 HTML（与旧 `src/index.ts` 一致），参考 `plugin-sample-vite-svelte/src/index.ts:493-1008`
 - `openSetting()` 直接调用 `svelteDialog()` 封装（参考 `plugin-sample-vite-svelte/src/index.ts:419-441`）
 
-### Step 10: src/libs/setting-utils.ts — 官方 Setting 工具
+### Step 9: src/libs/setting-utils.ts — 官方 Setting 工具
 
 直接复制 `plugin-sample-vite-svelte/src/libs/setting-utils.ts:1-397`，无需修改。
 
 这个文件是思源官方提供的 Setting 面板工具类，Phase 1 仅引用其基本能力（init → load → addItem → dump），Phase 2 后将逐步替换为 `setLocalStorageVal` 模式。
 
-### Step 11: src/libs/dialog.ts — Svelte 对话框封装
+### Step 10: src/libs/dialog.ts — Svelte 对话框封装
 
 直接复制 `plugin-sample-vite-svelte/src/libs/dialog.ts:1-177`，无需修改。
 
 提供 `svelteDialog()` / `confirmDialog()` / `simpleDialog()` 等封装，在 `index.ts:96` 中使用。
 
-### Step 12: src/libs/index.d.ts — SettingUtils 类型定义
+### Step 11: src/libs/index.d.ts — SettingUtils 类型定义
 
 直接复制 `plugin-sample-vite-svelte/src/libs/index.d.ts:1-43`，无需修改。
 
-### Step 13: src/types/index.d.ts — SiYuan 全局类型补充
+### Step 12: src/types/index.d.ts — SiYuan 全局类型补充
 
 直接复制 `plugin-sample-vite-svelte/src/types/index.d.ts:1-106`，无需修改。
 
-### Step 14: 占位 Svelte 组件
+### Step 13: 占位 Svelte 组件
 
 ```svelte
 <!-- src/ui/setting-panel.svelte -->
@@ -624,7 +606,7 @@ export default class BgCoverPlugin extends Plugin {
 </div>
 ```
 
-### Step 15: vitest.config.ts + vitest.setup.ts
+### Step 14: vitest.config.ts + vitest.setup.ts
 
 ```typescript
 // vitest.config.ts
@@ -758,8 +740,6 @@ SyncSettings.ffs_gui
 | `pnpm install` | 安装所有依赖 | `node_modules/` |
 | `pnpm dev` | 开发模式构建 + watch + livereload | `dev/` (含 sourcemap inline) |
 | `pnpm build` | 生产模式构建 + zip 打包 | `dist/` + `package.zip` |
-| `pnpm make-link` | 符号链接 `dev/` → 思源插件目录 | 需思源在后台运行 |
-| `pnpm make-install` | 构建 + 复制 `dist/` → 思源插件目录 | 需思源在后台运行 |
 | `pnpm test` | 运行全部测试 | 终端输出 |
 | `pnpm test:watch` | 测试监听模式 | 终端持续输出 |
 | `pnpm test:coverage` | 测试覆盖率 | 终端 + `coverage/` |
@@ -775,7 +755,6 @@ SyncSettings.ffs_gui
 | **vitest 冒烟测试** | `pnpm test` | `index.test.ts` 通过：模块导入、类导出验证 |
 | **dev watch 工作** | 修改 `src/index.ts` 后观察终端 | Vite 自动 rebuild |
 | **livereload 工作** | 修改后检查浏览器是否自动重载 | 思源界面自动刷新 |
-| **插件加载到思源** | `pnpm make-link` → 重启思源 | 顶栏出现图标 `iconCoverBg` |
 | **顶栏菜单可打开** | 点击顶栏图标 | 弹出 Menu（含"设置"和占位项） |
 | **设置面板可渲染** | 点击"设置"菜单项 | 弹出 Dialog，显示占位内容 |
 | **plugin.json 有效** | 思源集市识别 | `backends` / `frontends` / `minAppVersion` 格式正确 |

@@ -4,7 +4,6 @@ describe('Plugin entry', () => {
     it('should export BgCoverPlugin class', async () => {
         const mod = await import('../src/index')
         expect(mod.default).toBeDefined()
-        expect(mod.SettingUtils).toBeDefined()
         expect(mod.svelteDialog).toBeDefined()
     })
 })

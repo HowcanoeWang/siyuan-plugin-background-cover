@@ -378,6 +378,33 @@ src/ui/
 
 ### 4.4 `settings/sources-tab.svelte` — 资源池 tab
 
+实现文件树的选项，即@.agents/plans/20260514_refactor_v1.md 中Line353-374的那种面板设置
+
+```
+全局设置  ┌───────────────── 66% width ───────────────────────┐────────33% width──────
+         │                                                                              │       图片/视频缩略图预览区 
+数据管理->│ 📁 插件缓存 ( 图片: 73  视频: 2  )                              [📂定位] [🗑 清空]│              
+         │    ├── 🖼 sunset.jpg        [设为背景] [删除]                                │
+屏蔽主题  │    ├── 🎬 waterfall.mp4     [设为背景] [删除]                                │
+         │    └── 🖼 mountain.jpg      [设为背景] [删除]                                │
+高级设置  │                                                                              │
+         │ 📁 assets/wallpaper（图片: 12  视频: 0 ）                     [📂定位] [✕ 移除] │───────────────────
+关于      │    ├── 🖼 beach.jpg          [设为背景]                                     │
+         │    └── 🖼 forest.jpg         [设为背景]                                      │   图片信息展示区，如分辨率，文件大小，创建时间等
+         │                                                                              │
+         │ 📁 /home/user/Pictures/nature （图片: 45  视频: 1 ）           [📂定位] [✕ 移除]│
+         │    ├── 🖼 lake.jpg           [设为背景]                                      │
+         │    └── 🎬 timelapse.mp4      [设为背景]                                     │
+         │                                                                              │
+         │ [+ 添加本地目录] [+ 添加 assets 目录]                                           │
+         ├────────────────────────────────────────────────────────────────── 
+
+鼠标悬浮图片/视频文件名时 → 缩略图预览 (fetch blob + createObjectURL)
+文件夹状态不可访问时 → 行变灰，checkbox 不可用，仅 [✕ 移除] 可用
+```
+
+文件树可以参考下面思源的 设置-快捷键-b3-label file-tree config-keymap类，来更符合思源笔记整体UI
+
 ```svelte
 <script lang="ts">
     import { onMount } from "svelte";
