@@ -20,8 +20,9 @@
     let groups = $state<SourceGroup[]>([])
     let showLocalInput = $state(false)
     let localInputPath = $state("")
-    let hoveredUrl = $state<string | null>(null)
-    let hoveredSrc = $state<string | null>(null)
+    let selectedItem = $state<ImageItem | null>(null)
+    let previewSrc = $state<string | null>(null)
+    let prevUrl = $state<string | null>(null)
 
     onMount(() => {
         refreshAll()
@@ -112,6 +113,7 @@
                 configStore.save()
             }
         }
+        clearPreview()
         refreshAll()
     }
 
@@ -125,123 +127,162 @@
         }
     }
 
-    function handleMouseEnter(url: string) {
-        hoveredUrl = url
+    function selectPreview(item: ImageItem) {
+        if (item.type !== 'image') return
+        if (selectedItem?.url === item.url) {
+            clearPreview()
+            return
+        }
+        selectedItem = item
+        loadPreview(item.url)
+    }
+
+    function clearPreview() {
+        if (prevUrl) URL.revokeObjectURL(prevUrl)
+        selectedItem = null
+        previewSrc = null
+        prevUrl = null
+    }
+
+    function loadPreview(url: string) {
+        if (prevUrl) URL.revokeObjectURL(prevUrl)
+        prevUrl = null
+        previewSrc = null
         fetch(url)
             .then(r => r.blob())
             .then(b => {
-                if (hoveredUrl === url) {
-                    if (hoveredSrc) URL.revokeObjectURL(hoveredSrc)
-                    hoveredSrc = URL.createObjectURL(b)
+                if (selectedItem?.url === url) {
+                    prevUrl = URL.createObjectURL(b)
+                    previewSrc = prevUrl
                 }
             })
             .catch(() => {})
     }
-
-    function handleMouseLeave() {
-        hoveredUrl = null
-    }
 </script>
 
-<div class="config__tab-container" data-name="sources">
+<div class="config__tab-container" data-name="sources" style="height: 100%; display: flex; flex-direction: column;">
 
-    <div class="b3-list b3-list--border b3-list--background">
-        {#each groups as group, i}
-            {@const imgCount = group.files.filter(f => f.type === 'image').length}
-            {@const vidCount = group.files.filter(f => f.type === 'video').length}
+    <div class="config-assets" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0;">
 
-            <div
-                class="b3-list-item b3-list-item--narrow toggle"
-                class:b3-list-item--focus={!group.collapsed}
-                style:opacity={group.inaccessible ? "0.45" : "1"}
-                onclick={() => toggleGroup(i)}
-                onkeydown={undefined}
-                role="button"
-                tabindex="0"
-            >
-                <span class="b3-list-item__toggle b3-list-item__toggle--hl">
-                    <svg class="b3-list-item__arrow" class:b3-list-item__arrow--open={!group.collapsed}>
-                        <use xlink:href="#iconRight"></use>
-                    </svg>
-                </span>
-                <span class="b3-list-item__text fn__flex-1">
-                    {group.label}
-                    <span style="color: var(--b3-theme-on-surface); font-size: 0.85em;">
-                        ( 图片: {imgCount}  视频: {vidCount} )
-                    </span>
-                </span>
-                {#if group.removable}
-                    <span class="b3-list-item__action"
-                        onclick={(e: MouseEvent) => { e.stopPropagation(); removeGroup(i) }}
+        <div class="config-assets__list" style="flex: 0 0 55%; overflow-y: auto;">
+
+            <div class="fn__flex" style="padding: 8px 0;">
+                {#if isDesktop()}
+                    {#if showLocalInput}
+                        <div class="fn__flex" style="gap: 8px; flex: 1;">
+                            <input class="b3-text-field" type="text" style="flex: 1;"
+                                placeholder="/home/user/Pictures/wallpaper"
+                                bind:value={localInputPath}
+                                onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && addLocalFolder()}
+                            />
+                            <button class="b3-button b3-button--outline" onclick={addLocalFolder}>确认</button>
+                            <button class="b3-button b3-button--cancel" onclick={() => showLocalInput = false}>取消</button>
+                        </div>
+                    {:else}
+                        <button class="b3-button b3-button--outline" onclick={() => showLocalInput = true}>
+                            + 添加本地目录
+                        </button>
+                    {/if}
+                {/if}
+            </div>
+
+            <div class="b3-list b3-list--border b3-list--background">
+                {#each groups as group, i}
+                    {@const imgCount = group.files.filter(f => f.type === 'image').length}
+                    {@const vidCount = group.files.filter(f => f.type === 'video').length}
+
+                    <div
+                        class="b3-list-item b3-list-item--narrow toggle"
+                        class:b3-list-item--focus={!group.collapsed}
+                        style:opacity={group.inaccessible ? "0.45" : "1"}
+                        onclick={() => toggleGroup(i)}
                         onkeydown={undefined}
                         role="button"
-                        tabindex="0">✕ 移除</span>
-                {/if}
-                {#if group.inaccessible}
-                    <span style="color: var(--b3-theme-error); font-size: 0.85em; margin-left: 8px;">不可访问</span>
-                {/if}
-            </div>
-
-            {#if !group.collapsed}
-                <div class="b3-list__panel">
-                    {#each group.files as file}
-                        <label
-                            class="b3-list-item b3-list-item--narrow b3-list-item--hide-action"
-                            onmouseenter={() => handleMouseEnter(file.url)}
-                            onmouseleave={handleMouseLeave}
-                        >
-                            <span class="b3-list-item__text fn__flex-1">
-                                {#if file.type === 'video'}🎬{:else}🖼{/if} {file.name}
+                        tabindex="0"
+                    >
+                        <span class="b3-list-item__toggle b3-list-item__toggle--hl">
+                            <svg class="b3-list-item__arrow" class:b3-list-item__arrow--open={!group.collapsed}>
+                                <use xlink:href="#iconRight"></use>
+                            </svg>
+                        </span>
+                        <span class="b3-list-item__text fn__flex-1">
+                            {group.label}
+                            <span style="color: var(--b3-theme-on-surface); font-size: 0.85em;">
+                                ( 图片: {imgCount}  视频: {vidCount} )
                             </span>
-                            <span class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="设为背景"
-                                onclick={(e: MouseEvent) => { e.preventDefault(); setAsBackground(file) }}
+                        </span>
+                        {#if group.removable}
+                            <span class="b3-list-item__action"
+                                onclick={(e: MouseEvent) => { e.stopPropagation(); removeGroup(i) }}
                                 onkeydown={undefined}
                                 role="button"
-                                tabindex="0">
-                                <svg><use xlink:href="#iconEye"></use></svg>
-                            </span>
-                        </label>
-                    {/each}
-                    {#if group.files.length === 0}
-                        <div class="b3-list-item b3-list-item--narrow" style="color: var(--b3-theme-on-surface);">
-                            <span class="b3-list-item__text">暂无文件</span>
+                                tabindex="0">✕ 移除</span>
+                        {/if}
+                        {#if group.inaccessible}
+                            <span style="color: var(--b3-theme-error); font-size: 0.85em; margin-left: 8px;">不可访问</span>
+                        {/if}
+                    </div>
+
+                    {#if !group.collapsed}
+                        <div class="b3-list__panel">
+                            {#each group.files as file}
+                                <label
+                                    class="b3-list-item b3-list-item--narrow b3-list-item--hide-action"
+                                    class:b3-list-item--focus={selectedItem?.url === file.url}
+                                >
+                                    <span class="b3-list-item__text fn__flex-1"
+                                        onmouseover={() => selectPreview(file)}
+                                        onkeydown={undefined}
+                                        role="button"
+                                        tabindex="0">
+                                        {#if file.type === 'video'}🎬{:else}🖼{/if} {file.name}
+                                    </span>
+                                    <span class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="设为背景"
+                                        onclick={(e: MouseEvent) => { e.preventDefault(); setAsBackground(file) }}
+                                        onkeydown={undefined}
+                                        role="button"
+                                        tabindex="0">
+                                        <svg><use xlink:href="#iconEye"></use></svg>
+                                    </span>
+                                </label>
+                            {/each}
+                            {#if group.files.length === 0}
+                                <div class="b3-list-item b3-list-item--narrow" style="color: var(--b3-theme-on-surface);">
+                                    <span class="b3-list-item__text">暂无文件</span>
+                                </div>
+                            {/if}
                         </div>
                     {/if}
-                </div>
-            {/if}
-        {/each}
+                {/each}
 
-        {#if groups.length === 0}
-            <div class="b3-list-item" style="color: var(--b3-theme-on-surface); padding: 16px; text-align: center;">
-                尚未添加任何图片源，请使用下方按钮添加
+                {#if groups.length === 0}
+                    <div class="b3-list-item" style="color: var(--b3-theme-on-surface); padding: 16px; text-align: center;">
+                        尚未添加任何图片源，请使用下方按钮添加
+                    </div>
+                {/if}
             </div>
-        {/if}
-    </div>
 
-    <div class="fn__flex" style="gap: 8px; padding: 12px 0;">
-        {#if isDesktop()}
-            {#if showLocalInput}
-                <div class="fn__flex" style="gap: 8px; flex: 1;">
-                    <input class="b3-text-field" type="text" style="flex: 1;"
-                        placeholder="/home/user/Pictures/wallpaper"
-                        bind:value={localInputPath}
-                        onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && addLocalFolder()}
-                    />
-                    <button class="b3-button b3-button--outline" onclick={addLocalFolder}>确认</button>
-                    <button class="b3-button b3-button--cancel" onclick={() => showLocalInput = false}>取消</button>
+
+        </div>
+
+        <div class="fn__hr--b"></div>
+
+        <div class="config-assets__preview" style="flex: 0 0 45%; display: flex; align-items: center; justify-content: center; padding: 8px; overflow: hidden; background: var(--b3-theme-surface);">
+            {#if previewSrc}
+                <img src={previewSrc} alt="preview" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px;" />
+            {:else if selectedItem && selectedItem.type === 'video'}
+                <div style="color: var(--b3-theme-on-surface); text-align: center;">
+                    <div style="font-size: 2em;">🎬</div>
+                    <div>{selectedItem.name}</div>
+                    <div style="font-size: 0.85em; margin-top: 4px;">视频文件 — 不支持预览</div>
                 </div>
             {:else}
-                <button class="b3-button b3-button--outline" onclick={() => showLocalInput = true}>
-                    + 添加本地目录
-                </button>
+                <div style="color: var(--b3-theme-on-surface); text-align: center;">
+                    <div style="font-size: 2em;">🖼</div>
+                    <div>点击文件列表中图片以预览</div>
+                </div>
             {/if}
-        {/if}
+        </div>
     </div>
 
-    {#if hoveredSrc}
-        <div style="position: fixed; bottom: 16px; right: 16px; z-index: 9999; border-radius: 6px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
-            <img src={hoveredSrc} alt="preview"
-                style="max-width: 320px; max-height: 240px; display: block;" />
-        </div>
-    {/if}
 </div>
