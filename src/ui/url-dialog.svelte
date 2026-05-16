@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { downloadUrl } from "../utils/fs"
+    import { downloadUrl } from "../utils/api"
 
     interface Props {
         onSuccess?: () => void

@@ -6,8 +6,16 @@ vi.mock("siyuan", () => ({
     }),
 }))
 
-import { fetchPost } from "siyuan"
-import { isDesktop, readDir, getFileUrl, fileExists } from "../../src/utils/fs"
+vi.mock("../../src/stores/config", () => ({
+    configStore: {
+        get: vi.fn((key: string) => {
+            if (key === "localFolders") return ["/fake/path", "/nonexistent"]
+            return null
+        }),
+    },
+}))
+
+import { isDesktop, readLocalDir, getFileUrl, fileExists } from "../../src/utils/fs"
 
 describe("fs.ts - isDesktop", () => {
     beforeEach(() => {
@@ -34,13 +42,12 @@ describe("fs.ts - isDesktop", () => {
     })
 })
 
-describe("fs.ts - readDir", () => {
+describe("fs.ts - readLocalDir", () => {
     beforeEach(() => {
         delete (window as any).require
-        vi.mocked(fetchPost).mockClear()
     })
 
-    it("desktop: 返回纯文件列表，过滤目录", async () => {
+    it("返回纯文件列表，过滤目录", async () => {
         (window as any).require = vi.fn((id: string) => {
             if (id === 'fs/promises') return {
                 readdir: vi.fn().mockResolvedValue([
@@ -52,11 +59,11 @@ describe("fs.ts - readDir", () => {
             return undefined
         })
 
-        const files = await readDir('/fake/path')
+        const files = await readLocalDir('/fake/path')
         expect(files).toEqual(['a.jpg', 'b.png'])
     })
 
-    it("desktop: readdir 抛出时返回 []", async () => {
+    it("readdir 抛出时返回 []", async () => {
         (window as any).require = vi.fn((id: string) => {
             if (id === 'fs/promises') return {
                 readdir: vi.fn().mockRejectedValue(new Error('ENOENT')),
@@ -64,36 +71,7 @@ describe("fs.ts - readDir", () => {
             return undefined
         })
 
-        const files = await readDir('/nonexistent')
-        expect(files).toEqual([])
-    })
-
-    it("fallback: fetchPost readDir 返回文件列表", async () => {
-        vi.mocked(fetchPost).mockImplementationOnce(
-            (_url: string, _data: any, callback: (response: any) => void) => {
-                callback({
-                    code: 0,
-                    data: [
-                        { isDir: true, name: 'subfolder' },
-                        { isDir: false, name: 'img.jpg' },
-                        { isDir: false, name: 'vid.mp4' },
-                    ],
-                })
-            }
-        )
-
-        const files = await readDir('data/public/plugin')
-        expect(files).toEqual(['img.jpg', 'vid.mp4'])
-    })
-
-    it("fallback: fetchPost 返回错误时返回 []", async () => {
-        vi.mocked(fetchPost).mockImplementationOnce(
-            (_url: string, _data: any, callback: (response: any) => void) => {
-                callback({ code: -1, msg: 'error' })
-            }
-        )
-
-        const files = await readDir('data/public/bad')
+        const files = await readLocalDir('/nonexistent')
         expect(files).toEqual([])
     })
 })

@@ -1,4 +1,5 @@
-import { isDesktop, readDir, getFileUrl } from '../utils/fs'
+import { isDesktop, readLocalDir, getFileUrl } from '../utils/fs'
+import { readDir as readDirKernel } from '../utils/api'
 import { classifyFileType } from '../types'
 import type { ImageItem } from '../types'
 import { pluginAssetsDir } from '../constants'
@@ -46,7 +47,9 @@ export async function scanSource(
     type: 'local' | 'upload' | 'assets',
     path: string,
 ): Promise<ImageItem[]> {
-    const filenames = await readDir(path)
+    const filenames = type === 'local'
+        ? await readLocalDir(path)
+        : await readDirKernel(path)
 
     const items: ImageItem[] = []
     const skipped: string[] = []
@@ -106,7 +109,7 @@ export async function validatePath(path: string): Promise<boolean> {
     }
 
     try {
-        await readDir(path)
+        await readDirKernel(path)
         return true
     } catch {
         return false
