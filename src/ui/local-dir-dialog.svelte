@@ -73,10 +73,10 @@
     }
 </script>
 
-<div style="display: flex; flex-direction: column; gap: 12px; padding: 8px;">
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 8px; width: 100%;">
     <div class="b3-label">输入本地文件夹的绝对路径</div>
 
-    <input class="b3-text-field fn__block" type="text"
+    <input class="b3-text-field fn__block" type="text" style="width: 100%;"
         placeholder="/home/user/Pictures/wallpaper"
         bind:value={pathInput}
         oninput={handleInput}
@@ -101,8 +101,7 @@
         {/if}
     </div>
 
-    <div class="fn__flex" style="justify-content: flex-end; gap: 8px;">
-        <button class="b3-button b3-button--cancel">取消</button>
+    <div class="fn__flex" style="justify-content: flex-end;">
         <button class="b3-button b3-button--text"
             disabled={!validDir}
             onclick={confirm}>

@@ -94,17 +94,14 @@ export async function downloadUrl(url: string, destPath: string): Promise<boolea
         }
 
         return new Promise((resolve) => {
-            const reader = new FileReader()
-            reader.onload = () => {
-                fetchPost("/api/file/putFile", {
-                    path: destPath,
-                    file: reader.result,
-                }, (res: any) => {
-                    resolve(res.code === 0)
-                })
-            }
-            reader.onerror = () => resolve(false)
-            reader.readAsDataURL(blob)
+            const formData = new FormData()
+            formData.append("path", destPath)
+            formData.append("isDir", "false")
+            formData.append("modTime", Math.floor(Date.now() / 1000).toString())
+            formData.append("file", blob)
+            fetchPost("/api/file/putFile", formData, (res: any) => {
+                resolve(res.code === 0)
+            })
         })
     } catch (err: any) {
         console.debug(`${ENGINE} downloadUrl 失败: url=${url}, err=${err.message}`)

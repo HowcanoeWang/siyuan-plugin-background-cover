@@ -56,18 +56,14 @@ export function buildTopBarMenu(
             for (let i = 0; i < files.length; i++) {
                 const file = files[i]
                 try {
-                    const dataUrl = await new Promise<string>((resolve, reject) => {
-                        const reader = new FileReader()
-                        reader.onload = () => resolve(reader.result as string)
-                        reader.onerror = () => reject(reader.error)
-                        reader.readAsDataURL(file)
-                    })
+                    const formData = new FormData()
+                    formData.append("path", `data/public/siyuan-plugin-background-cover/${file.name}`)
+                    formData.append("isDir", "false")
+                    formData.append("modTime", Math.floor(Date.now() / 1000).toString())
+                    formData.append("file", file)
 
                     await new Promise<void>((resolve) => {
-                        fetchPost("/api/file/putFile", {
-                            path: `data/public/siyuan-plugin-background-cover/${file.name}`,
-                            file: dataUrl,
-                        }, (res: any) => {
+                        fetchPost("/api/file/putFile", formData, (res: any) => {
                             if (res.code === 0) {
                                 lastUrl = getFileUrl(
                                     `data/public/siyuan-plugin-background-cover/${file.name}`,

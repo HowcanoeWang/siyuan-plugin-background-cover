@@ -119,8 +119,7 @@
         {/if}
     </div>
 
-    <div class="fn__flex" style="justify-content: flex-end; gap: 8px;">
-        <button class="b3-button b3-button--cancel">取消</button>
+    <div class="fn__flex" style="justify-content: flex-end;">
         <button class="b3-button b3-button--text"
             disabled={!validExt}
             onclick={handleUpload}>
