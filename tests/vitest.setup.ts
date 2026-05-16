@@ -4,7 +4,7 @@ import '@testing-library/jest-dom/vitest'
     config: {
         system: { id: 'test-device', workspaceDir: '/tmp/test-workspace' },
     },
-    storage: {},
+    storage: {} as Record<string, any>,
     languages: { cancel: 'Cancel', confirm: 'Confirm' },
 }
 ;(window as any).fetchPost = async () => ({ code: 0, data: null })

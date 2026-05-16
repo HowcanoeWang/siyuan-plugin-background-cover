@@ -6,6 +6,7 @@ import {
 
 import { SettingUtils } from "./libs/setting-utils"
 import { svelteDialog } from "./libs/dialog"
+import { configStore } from "./stores/config"
 import SettingPanel from "./ui/setting-panel.svelte"
 
 export { SettingUtils }
@@ -22,10 +23,13 @@ export default class BgCoverPlugin extends Plugin {
         const frontEnd = getFrontend()
         this.isMobileLayout = frontEnd === "mobile" || frontEnd === "browser-mobile"
 
+        await configStore.load()
+
         ;(window as any).bgCoverPlugin = {
             i18n: this.i18n,
             isMobileLayout: this.isMobileLayout,
             plugin: this,
+            configStore,
         }
 
         this.addIcons(`<symbol id="iconCoverBg" viewBox="0 0 32 32">

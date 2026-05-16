@@ -23,3 +23,7 @@ export const Menu = vi.fn(() => ({
 
 export const Dialog = vi.fn()
 export const Setting = vi.fn()
+
+export const fetchPost = vi.fn((_url: string, _data: any, callback: (response: any) => void) => {
+    callback({ code: 0, data: null })
+})
