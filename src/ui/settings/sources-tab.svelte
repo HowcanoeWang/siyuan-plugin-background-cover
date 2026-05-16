@@ -18,8 +18,6 @@
     }
 
     let groups = $state<SourceGroup[]>([])
-    let showLocalInput = $state(false)
-    let localInputPath = $state("")
     let selectedItem = $state<ImageItem | null>(null)
     let previewSrc = $state<string | null>(null)
     let prevUrl = $state<string | null>(null)
@@ -83,14 +81,31 @@
         groups = groups
     }
 
-    function addLocalFolder() {
-        const path = localInputPath.trim()
+    function pickLocalFolder() {
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.setAttribute('webkitdirectory', '')
+        input.style.display = 'none'
+        document.body.appendChild(input)
+        input.addEventListener('change', () => {
+            const files = input.files
+            if (files && files.length > 0) {
+                const firstPath = (files[0] as any).path ?? files[0].webkitRelativePath
+                const dir = firstPath.includes('/')
+                    ? firstPath.substring(0, firstPath.lastIndexOf('/'))
+                    : firstPath
+                if (dir) addLocalFolder(dir)
+            }
+            document.body.removeChild(input)
+        })
+        input.click()
+    }
+
+    function addLocalFolder(path: string) {
         if (!path) return
         const folders = [...configStore.get("localFolders"), path]
         configStore.set("localFolders", folders)
         configStore.save()
-        localInputPath = ""
-        showLocalInput = false
         refreshAll()
     }
 
@@ -168,21 +183,9 @@
 
             <div class="fn__flex" style="padding: 8px 0;">
                 {#if isDesktop()}
-                    {#if showLocalInput}
-                        <div class="fn__flex" style="gap: 8px; flex: 1;">
-                            <input class="b3-text-field" type="text" style="flex: 1;"
-                                placeholder="/home/user/Pictures/wallpaper"
-                                bind:value={localInputPath}
-                                onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && addLocalFolder()}
-                            />
-                            <button class="b3-button b3-button--outline" onclick={addLocalFolder}>确认</button>
-                            <button class="b3-button b3-button--cancel" onclick={() => showLocalInput = false}>取消</button>
-                        </div>
-                    {:else}
-                        <button class="b3-button b3-button--outline" onclick={() => showLocalInput = true}>
-                            + 添加本地目录
-                        </button>
-                    {/if}
+                    <button class="b3-button b3-button--outline" onclick={pickLocalFolder}>
+                        + 添加本地目录
+                    </button>
                 {/if}
             </div>
 

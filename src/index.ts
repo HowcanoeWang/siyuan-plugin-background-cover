@@ -5,7 +5,9 @@ import {
 
 import { svelteDialog } from "./libs/dialog"
 import { configStore } from "./stores/config"
-import { createBgLayer, destroyBgLayer, renderImage, changeOpacity, changeBlur, changePosition } from "./services/bgRender"
+import { destroyBgLayer, createBgLayer, renderImage, renderVideo, changeOpacity, changeBlur, changePosition } from "./services/bgRender"
+import { scanAll, pickRandom } from "./services/sourceManager"
+import { diyIcon } from "./constants"
 import SettingsPanel from "./ui/settings/settings.svelte"
 import { buildTopBarMenu } from "./ui/topbar-menu"
 
@@ -28,21 +30,11 @@ export default class BgCoverPlugin extends Plugin {
             configStore,
         }
 
-        this.addIcons(`<symbol id="iconCoverBg" viewBox="0 0 32 32">
-<path d="M4 4h24v24H4z"/>
-</symbol>`)
+        this.addIcons(diyIcon.iconLogo)
 
         this.addCommand({ langKey: "selectPictureManualLabel", hotkey: "⇧⌘F6", callback: () => this.openSetting("sources") })
-        this.addCommand({ langKey: "selectPictureRandomLabel", hotkey: "⇧⌘F7", callback: () => {} })
-        this.addCommand({ langKey: "openBackgroundLabel", hotkey: "⇧⌘F4", callback: () => {
-            const active = !configStore.get("activate")
-            configStore.setAndSave("activate", active)
-            if (active) {
-                this.applyBackground()
-            } else {
-                destroyBgLayer()
-            }
-        }})
+        this.addCommand({ langKey: "selectPictureRandomLabel", hotkey: "⇧⌘F7", callback: () => this.randomSelect() })
+        this.addCommand({ langKey: "openBackgroundLabel", hotkey: "⇧⌘F4", callback: () => this.toggleBackground() })
         this.addCommand({ langKey: "reduceBackgroundOpacityLabel", hotkey: "⇧⌘7", callback: () => {
             const v = Math.max(0, configStore.get("opacity") - 0.05)
             configStore.setAndSave("opacity", v)
@@ -74,11 +66,15 @@ export default class BgCoverPlugin extends Plugin {
 
     onLayoutReady() {
         const topBarElement = this.addTopBar({
-            icon: "iconCoverBg",
+            icon: "iconLogo",
             title: this.i18n.addTopBarIcon,
             position: "right",
             callback: () => {
-                buildTopBarMenu(topBarElement, this, (tab?: string) => this.openSetting(tab))
+                buildTopBarMenu(topBarElement, this, {
+                    onOpenSettings: (tab?: string) => this.openSetting(tab),
+                    toggleBackground: () => this.toggleBackground(),
+                    randomSelect: () => this.randomSelect(),
+                })
             },
         })
     }
@@ -96,6 +92,37 @@ export default class BgCoverPlugin extends Plugin {
     onunload() {
         destroyBgLayer()
         console.log(this.i18n.byePlugin)
+    }
+
+    toggleBackground() {
+        const active = !configStore.get("activate")
+        configStore.setAndSave("activate", active)
+        if (active) {
+            createBgLayer()
+            this.applyBackground()
+        } else {
+            destroyBgLayer()
+        }
+    }
+
+    async randomSelect() {
+        const assetDirs = configStore.get("assetDirs")
+        const localFolders = configStore.get("localFolders")
+        const pool = await scanAll(assetDirs, localFolders)
+        if (pool.length === 0) return
+        const exclude = pool.length > 1 ? configStore.get("currentFile") : null
+        const item = pickRandom(pool, exclude)
+        if (!item) return
+        configStore.set("currentFile", item.url)
+        configStore.save()
+        if (item.type === 'image') {
+            renderImage(item.url)
+        } else {
+            renderVideo(item.url)
+        }
+        changeOpacity(configStore.get("opacity"))
+        changeBlur(configStore.get("blur"))
+        changePosition(configStore.get("positionX"), configStore.get("positionY"))
     }
 
     private applyBackground() {
