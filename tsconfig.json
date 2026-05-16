@@ -30,14 +30,6 @@
         "src/**/*.svelte",
         "tests/**/*.ts"
     ],
-    "exclude": [
-        "src/i18n/",
-        "src/services/",
-        "src/utils/",
-        "src/ui/",
-        "src/constants.ts",
-        "src/types.ts"
-    ],
     "references": [
         { "path": "./tsconfig.node.json" }
     ],

@@ -1,0 +1,17 @@
+{
+    "addTopBarIcon": "切换背景图",
+    "helloPlugin": "背景插件载入成功",
+    "byePlugin": "背景插件已关闭",
+    "selectPictureLabel": "选择一张背景图",
+    "settingLabel": "设置",
+    "openBackgroundLabel": "打开图片背景",
+    "closeBackgroundLabel": "关闭图片背景",
+    "selectPictureManualLabel": "手动挑一张",
+    "selectPictureRandomLabel": "随机抽一张",
+    "reduceBackgroundOpacityLabel": "减少背景透明度",
+    "addBackgroundOpacityLabel": "增加背景透明度",
+    "reduceBackgroundBlurLabel": "减少背景模糊度",
+    "addBackgroundBlurLabel": "增加背景模糊度",
+    "notImplementTitle": "抱歉！",
+    "notImplementMsg": "该功能尚在开发中"
+}

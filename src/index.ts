@@ -1,163 +1,103 @@
 import {
     Plugin,
     getFrontend,
-    getBackend,
-} from "siyuan";
+    Menu,
+} from "siyuan"
 
-import { confmngr } from './utils/configs';
+import { SettingUtils } from "./libs/setting-utils"
+import { svelteDialog } from "./libs/dialog"
+import SettingPanel from "./ui/setting-panel.svelte"
 
-import { info, debug} from './utils/logger'
-import { getCurrentThemeInfo} from './utils/theme';
+export { SettingUtils }
+export { svelteDialog }
 
-import * as cst from './constants';
-import * as bgRender from "./services/bgRender"
-
-import * as topbarUI from "./ui/topbar";
-import * as noticeUI from "./ui/notice";
-import * as settingsUI from "./ui/settings";
-import * as fileManagerUI from "./ui/fileManager"
+const STORAGE_NAME = "settings"
 
 export default class BgCoverPlugin extends Plugin {
 
-    public isMobileLayout: boolean;
-    public isBrowser: boolean;
-    public isAndroidBackend: boolean;
-    public htmlThemeNode = document.getElementsByTagName('html')[0];
+    public isMobileLayout: boolean
+    private settingUtils: SettingUtils
 
     async onload() {
-        const frontEnd = getFrontend();
-        const backEnd = getBackend();
+        const frontEnd = getFrontend()
+        this.isMobileLayout = frontEnd === "mobile" || frontEnd === "browser-mobile"
 
-        this.isMobileLayout = frontEnd === "mobile" || frontEnd === "browser-mobile";
-        this.isBrowser = frontEnd.includes("browser");
-        this.isAndroidBackend = backEnd === "android";
-
-        window.bgCoverPlugin = {
+        ;(window as any).bgCoverPlugin = {
             i18n: this.i18n,
             isMobileLayout: this.isMobileLayout,
-            isBrowser: this.isBrowser,
-            isAndroid: this.isAndroidBackend,
-            isDev: false,
-        };
-        debug(`设置全局变量window.bgCoverPlugin`, window.bgCoverPlugin)
+            plugin: this,
+        }
 
-        // 图标的制作参见帮助文档
-        this.addIcons(cst.diyIcon.iconLogo);
+        this.addIcons(`<symbol id="iconCoverBg" viewBox="0 0 32 32">
+<path d="M4 4h24v24H4z"/>
+</symbol>`)
 
-        await topbarUI.initTopbar(this);
+        this.addCommand({ langKey: "selectPictureManualLabel", hotkey: "⇧⌘F6", callback: () => {} })
+        this.addCommand({ langKey: "selectPictureRandomLabel", hotkey: "⇧⌘F7", callback: () => {} })
+        this.addCommand({ langKey: "openBackgroundLabel", hotkey: "⇧⌘F4", callback: () => {} })
+        this.addCommand({ langKey: "reduceBackgroundOpacityLabel", hotkey: "⇧⌘7", callback: () => {} })
+        this.addCommand({ langKey: "addBackgroundOpacityLabel", hotkey: "⇧⌘8", callback: () => {} })
+        this.addCommand({ langKey: "reduceBackgroundBlurLabel", hotkey: "⇧⌘9", callback: () => {} })
+        this.addCommand({ langKey: "addBackgroundBlurLabel", hotkey: "⇧⌘0", callback: () => {} })
 
-        // 绑定快捷键
-        this.addCommand({
-            langKey: "selectPictureManualLabel",
-            hotkey: "⇧⌘F6",
-            callback: () => {
-                topbarUI.selectPictureByHand();
-            }
-        });
-        this.addCommand({
-            langKey: "selectPictureRandomLabel",
-            hotkey: "⇧⌘F7",
-            callback: () => {
-                topbarUI.selectPictureRandom(true);
-            }
-        });
-        this.addCommand({
-            langKey: "openBackgroundLabel",
-            hotkey: "⇧⌘F4",
-            callback: () => {
-                topbarUI.pluginOnOff();
-            }
-        });
-        this.addCommand({
-            langKey: "reduceBackgroundOpacityLabel",
-            hotkey: "⇧⌘7",
-            callback: () => {
-                settingsUI.opacityShortcut(false);
+        this.settingUtils = new SettingUtils({
+            plugin: this,
+            name: STORAGE_NAME,
+        })
+        this.settingUtils.addItem({
+            key: "hint",
+            value: "",
+            type: "hint",
+            title: this.i18n.notImplementTitle,
+            description: this.i18n.notImplementMsg,
+        })
 
-            }
-        });
-        this.addCommand({
-            langKey: "addBackgroundOpacityLabel",
-            hotkey: "⇧⌘8",
-            callback: () => {
-                settingsUI.opacityShortcut(true);
-
-            }
-        });
-        this.addCommand({
-            langKey: "reduceBackgroundBlurLabel",
-            hotkey: "⇧⌘9",
-            callback: () => {
-                settingsUI.blurShortcut(false);
-
-            }
-        });
-        this.addCommand({
-            langKey: "addBackgroundBlurLabel",
-            hotkey: "⇧⌘0",
-            callback: () => {
-                settingsUI.blurShortcut(true);
-
-            }
-        });
-
-        // 侦测theme主题有没有发生变化
-        // const themeChangeObserver = new MutationObserver(await this.themeOnChange.bind(this));
-        // themeChangeObserver.observe(this.htmlThemeNode, { attributes: true });
-        info(this.i18n.helloPlugin);
+        console.log(this.i18n.helloPlugin)
     }
 
-    async onLayoutReady() {
-        confmngr.setParent(this);
-        
-        //初始化数据
-        await confmngr.load();
-        window.bgCoverPlugin.isDev = confmngr.get('inDev');
+    onLayoutReady() {
+        const topBarElement = this.addTopBar({
+            icon: "iconCoverBg",
+            title: this.i18n.addTopBarIcon,
+            position: "right",
+            callback: () => this.addMenu(topBarElement),
+        })
+        this.settingUtils.load().catch(e =>
+            console.error("Error loading settings:", e)
+        )
+    }
 
-        bgRender.createBgLayer();
-        
-        await fileManagerUI.checkAssetsDir();
-
-        // load the user setting data
-        const [themeMode, themeName] = getCurrentThemeInfo();
-        confmngr.set('prevTheme', themeName);
-
-        await bgRender.applySettings();
-
-        debug(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
-
-        // 去除检测到主题变化的提示(因为此时已经刷新了)
-        noticeUI.removeThemeRefreshDialog();
+    openSetting(): void {
+        svelteDialog({
+            title: "Background Cover",
+            width: "800px",
+            height: "35rem",
+            component: SettingPanel,
+            props: { app: this.app },
+        })
     }
 
     onunload() {
-        // solve cloud sync conflicts
-        // configs.save('[index.ts][onunload]');
-
-        // remove changes when deactivate plugin
-        var bgLayer = document.getElementById('bglayer');
-        bgLayer.remove();
-        document.body.style.removeProperty('opacity');
-
-        info(`${this.i18n.byePlugin}`);
+        console.log(this.i18n.byePlugin)
     }
 
-    private async themeOnChange() {
-        const [themeMode, themeName] = getCurrentThemeInfo();
-        let prevTheme = confmngr.get('prevTheme')
-
-        debug(`Theme changed! from ${prevTheme} to ${themeMode} | ${themeName}`)
-
-        if (prevTheme !== themeName) {
-            // 更换主题时且没有重载时，提示需要刷新笔记页面
-            confmngr.set('prevTheme', themeName);
-            await confmngr.save('[index][themeOnChange]')
-            noticeUI.themeRefreshDialog();
-            // 如果重载了，这个界面会在onLoadReady时被去掉
+    private addMenu(topBarElement: HTMLElement) {
+        const menu = new Menu("bgCoverMenu", () => {})
+        menu.addItem({
+            icon: "iconSettings",
+            label: this.i18n.settingLabel,
+            click: () => this.openSetting(),
+        })
+        menu.addItem({
+            icon: "iconImage",
+            label: this.i18n.notImplementMsg,
+            type: "readonly",
+        })
+        if (this.isMobileLayout) {
+            menu.fullscreen()
+        } else {
+            const rect = topBarElement.getBoundingClientRect()
+            menu.open({ x: rect.right, y: rect.bottom, isLeft: true })
         }
-    }
-
-    public openSetting() {
-        settingsUI.openSettingDialog(this);
     }
 }

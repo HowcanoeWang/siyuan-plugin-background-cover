@@ -80,7 +80,6 @@ export default defineConfig({
             external: ["siyuan", "process"],
 
             output: {
-                exports: "named",
                 entryFileNames: "[name].js",
                 assetFileNames: (assetInfo) => {
                     if (assetInfo.name === "style.css") {

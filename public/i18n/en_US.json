@@ -1,0 +1,17 @@
+{
+    "addTopBarIcon": "SwitchBgCover",
+    "helloPlugin": "Background Cover loaded",
+    "byePlugin": "Background Cover closed",
+    "selectPictureLabel": "Select Pictures",
+    "settingLabel": "Settings",
+    "openBackgroundLabel": "Opening Background",
+    "closeBackgroundLabel": "Closing Background",
+    "selectPictureManualLabel": "Manual Selection",
+    "selectPictureRandomLabel": "Random Selection",
+    "reduceBackgroundOpacityLabel": "Reduce Background Opacity",
+    "addBackgroundOpacityLabel": "Add Background Opacity",
+    "reduceBackgroundBlurLabel": "Reduce Background Blur",
+    "addBackgroundBlurLabel": "Add Background Blur",
+    "notImplementTitle": "Oops!",
+    "notImplementMsg": "This feature is still under development"
+}
