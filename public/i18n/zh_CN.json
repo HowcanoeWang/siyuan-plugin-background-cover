@@ -87,5 +87,7 @@
     "inDevModeDesc": "显示调试信息 (frontend/backend/isMobile 等)",
     "currentFile": "当前背景",
     "positionX": "X 偏移",
-    "positionY": "Y 偏移"
+    "positionY": "Y 偏移",
+    "imageCount": "图片",
+    "videoCount": "视频"
 }

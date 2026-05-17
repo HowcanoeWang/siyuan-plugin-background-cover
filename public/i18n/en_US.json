@@ -87,5 +87,7 @@
     "inDevModeDesc": "Show debug info (frontend/backend/isMobile etc.)",
     "currentFile": "Current Background",
     "positionX": "X Offset",
-    "positionY": "Y Offset"
+    "positionY": "Y Offset",
+    "imageCount": "Images",
+    "videoCount": "Videos"
 }

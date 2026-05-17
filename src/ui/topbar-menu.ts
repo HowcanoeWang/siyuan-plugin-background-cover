@@ -7,6 +7,7 @@ import { classifyFileType } from "../types"
 import { svelteDialog, confirmDialog } from "../libs/dialog"
 import UrlDialog from "./url-dialog.svelte"
 import LocalDirDialog from "./local-dir-dialog.svelte"
+import AssetPicker from "./sources/asset-picker.svelte"
 
 interface MenuCallbacks {
     onOpenSettings: (tab?: string) => void
@@ -97,6 +98,26 @@ export function buildTopBarMenu(
             cb.onOpenSettings("sources")
         })
         input.click()
+    }
+
+    function showAssetsDirDialog() {
+        svelteDialog({
+            title: i18n.addAssetsDirTitle ?? "选择 data/assets/ 下的子文件夹作为图片源",
+            component: AssetPicker,
+            width: "520px",
+            height: "auto",
+            props: {
+                onConfirm: (paths: string[]) => {
+                    const dirs = [...configStore.get("assetDirs")]
+                    for (const dir of paths) {
+                        if (dir && !dirs.includes(dir)) dirs.push(dir)
+                    }
+                    configStore.set("assetDirs", dirs)
+                    configStore.save()
+                    cb.onOpenSettings("sources")
+                },
+            },
+        })
     }
 
     function showUrlDialog() {
@@ -205,7 +226,7 @@ export function buildTopBarMenu(
             {
                 icon: "iconFilesRoot",
                 label: i18n.addNoteAssetsDirectoryLabel ?? "链接资源目录",
-                click: () => cb.onOpenSettings("sources"),
+                click: showAssetsDirDialog,
             },
             {
                 icon: "iconFiles",

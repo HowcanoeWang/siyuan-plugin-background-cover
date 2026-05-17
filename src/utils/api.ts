@@ -24,6 +24,12 @@ export async function readDir(path: string): Promise<string[]> {
         .map(item => item.name)
 }
 
+export async function readDirItems(path: string): Promise<IDirItem[]> {
+    const data = await request("/api/file/readDir", { path })
+    if (!Array.isArray(data)) return []
+    return data as IDirItem[]
+}
+
 export async function putFile(path: string, file: File | Blob): Promise<boolean> {
     const formData = new FormData()
     formData.append("path", path)
