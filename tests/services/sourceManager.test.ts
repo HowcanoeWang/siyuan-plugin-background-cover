@@ -4,9 +4,10 @@ vi.mock("siyuan", () => ({
     fetchPost: vi.fn((_url: string, _data: any, callback: (response: any) => void) => {
         callback({ code: 0, data: null })
     }),
+    fetchSyncPost: vi.fn(async (_url: string, _data: any) => ({ code: 0, msg: "", data: null, cmd: "", sid: "" })),
 }))
 
-import { fetchPost } from "siyuan"
+import { fetchSyncPost } from "siyuan"
 import { classifyFileType } from "../../src/types"
 import { scanAll, scanSource, pickRandom, validatePath } from "../../src/services/sourceManager"
 
@@ -66,44 +67,35 @@ describe("sourceManager - pickRandom", () => {
 describe("sourceManager - scanAll", () => {
     beforeEach(() => {
         delete (window as any).require
-        vi.mocked(fetchPost).mockClear()
+        vi.mocked(fetchSyncPost).mockClear()
     })
 
     it("空 source 列表返回数组", async () => {
-        vi.mocked(fetchPost).mockImplementation(
-            (_url: string, _data: any, callback: (response: any) => void) => {
-                callback({ code: 0, data: [] })
-            }
-        )
+        vi.mocked(fetchSyncPost).mockResolvedValue({ code: 0, msg: "", data: [], cmd: "", sid: "" })
 
         const result = await scanAll([], [])
         expect(Array.isArray(result)).toBe(true)
     })
 
     it("非 desktop 端跳过 localFolders", async () => {
-        vi.mocked(fetchPost).mockImplementation(
-            (_url: string, _data: any, callback: (response: any) => void) => {
-                callback({ code: 0, data: [] })
-            }
-        )
+        vi.mocked(fetchSyncPost).mockResolvedValue({ code: 0, msg: "", data: [], cmd: "", sid: "" })
 
         const result = await scanAll([], ['/home/user/Pictures'])
         expect(result.filter(i => i.sourceType === 'local').length).toBe(0)
     })
 
     it("返回有效的 ImageItem 结构", async () => {
-        vi.mocked(fetchPost).mockImplementation(
-            (_url: string, _data: any, callback: (response: any) => void) => {
-                callback({
-                    code: 0,
-                    data: [
-                        { isDir: false, name: 'sunset.jpg' },
-                        { isDir: false, name: 'waterfall.mp4' },
-                        { isDir: false, name: 'readme.txt' },
-                    ],
-                })
-            }
-        )
+        vi.mocked(fetchSyncPost).mockResolvedValue({
+            code: 0,
+            msg: "",
+            cmd: "",
+            sid: "",
+            data: [
+                { isDir: false, name: 'sunset.jpg' },
+                { isDir: false, name: 'waterfall.mp4' },
+                { isDir: false, name: 'readme.txt' },
+            ],
+        })
 
         const result = await scanSource('upload', 'data/public/plugin/')
         expect(result.length).toBe(2)

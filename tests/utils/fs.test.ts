@@ -4,6 +4,7 @@ vi.mock("siyuan", () => ({
     fetchPost: vi.fn((_url: string, _data: any, callback: (response: any) => void) => {
         callback({ code: 0, data: null })
     }),
+    fetchSyncPost: vi.fn(async (_url: string, _data: any) => ({ code: 0, msg: "", data: null, cmd: "", sid: "" })),
 }))
 
 vi.mock("../../src/stores/config", () => ({

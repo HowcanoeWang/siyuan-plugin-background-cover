@@ -27,3 +27,5 @@ export const Setting = vi.fn()
 export const fetchPost = vi.fn((_url: string, _data: any, callback: (response: any) => void) => {
     callback({ code: 0, data: null })
 })
+
+export const fetchSyncPost = vi.fn(async (_url: string, _data: any) => ({ code: 0, msg: "", data: null, cmd: "", sid: "" }))
