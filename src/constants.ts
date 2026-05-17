@@ -1,4 +1,8 @@
+import pluginJson from "../plugin.json"
+
 export const packageName = "siyuan-plugin-background-cover"
+
+export const packageVersion = pluginJson.version
 
 export const pluginAssetsDir = `/data/public/${packageName}/`
 

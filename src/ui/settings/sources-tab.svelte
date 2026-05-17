@@ -7,6 +7,7 @@
     import { svelteDialog } from "../../libs/dialog"
     import { pluginAssetsDir } from "../../constants"
     import LocalDirDialog from "../local-dir-dialog.svelte"
+    import AssetPicker from "../sources/asset-picker.svelte"
     import type { ImageItem } from "../../types"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
@@ -85,6 +86,20 @@
         groups = groups
     }
 
+    function showAssetDirDialog() {
+        svelteDialog({
+            title: i18n.addAssetsDirTitle ?? "选择 data/assets/ 下的子文件夹作为图片源",
+            component: AssetPicker,
+            width: "520px",
+            height: "auto",
+            props: {
+                onConfirm: (paths: string[]) => {
+                    for (const dir of paths) addAssetFolder(dir)
+                },
+            },
+        })
+    }
+
     function showLocalDirDialog() {
         svelteDialog({
             title: i18n.addLocalDirTitle ?? "添加本地目录",
@@ -97,6 +112,14 @@
                 },
             },
         })
+    }
+
+    function addAssetFolder(dir: string) {
+        if (!dir) return
+        const dirs = [...configStore.get("assetDirs"), dir]
+        configStore.set("assetDirs", dirs)
+        configStore.save()
+        refreshAll()
     }
 
     function addLocalFolder(path: string) {
@@ -179,12 +202,15 @@
 
         <div class="config-assets__list" style="flex: 0 0 55%; overflow-y: auto;">
 
-            <div class="fn__flex" style="padding: 8px 0;">
+            <div class="fn__flex" style="padding: 8px 0; gap: 8px;">
                 {#if isDesktop()}
                     <button class="b3-button b3-button--outline" onclick={showLocalDirDialog}>
                         + {i18n.addLocalDir ?? "添加本地目录"}
                     </button>
                 {/if}
+                <button class="b3-button b3-button--outline" onclick={showAssetDirDialog}>
+                    + {i18n.linkAssetsDir ?? "链接资源目录"}
+                </button>
             </div>
 
             <div class="b3-list b3-list--border b3-list--background">

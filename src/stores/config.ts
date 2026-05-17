@@ -17,6 +17,7 @@ const APP_CONFIG_DEFAULTS: AppConfig = {
     disabledThemes: { dark: [], light: [] },
     imageOverrides: {},
     currentFile: null,
+    inDev: false,
 }
 
 function post<T = any>(url: string, data?: any): Promise<T> {
@@ -126,6 +127,7 @@ class ConfigStore {
         this.cfg.autoRefresh = old.autoRefresh ?? APP_CONFIG_DEFAULTS.autoRefresh
         this.cfg.autoRefreshTime = old.autoRefreshTime ?? APP_CONFIG_DEFAULTS.autoRefreshTime
         this.cfg.currentFile = old.crtBgObj?.path ?? null
+        this.cfg.inDev = old.inDev ?? false
 
         if (old.disabledTheme) {
             this.cfg.disabledThemes = {

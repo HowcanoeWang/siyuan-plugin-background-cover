@@ -1,11 +1,19 @@
 <script lang="ts">
+    import { onMount } from "svelte"
     import { configStore } from "../../stores/config"
+    import { getInstalledThemes } from "../../utils/theme"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
 
     let disabledThemes = $state(configStore.get("disabledThemes"))
     let darkThemes = $state<string[]>([])
     let lightThemes = $state<string[]>([])
+
+    onMount(() => {
+        const [light, dark] = getInstalledThemes()
+        lightThemes = light.map(t => t.name)
+        darkThemes = dark.map(t => t.name)
+    })
 
     $effect(() => {
         disabledThemes = configStore.get("disabledThemes")

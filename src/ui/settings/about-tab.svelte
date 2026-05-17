@@ -1,11 +1,12 @@
 <script lang="ts">
+    import { packageVersion } from "../../constants"
+
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
-    const version = "1.0.0-dev"
 </script>
 
 <div class="config__tab-container" data-name="about" style="display: flex; flex-direction: column; gap: 8px;">
     <div class="b3-label fn__flex-center">
-        Background Cover Plugin v{version}
+        Background Cover Plugin v{packageVersion}
     </div>
     <div class="ft__breakword" style="text-align: center;">
         {i18n.aboutDesc ?? "添加一张你喜欢的图片铺满整个思源笔记"}

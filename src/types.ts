@@ -21,6 +21,7 @@ export interface AppConfig {
     disabledThemes: DisabledThemes
     imageOverrides: Record<string, ImageOverride>
     currentFile: string | null
+    inDev: boolean
 }
 
 export interface ImageItem {

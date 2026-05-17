@@ -52,27 +52,29 @@
         </div>
     </div>
 
-    <div class="b3-label">
-        <div class="fn__flex">
-            <span class="fn__flex-1">{i18n.activateBg ?? "开启背景"}</span>
-            <input class="b3-switch fn__flex-center" type="checkbox"
-                bind:checked={activate}
-                onchange={handleActivateChange}
-            />
-        </div>
-    </div>
+    <label class="fn__flex b3-label config__item">
+        <div class="fn__flex-1">{i18n.activateBg ?? "开启背景"}</div>
+        <span class="fn__space"></span>
+        <input class="b3-switch fn__flex-center" type="checkbox"
+            bind:checked={activate}
+            onchange={handleActivateChange}
+        />
+    </label>
 
     <div class="fn__hr"></div>
 
-    <div class="b3-label">
-        <div>{i18n.autoRefresh ?? "自动刷新"}</div>
-        <div class="fn__flex" style="gap: 12px; margin-top: 4px;">
-            <span class="fn__flex-1">{i18n.autoRefreshDesc ?? "启动时自动更换背景"}</span>
-            <input class="b3-switch fn__flex-center" type="checkbox"
-                bind:checked={autoRefresh}
-                onchange={() => configStore.set("autoRefresh", autoRefresh)}
-            />
+    <label class="fn__flex b3-label config__item">
+        <div class="fn__flex-1">
+            {i18n.autoRefresh ?? "自动刷新"}
+            <div class="b3-label__text">{i18n.autoRefreshDesc ?? "启动时自动更换背景"}</div>
         </div>
+        <span class="fn__space"></span>
+        <input class="b3-switch fn__flex-center" type="checkbox"
+            bind:checked={autoRefresh}
+            onchange={() => configStore.set("autoRefresh", autoRefresh)}
+        />
+    </label>
+    <div class="b3-label" style="margin-left: 8px;">
         <div class="fn__flex" style="gap: 8px;">
             <span>{i18n.switchInterval ?? "定时切换间隔"}</span>
             <input class="b3-text-field fn__size200" type="number"
