@@ -34,7 +34,7 @@ export async function readLocalDir(path: string): Promise<string[]> {
 
 export function getFileUrl(apiPath: string, sourceType: 'local' | 'upload' | 'assets'): string {
     if (sourceType === 'local') {
-        return `file://${apiPath}`
+        return `file://${apiPath.replace(/\\/g, '/')}`
     }
 
     let rel = apiPath
