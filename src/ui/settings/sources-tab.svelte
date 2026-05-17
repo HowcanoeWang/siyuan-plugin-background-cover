@@ -1,14 +1,16 @@
 <script lang="ts">
     import { onMount } from "svelte"
     import { configStore } from "../../stores/config"
-    import { isDesktop } from "../../utils/fs"
+    import { isDesktop, getFileUrl } from "../../utils/fs"
     import { scanSource } from "../../services/sourceManager"
     import { renderImage, renderVideo } from "../../services/bgRender"
     import { svelteDialog, confirmDialog } from "../../libs/dialog"
     import { pluginAssetsDir } from "../../constants"
-    import { removeFile } from "../../utils/api"
+    import { removeFile, putFile as apiPutFile } from "../../utils/api"
+    import { classifyFileType } from "../../types"
     import LocalDirDialog from "../local-dir-dialog.svelte"
     import AssetPicker from "../sources/asset-picker.svelte"
+    import UrlDialog from "../url-dialog.svelte"
     import type { ImageItem } from "../../types"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
@@ -247,6 +249,74 @@
             }
         } catch { /* ignore */ }
     }
+
+    async function deleteFile(file: ImageItem) {
+        await removeFile(file.apiPath)
+        refreshAll()
+    }
+
+    function pickMultipleFiles() {
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.multiple = true
+        input.accept = 'image/*,video/*'
+        input.style.display = 'none'
+        document.body.appendChild(input)
+        input.addEventListener('change', async () => {
+            const files = input.files
+            if (!files || files.length === 0) {
+                document.body.removeChild(input)
+                return
+            }
+            for (let i = 0; i < files.length; i++) {
+                if (classifyFileType(files[i].name)) {
+                    await apiPutFile(
+                        `data/public/siyuan-plugin-background-cover/${files[i].name}`,
+                        files[i],
+                    )
+                }
+            }
+            document.body.removeChild(input)
+            refreshAll()
+        })
+        input.click()
+    }
+
+    function pickFolderFiles() {
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.setAttribute('webkitdirectory', '')
+        input.style.display = 'none'
+        document.body.appendChild(input)
+        input.addEventListener('change', async () => {
+            const files = input.files
+            if (!files || files.length === 0) {
+                document.body.removeChild(input)
+                return
+            }
+            for (let i = 0; i < files.length; i++) {
+                if (classifyFileType(files[i].name)) {
+                    await apiPutFile(
+                        `data/public/siyuan-plugin-background-cover/${files[i].name}`,
+                        files[i],
+                    )
+                }
+            }
+            document.body.removeChild(input)
+            refreshAll()
+        })
+        input.click()
+    }
+
+    function showAddUrlDialog() {
+        svelteDialog({
+            title: i18n.addUrlTitle ?? "添加网络背景资源",
+            component: UrlDialog,
+            width: "520px",
+            height: "auto",
+            props: { onSuccess: () => refreshAll() },
+        })
+    }
 </script>
 
 <div class="config__tab-container" data-name="sources" style="height: 100%; display: flex; flex-direction: column;">
@@ -295,6 +365,26 @@
                                 ( 图片: {imgCount}  视频: {vidCount} )
                             </span>
                         </span>
+                        {#if group.type === 'upload'}
+                            <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                                aria-label={i18n.uploadMultipleFiles ?? "上传多个文件"}
+                                onclick={(e: MouseEvent) => { e.stopPropagation(); pickMultipleFiles() }}
+                                onkeydown={undefined} role="button" tabindex="0">
+                                <svg><use xlink:href="#iconFiles"></use></svg>
+                            </span>
+                            <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                                aria-label={i18n.uploadEntireDir ?? "上传整个目录"}
+                                onclick={(e: MouseEvent) => { e.stopPropagation(); pickFolderFiles() }}
+                                onkeydown={undefined} role="button" tabindex="0">
+                                <svg><use xlink:href="#iconFolder"></use></svg>
+                            </span>
+                            <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                                aria-label={i18n.addNetworkResource ?? "添加网络资源"}
+                                onclick={(e: MouseEvent) => { e.stopPropagation(); showAddUrlDialog() }}
+                                onkeydown={undefined} role="button" tabindex="0">
+                                <svg><use xlink:href="#iconLink"></use></svg>
+                            </span>
+                        {/if}
                         {#if isDesktop() && !group.inaccessible}
                             <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
                                 aria-label="打开文件夹"
@@ -305,17 +395,19 @@
                                 <svg><use xlink:href="#iconOpenWindow"></use></svg>
                             </span>
                         {/if}
-                        {#if group.type === 'upload' && group.files.length > 0}
+                        {#if group.removable}
                             <span class="b3-list-item__action"
-                                onclick={(e: MouseEvent) => { e.stopPropagation(); clearCache() }}
+                                onclick={(e: MouseEvent) => { e.stopPropagation(); removeGroup(i) }}
                                 onkeydown={undefined}
                                 role="button"
                                 tabindex="0">
                                 <svg><use xlink:href="#iconTrashcan"></use></svg>
                             </span>
-                        {:else if group.removable}
-                            <span class="b3-list-item__action"
-                                onclick={(e: MouseEvent) => { e.stopPropagation(); removeGroup(i) }}
+                        {/if}
+                        {#if group.type === 'upload' && group.files.length > 0}
+                            <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                                aria-label={i18n.clearCacheTitle ?? "清空插件缓存"}
+                                onclick={(e: MouseEvent) => { e.stopPropagation(); clearCache() }}
                                 onkeydown={undefined}
                                 role="button"
                                 tabindex="0">
@@ -333,6 +425,7 @@
                                 <label
                                     class="b3-list-item b3-list-item--narrow b3-list-item--hide-action"
                                     class:b3-list-item--focus={selectedItem?.url === file.url}
+                                    onclick={() => setAsBackground(file)}
                                 >
                                     <span class="b3-list-item__text fn__flex-1"
                                         onmouseover={() => selectPreview(file)}
@@ -344,21 +437,23 @@
                                         </svg>
                                         {file.name}
                                     </span>
-                                    <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
-                                        aria-label={i18n.setAsBackground ?? "设为背景"}
-                                        onclick={(e: MouseEvent) => { e.preventDefault(); setAsBackground(file) }}
-                                        onkeydown={undefined}
-                                        role="button"
-                                        tabindex="0">
-                                        <svg><use xlink:href="#iconEye"></use></svg>
-                                    </span>
+                                    {#if group.type === 'upload'}
+                                        <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                                            aria-label={i18n.delete ?? "删除"}
+                                            onclick={(e: MouseEvent) => { e.preventDefault(); e.stopPropagation(); deleteFile(file) }}
+                                            onkeydown={undefined}
+                                            role="button"
+                                            tabindex="0">
+                                            <svg><use xlink:href="#iconTrashcan"></use></svg>
+                                        </span>
+                                    {/if}
                                 </label>
                             {/each}
                             {#if group.files.length === 0}
                                 <div class="b3-list-item b3-list-item--narrow" style="color: var(--b3-theme-on-surface);">
                                     <span class="b3-list-item__text">{i18n.noFiles ?? "暂无文件"}</span>
                                 </div>
-{/if}
+                            {/if}
                         </div>
                     {/if}
                 {/each}

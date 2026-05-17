@@ -60,7 +60,7 @@
     "minutes": "分钟",
     "foregroundOpacity": "前景透明度",
     "bgBlur": "背景虚化",
-    "pluginCache": "插件缓存",
+    "pluginCache": "插件缓存(云同步)",
     "addLocalDir": "添加本地目录",
     "none": "(无)",
     "disabledThemesTitle": "屏蔽主题 (在下列主题不显示背景)",

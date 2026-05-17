@@ -60,7 +60,7 @@
     "minutes": "min",
     "foregroundOpacity": "Foreground Opacity",
     "bgBlur": "Background Blur",
-    "pluginCache": "Plugin Cache",
+    "pluginCache": "Plugin Cache (Cloud Sync)",
     "addLocalDir": "Add Local Directory",
     "none": "(None)",
     "disabledThemesTitle": "Disabled Themes",
