@@ -1,3 +1,5 @@
+# 文件与目录结构设计规范
+
 ### 设计约定
 
 | 目录 | 职责 | 原则 |
@@ -33,6 +35,7 @@
 | 命令快捷键显示 | `addCommand({ langKey: "selectManual", hotkey: "⇧⌘F6" })` |
 | plugin.json | `displayName` / `description` / `readme` 字段支持 `{ "default": "...", "zh_CN": "..." }` |
 
+### 结构图
 
 ```
 siyuan-plugin-background-cover/        # 项目根
@@ -77,7 +80,7 @@ siyuan-plugin-background-cover/        # 项目根
     │
     ├── services/                      #   核心服务
     │   ├── bgRender.ts                #     背景渲染引擎
-    │   └── sourceManager.ts           #     图片源管理器（双路径：desktop/fallback）
+    │   └── sourceManager.ts           #     图片源管理器（三种源类型：local / upload / assets）
     │
     └── ui/                            #   Svelte 5 视图组件
         ├── topbar.svelte              #     顶栏菜单
@@ -91,50 +94,4 @@ siyuan-plugin-background-cover/        # 项目根
         └── sources/
             ├── source-list.svelte     #       图片源列表
             └── asset-picker.svelte    #       assets 文件夹树选取器
-```
-
-
-
-#### 测试目录
-
-```
-tests/                                # 测试（镜像 src/ 结构）
-├── vitest.setup.ts                   #   全局 mock（window.siyuan, window.require('fs/promises'), fetchPost）
-├── stores/
-│   └── config.test.ts                #   配置 CRUD、reset、旧版清理
-├── services/
-│   ├── sourceManager.test.ts         #   源扫描、过滤、平台降级、随机选取
-│   └── bgRender.test.ts              #   渲染 URL 构建、video vs canvas 元素创建
-├── utils/
-│   ├── api.test.ts                   #   API 封装调用链
-│   ├── fs.test.ts                    #   isDesktop() 检测、fs shim 降级
-│   └── theme.test.ts                 #   主题检测（mock window.siyuan.config）
-└── ui/                               #   Svelte 5 组件测试
-    ├── topbar.test.ts                #     菜单结构渲染
-    ├── settings.test.ts              #     tab 导航、表单控件
-    └── sources/
-        └── source-list.test.ts       #     源树渲染、文件操作按钮
-```
-
-**测试框架**：
-
-| 工具 | 用途 |
-|------|------|
-| `vitest` | 测试运行器（Vite-native，零配置 TypeScript） |
-| `@testing-library/svelte` | Svelte 组件测试（render + fireEvent） |
-| `jsdom` | DOM 环境模拟 |
-
-**Mock 策略** (`vitest.setup.ts`)：
-
-```typescript
-// Siyuan 运行时全局对象在测试环境不存在，需为所有测试统一 mock
-(window as any).siyuan = {
-  config: { system: { id: 'test-device', workspaceDir: '/tmp/test-workspace' } },
-  storage: {},
-};
-(window as any).require = (id: string) => {
-  if (id === 'fs/promises') return { /* 仅在 desktop 测试场景中注入 */ };
-  return undefined;
-};
-// fetchPost / fetchSyncPost 用 vitest.fn() mock
 ```

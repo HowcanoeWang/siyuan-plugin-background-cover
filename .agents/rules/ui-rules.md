@@ -100,23 +100,13 @@ input.click()
 
 ## 四、缩略图预览规范
 
-### 必须配对 `createObjectURL` / `revokeObjectURL`
+和最终背景插件渲染的URL保持一致，禁止使用 `createObjectURL` 生成临时 URL，避免内存泄漏。
 
-```typescript
-let previewSrc: string | null = $state(null)
-
-function loadPreview(url: string) {
-    if (prevUrl) URL.revokeObjectURL(prevUrl)
-    fetch(url).then(r => r.blob()).then(b => {
-        previewSrc = URL.createObjectURL(b)
-    })
-}
-
-function clearPreview() {
-    if (prevUrl) URL.revokeObjectURL(prevUrl)
-    previewSrc = null
-}
-```
+| sourceType | Canvas `url()` | 说明 |
+|-----------|---------------|------|
+| `local` | `url("file:///home/user/Pictures/img.jpg")` | 绝对路径，仅 desktop 可用|
+| `upload` | `url("public/{packageName}/img.jpg")` | 思源 webview 相对路径，全平台 |
+| `assets` | `url("assets/.../img.jpg")` | 思源 webview 相对路径，全平台 |
 
 ---
 

@@ -1,178 +1,112 @@
 # 思源 API 与本地文件系统调用规则
 
-何时使用 思源 API/FS 层约束
+## 三种源类型的核心差异
 
-| 源类型 | desktop | mobile / browser / docker | 枚举方式 | 渲染方式 |
-|--------|---------|--------------------------|---------|---------|
-| `local` | **可用** | 不可用 | `require('fs/promises')` | `url("file:///...")` |
-| `upload` | **可用** | **可用** | `api.readDir("data/public/...")` | `url("/data/public/...")` |
-| `assets` | **可用** | **可用** | `api.readDir("data/assets/...")` | `url("/data/assets/...")` |
-| `url` | **可用** | **可用** | HTTP 下载 | `url(...)` |
-
----
-
-## 一、模块职责
-
-### `src/utils/api.ts` — 思源内核 API 封装
-
-```typescript
-import { fetchSyncPost } from "siyuan"
-
-interface IResponse { code: number; msg: string; data: any }
-interface IDirItem { isDir: boolean; name: string }
-
-request(url, data)      → fetchSyncPost → { code: 0 ? data : null }
-readDir(path)           → /api/file/readDir   → 自动过滤 isDir 返回 name[]
-putFile(path, blob)     → /api/file/putFile   → FormData + 原始 Blob
-removeFile(path)        → /api/file/removeFile
-downloadUrl(url, dest)  → fetch + putFile 一站式
-```
-
-**原则**：全平台可用，不区分 desktop/fallback。用 `fetchSyncPost`（Promise-based，非回调）。
-
-### `src/utils/fs.ts` — 本地文件系统封装
-
-```typescript
-import { configStore } from "../stores/config"
-
-isDesktop()             → typeof window.require === 'function' && getFsp() !== null
-readLocalDir(path)      → fsp.readdir + isFile() 过滤，仅返回 name[]
-getFileUrl(path, type)  → 按 sourceType 构造渲染 URL
-fileExists(path, type)  → local → fsp.access，其余 → api.readDir 检测
-
-// 内部辅助
-getFsp()                → window.require('fs/promises') ?? null，惰性求值
-isLocalPath(path)       → configStore.get("localFolders").some(f => path.startsWith(f))
-```
-
-**原则**：仅用于用户配置的 `localFolders` 路径。禁止用于 `data/...` 工作空间路径。
+| 源类型 | 平台 | 目录枚举 | Canvas 渲染 URL |
+|--------|------|---------|-----------------|
+| `local` | **desktop only** | `require('fs/promises')`（`src/utils/fs.ts`） | `url("file:///absolute/path/img.jpg")` |
+| `upload` | 全平台 | 思源 API `readDir` | `url("public/{packageName}/img.jpg")` |
+| `assets` | 全平台 | 思源 API `readDir` | `url("assets/.../img.jpg")` |
 
 ---
 
-## 二、路径判断规则
+## 一、源码模块职责
 
-### 核心原则：查 `localFolders`，不猜前缀
+### `src/utils/fs.ts` — 本地文件系统（仅 `local` 源类型）
+
+```
+isDesktop()           → typeof window.require === 'function' && getFsp() !== null
+readLocalDir(path)    → fsp.readdir + isFile() 过滤，仅返回 name[]
+getFileUrl(path, type)→ 按 sourceType 构造渲染 URL
+fileExists(path)      → fsp.access 检测
+```
+
+**原则**：仅用于 `localFolders` 配置项。禁止操作 `data/...` 工作空间路径。
+
+### `src/utils/api.ts` — 思源内核 API（`upload` / `assets` 源类型）
+
+```
+readDir(path)    → /api/file/readDir   → 自动过滤 isDir，返回 name[]
+putFile(path, blob) → /api/file/putFile → FormData + 原始 Blob
+removeFile(path) → /api/file/removeFile
+downloadUrl(url) → fetch + putFile 一站式
+```
+
+**原则**：全平台可用，统一用 `fetchSyncPost`（Promise-based）。
+
+---
+
+## 二、Canvas 渲染 URL 构造
+
+canvas CSS 中引用背景图片时，URL 按源类型不同：
+
+| sourceType | Canvas `url()` | 说明 |
+|-----------|---------------|------|
+| `local` | `url("file:///home/user/Pictures/img.jpg")` | 绝对路径，仅 desktop 可用 |
+| `upload` | `url("public/{packageName}/img.jpg")` | 思源 webview 相对路径，全平台 |
+| `assets` | `url("assets/.../img.jpg")` | 思源 webview 相对路径，全平台 |
+
+> **`file:///` 仅用于 `local`**。`upload` 和 `assets` 在所有平台（含 desktop）都使用思源 webview 的相对路径，思源内核负责解析到正确位置。
+
+### upload 路径: `data/` → `public/` 前缀转换
+
+upload 文件存在 `/data/public/{plugin}/` 下，但 canvas CSS 中引用时去掉 `data` 前缀：
 
 ```typescript
-// ✅ 正确
+let rel = apiPath
+if (rel.startsWith('/data/')) rel = rel.slice(1)        // /data/public/... → data/public/...
+if (rel.startsWith('data/')) rel = '/' + rel.slice(5)    // data/public/...  → /public/...
+// 最终用于 canvas: url("public/{plugin}/img.jpg")
+```
+
+---
+
+## 三、目录枚举 dispatch
+
+```typescript
+// sourceManager.scanSource 中
+const filenames = type === 'local'
+    ? await readLocalDir(path)       // fsp.readdir
+    : await readDirKernel(path)      // fetchSyncPost → /api/file/readDir
+```
+
+### 判断路径是否属于 localFolders
+
+```typescript
+// ✅ 正确：查 localFolders 配置
 function isLocalPath(path: string): boolean {
     return configStore.get("localFolders").some(f => path.startsWith(f))
 }
 
 // ❌ 错误：前缀匹配不可靠
-path.startsWith('/')           // /data/public/... 也以 / 开头
-path.startsWith('data/')       // localFolders 可能是 /home/user/...
-```
-
-### `readLocalDir` vs `api.readDir` 调用决策
-
-| 路径来源 | 调用 | 原因 |
-|---------|------|------|
-| `localFolders` 配置项 | `readLocalDir(path)` | 用户指定绝对路径，走 fsp |
-| `data/assets/...` | `api.readDir(path)` | 工作空间路径，走内核 |
-| `data/public/...` | `api.readDir(path)` | 工作空间路径，走内核 |
-| upload 固定路径 | `api.readDir(path)` | 工作空间路径，走内核 |
-
-### `sourceManager.scanSource` 中的 dispatch
-
-```typescript
-const filenames = type === 'local'
-    ? await readLocalDir(path)       // fsp
-    : await readDirKernel(path)      // fetchSyncPost → /api/file/readDir
+path.startsWith('/')     // /data/public/... 也以 / 开头
+path.startsWith('data/') // localFolders 可能是 /home/user/...
 ```
 
 ---
 
-## 三、`/api/file/putFile` 调用规范
+## 四、`/api/file/putFile` 上传规范
 
 ### 必须使用 FormData + 原始 File/Blob
 
 ```typescript
-// ✅ 正确
 const fd = new FormData()
 fd.append("path", "data/public/{plugin}/file.jpg")
 fd.append("isDir", "false")
 fd.append("modTime", Math.floor(Date.now() / 1000).toString())
-fd.append("file", rawFile)  // 原始 File 或 Blob 对象
+fd.append("file", rawFile)  // 原始 File 或 Blob
 fetchSyncPost("/api/file/putFile", fd)
-
-// ❌ 错误：JSON body + data URL
-fetchPost("/api/file/putFile", { path, file: dataUrl }, cb)
-// → ERR_CONNECTION_RESET
 ```
 
-**根因**：`putFile` 是 HTTP Multipart form 接口。后端从 `FormData.file` 读取二进制流。
-
-### `isDir` 参数
-
-| 操作 | isDir | file |
-|------|-------|------|
-| 上传文件 | `"false"` | File/Blob |
-| 创建目录 | `"true"` | 忽略 |
-
-本插件仅涉及文件上传，`isDir` 固定 `"false"`。
-
-### `modTime` 参数
-
-```typescript
-Math.floor(Date.now() / 1000).toString()  // Unix 时间戳（秒）
-```
-
-后端用此字段校验文件最后修改时间。
+> `putFile` 是 HTTP Multipart form 接口，后端从 `FormData.file` 读取二进制流。JSON body 会导致 `ERR_CONNECTION_RESET`。
 
 ---
 
-## 四、`getFileUrl` 路径构造
-
-### 按 sourceType 分支
-
-| sourceType | Desktop | Fallback |
-|-----------|---------|---------|
-| `local` | `file:///home/user/Pictures/img.jpg` | `file://{path}`（不可用，仅 desktop） |
-| `upload` | `file://{wsDir}/data/public/{plugin}/img.jpg` | `/public/{plugin}/img.jpg` |
-| `assets` | `file://{wsDir}/data/assets/wallpaper/img.jpg` | `/assets/wallpaper/img.jpg` |
-
-### Desktop 路径拼接
-
-```typescript
-const wsDir = siyuan.config.system.workspaceDir     // /home/user/SiyuanDev
-const cleanPath = apiPath.startsWith('/') ? apiPath.slice(1) : apiPath  // 去前导 /
-return `file://${wsDir}/${cleanPath}`  // file:///home/user/SiyuanDev/data/public/plugin/img.jpg
-```
-
-禁止直接 `wsDir + apiPath`（会 `//` 双斜杠）。
-
-### 规范化 data 前缀
-
-```typescript
-let rel = apiPath
-if (rel.startsWith('/data/')) rel = rel.slice(1)      // /data/public/... → data/public/...
-if (rel.startsWith('data/')) rel = '/' + rel.slice(5)  // data/public/...  → /public/...
-return rel
-```
-
-同时处理 `data/` 和 `/data/` 两种输入。
-
----
-
-## 五、`fetchSyncPost` vs `fetchPost` 使用场景
-
-| 场景 | 使用 | 原因 |
-|------|------|------|
-| JSON API（读/写配置、读目录、删文件） | `fetchSyncPost` | Promise-based，代码简洁 |
-| FormData 上传（putFile） | `fetchSyncPost` | 支持 FormData |
-| 获取文件原始内容（getFile） | `fetchPost` | 返回非 JSON 内容 |
-
-**本插件代码中**：`api.ts` 全部用 `fetchSyncPost`，`topbar-menu.ts` 多文件上传用 `fetchPost`（现已有 `putFile` 封装替代）。
-
----
-
-## 六、禁止事项
+## 五、禁止事项
 
 | 禁止 | 原因 |
 |------|------|
-| 对 `data/...` 路径调用 `fsp.readdir` | 相对路径，fsp 解析为文件系统根 → ENOENT |
-| 用 `startsWith('/')` 判断是否本地路径 | `/data/public/...` 也以 `/` 开头 |
+| 对 `data/...` 路径调用 `fsp.readdir` | 相对路径 → ENOENT |
+| 用 `startsWith('/')` 判断本地路径 | `/data/public/...` 也以 `/` 开头 |
 | `putFile` 用 JSON body | 后端只接受 FormData |
-| 在 `fs.ts` 中 import `api.ts` 的函数 | 职责分离（`fileExists` 用 dynamic import 例外） |
-| `pluginAssetsDir` 以 `/` 开头传给 fsp | 须保持为 `/data/public/{plugin}/` 格式 |
+| `fs.ts` 中 import `api.ts` 的函数 | 职责分离 |
