@@ -7,7 +7,7 @@ import { svelteDialog } from "./libs/dialog"
 import { configStore } from "./stores/config"
 import { destroyBgLayer, createBgLayer, renderImage, renderVideo, changeOpacity, changeBlur, changePosition, setVisible, startAutoRefresh, stopAutoRefresh } from "./services/bgRender"
 import { scanAll, pickRandom } from "./services/sourceManager"
-import { diyIcon, pickDefaultBackground, IMAGE_EXTS, VIDEO_EXTS } from "./constants"
+import { diyIcon, pickDefaultBackground, DEFAULT_BACKGROUNDS, IMAGE_EXTS, VIDEO_EXTS } from "./constants"
 import { debug, log } from "./utils/logger"
 import { isCurrentThemeDisabled, watchTheme } from "./utils/theme"
 import SettingsPanel from "./ui/settings/settings.svelte"
@@ -65,6 +65,11 @@ export default class BgCoverPlugin extends Plugin {
             createBgLayer()
             if (configStore.get("changeBgOnStart")) {
                 await this.randomSelect()
+            }
+            const currentFile = configStore.get("currentFile")
+            if (DEFAULT_BACKGROUNDS.includes(currentFile ?? '')) {
+                configStore.set("currentFile", pickDefaultBackground())
+                configStore.save()
             }
             if (!configStore.get("currentFile")) {
                 const assetDirs = configStore.get("assetDirs")
