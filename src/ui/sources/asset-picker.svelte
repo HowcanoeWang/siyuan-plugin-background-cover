@@ -81,9 +81,9 @@
     }
 
     function getRelPath(fullPath: string): string {
-        return fullPath.startsWith('data/assets/')
-            ? fullPath.slice('data/assets/'.length)
-            : fullPath
+        if (fullPath.startsWith('/data/assets/')) return `assets/${fullPath.slice('/data/assets/'.length)}`
+        if (fullPath.startsWith('data/assets/')) return `assets/${fullPath.slice('data/assets/'.length)}`
+        return fullPath
     }
 
     function confirm() {

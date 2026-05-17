@@ -20,6 +20,7 @@
         files: ImageItem[]
         inaccessible: boolean
         collapsed: boolean
+        configKey: string
     }
 
     let groups = $state<SourceGroup[]>([])
@@ -43,21 +44,27 @@
             files: uploadFiles,
             inaccessible: false,
             collapsed: false,
+            configKey: '',
         })
 
         const assetDirs = configStore.get("assetDirs")
         for (const dir of assetDirs) {
             if (!dir) continue
-            const path = dir.startsWith('data/') ? dir : `data/assets/${dir}`
+            const normalized = dir.startsWith('/data/assets/') ? `assets/${dir.slice('/data/assets/'.length)}`
+                : dir.startsWith('data/assets/') ? `assets/${dir.slice('data/assets/'.length)}`
+                : dir
+            const path = `/data/${normalized}`
+            const label = normalized.startsWith('assets/') ? normalized.slice('assets/'.length) : normalized
             const files = await scanSource('assets', path + '/')
             newGroups.push({
                 type: 'assets',
-                label: dir.startsWith('data/assets/') ? dir.slice('data/assets/'.length) : dir,
+                label,
                 path,
                 removable: true,
                 files,
                 inaccessible: files.length === 0 && path.length > 0,
                 collapsed: false,
+                configKey: normalized,
             })
         }
 
@@ -74,6 +81,7 @@
                     files,
                     inaccessible: files.length === 0,
                     collapsed: false,
+                    configKey: dir,
                 })
             }
         }
@@ -134,7 +142,7 @@
         const g = groups[i]
         if (g.type === 'assets') {
             const dirs = [...configStore.get("assetDirs")]
-            const idx = dirs.indexOf(g.label)
+            const idx = dirs.indexOf(g.configKey)
             if (idx >= 0) {
                 dirs.splice(idx, 1)
                 configStore.set("assetDirs", dirs)
@@ -142,7 +150,7 @@
             }
         } else if (g.type === 'local') {
             const dirs = [...configStore.get("localFolders")]
-            const idx = dirs.indexOf(g.path)
+            const idx = dirs.indexOf(g.configKey)
             if (idx >= 0) {
                 dirs.splice(idx, 1)
                 configStore.set("localFolders", dirs)
