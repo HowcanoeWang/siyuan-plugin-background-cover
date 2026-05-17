@@ -13,6 +13,7 @@
         children: DirNode[]
         open: boolean
         loaded: boolean
+        hasSubdirs: boolean
     }
 
     interface Props {
@@ -25,18 +26,40 @@
     let selectedDir = $state<string | null>(null)
     let loading = $state(true)
 
+    async function scanDir(dirPath: string): Promise<{
+        imageCount: number; videoCount: number; hasSubdirs: boolean; childDirs: string[]
+    }> {
+        let imageCount = 0, videoCount = 0, hasSubdirs = false
+        const childDirs: string[] = []
+        const items = await readDirItems(dirPath + '/')
+        for (const child of items) {
+            if (child.isDir) {
+                hasSubdirs = true
+                childDirs.push(child.name)
+            } else {
+                const type = classifyFileType(child.name)
+                if (type === 'image') imageCount++
+                else if (type === 'video') videoCount++
+            }
+        }
+        return { imageCount, videoCount, hasSubdirs, childDirs }
+    }
+
     onMount(async () => {
         const items = await readDirItems("/data/assets/")
         for (const item of items) {
             if (!item.isDir) continue
+            const nodePath = "/data/assets/" + item.name
+            const { imageCount, videoCount, hasSubdirs } = await scanDir(nodePath)
             roots.push({
                 name: item.name,
-                path: "/data/assets/" + item.name,
-                imageCount: 0,
-                videoCount: 0,
+                path: nodePath,
+                imageCount,
+                videoCount,
                 children: [],
                 open: false,
                 loaded: false,
+                hasSubdirs,
             })
         }
         roots.sort((a, b) => a.name.localeCompare(b.name))
@@ -44,35 +67,41 @@
     })
 
     async function expandChild(node: DirNode) {
-        if (node.loaded) {
-            node.open = !node.open
+        if (node.open) {
+            node.open = false
             return
         }
 
-        node.imageCount = 0
-        node.videoCount = 0
-        node.children = []
+        if (!node.loaded) {
+            node.imageCount = 0
+            node.videoCount = 0
+            node.children = []
 
-        const items = await readDirItems(node.path + '/')
-        for (const child of items) {
-            if (child.isDir) {
-                node.children.push({
-                    name: child.name,
-                    path: node.path + '/' + child.name,
-                    imageCount: 0,
-                    videoCount: 0,
-                    children: [],
-                    open: false,
-                    loaded: false,
-                })
-            } else {
-                const type = classifyFileType(child.name)
-                if (type === 'image') node.imageCount++
-                else if (type === 'video') node.videoCount++
+            const items = await readDirItems(node.path + '/')
+            for (const child of items) {
+                if (child.isDir) {
+                    const childPath = node.path + '/' + child.name
+                    const { imageCount, videoCount, hasSubdirs } = await scanDir(childPath)
+                    node.children.push({
+                        name: child.name,
+                        path: childPath,
+                        imageCount,
+                        videoCount,
+                        children: [],
+                        open: false,
+                        loaded: false,
+                        hasSubdirs,
+                    })
+                } else {
+                    const type = classifyFileType(child.name)
+                    if (type === 'image') node.imageCount++
+                    else if (type === 'video') node.videoCount++
+                }
             }
+            node.children.sort((a, b) => a.name.localeCompare(b.name))
+            node.loaded = true
         }
-        node.children.sort((a, b) => a.name.localeCompare(b.name))
-        node.loaded = true
+
         node.open = true
     }
 
@@ -108,31 +137,31 @@
                 <div
                     class="b3-list-item b3-list-item--narrow toggle"
                     class:b3-list-item--focus={selectedDir === root.path}
-                    style:opacity={root.loaded && rTotal === 0 ? "0.45" : "1"}
+                    style:opacity={rTotal > 0 ? "1" : "0.45"}
                     onclick={() => selectDir(root.path, rTotal)}
                     onkeydown={undefined}
                     role="button"
                     tabindex="0"
                 >
-                    <span class="b3-list-item__toggle b3-list-item__toggle--hl"
-                        onclick={(e: MouseEvent) => { e.stopPropagation(); expandChild(root) }}
-                        onkeydown={undefined}
-                        role="button"
-                        tabindex="0">
-                        <svg class="b3-list-item__arrow" class:b3-list-item__arrow--open={root.open}>
-                            <use xlink:href="#iconRight"></use>
-                        </svg>
-                    </span>
+                    {#if root.hasSubdirs}
+                        <span class="b3-list-item__toggle b3-list-item__toggle--hl"
+                            onclick={(e: MouseEvent) => { e.stopPropagation(); expandChild(root) }}
+                            onkeydown={undefined}
+                            role="button"
+                            tabindex="0">
+                            <svg class="b3-list-item__arrow" class:b3-list-item__arrow--open={root.open}>
+                                <use xlink:href="#iconRight"></use>
+                            </svg>
+                        </span>
+                    {/if}
                     <span class="b3-list-item__text fn__flex-1">
                         <svg style="width:14px;height:14px;margin-right:4px;vertical-align:middle">
                             <use xlink:href="#iconFolder"></use>
                         </svg>
                         {root.name}/
-                        {#if root.loaded}
-                            <span style="color: var(--b3-theme-on-surface); font-size: 0.85em; margin-left: 8px;">
-                                ({rTotal} {i18n.imageCount ?? "图片"}, {root.videoCount} {i18n.videoCount ?? "视频"})
-                            </span>
-                        {/if}
+                        <span style="color: var(--b3-theme-on-surface); font-size: 0.85em; margin-left: 8px;">
+                            ({rTotal} {i18n.imageCount ?? "图片"}, {root.videoCount} {i18n.videoCount ?? "视频"})
+                        </span>
                     </span>
                 </div>
 
@@ -143,31 +172,31 @@
                             <div
                                 class="b3-list-item b3-list-item--narrow toggle"
                                 class:b3-list-item--focus={selectedDir === child.path}
-                                style:opacity={child.loaded && cTotal === 0 ? "0.45" : "1"}
+                                style:opacity={cTotal > 0 ? "1" : "0.45"}
                                 onclick={() => selectDir(child.path, cTotal)}
                                 onkeydown={undefined}
                                 role="button"
                                 tabindex="0"
                             >
-                                <span class="b3-list-item__toggle b3-list-item__toggle--hl"
-                                    onclick={(e: MouseEvent) => { e.stopPropagation(); expandChild(child) }}
-                                    onkeydown={undefined}
-                                    role="button"
-                                    tabindex="0">
-                                    <svg class="b3-list-item__arrow" class:b3-list-item__arrow--open={child.open}>
-                                        <use xlink:href="#iconRight"></use>
-                                    </svg>
-                                </span>
+                                {#if child.hasSubdirs}
+                                    <span class="b3-list-item__toggle b3-list-item__toggle--hl"
+                                        onclick={(e: MouseEvent) => { e.stopPropagation(); expandChild(child) }}
+                                        onkeydown={undefined}
+                                        role="button"
+                                        tabindex="0">
+                                        <svg class="b3-list-item__arrow" class:b3-list-item__arrow--open={child.open}>
+                                            <use xlink:href="#iconRight"></use>
+                                        </svg>
+                                    </span>
+                                {/if}
                                 <span class="b3-list-item__text fn__flex-1">
                                     <svg style="width:14px;height:14px;margin-right:4px;vertical-align:middle">
                                         <use xlink:href="#iconFolder"></use>
                                     </svg>
                                     {child.name}/
-                                    {#if child.loaded}
-                                        <span style="color: var(--b3-theme-on-surface); font-size: 0.85em; margin-left: 8px;">
-                                            ({cTotal} {i18n.imageCount ?? "图片"}, {child.videoCount} {i18n.videoCount ?? "视频"})
-                                        </span>
-                                    {/if}
+                                    <span style="color: var(--b3-theme-on-surface); font-size: 0.85em; margin-left: 8px;">
+                                        ({cTotal} {i18n.imageCount ?? "图片"}, {child.videoCount} {i18n.videoCount ?? "视频"})
+                                    </span>
                                 </span>
                             </div>
 
@@ -178,31 +207,31 @@
                                         <div
                                             class="b3-list-item b3-list-item--narrow toggle"
                                             class:b3-list-item--focus={selectedDir === grandchild.path}
-                                            style:opacity={grandchild.loaded && gTotal === 0 ? "0.45" : "1"}
+                                            style:opacity={gTotal > 0 ? "1" : "0.45"}
                                             onclick={() => selectDir(grandchild.path, gTotal)}
                                             onkeydown={undefined}
                                             role="button"
                                             tabindex="0"
                                         >
-                                            <span class="b3-list-item__toggle b3-list-item__toggle--hl"
-                                                onclick={(e: MouseEvent) => { e.stopPropagation(); expandChild(grandchild) }}
-                                                onkeydown={undefined}
-                                                role="button"
-                                                tabindex="0">
-                                                <svg class="b3-list-item__arrow" class:b3-list-item__arrow--open={grandchild.open}>
-                                                    <use xlink:href="#iconRight"></use>
-                                                </svg>
-                                            </span>
+                                            {#if grandchild.hasSubdirs}
+                                                <span class="b3-list-item__toggle b3-list-item__toggle--hl"
+                                                    onclick={(e: MouseEvent) => { e.stopPropagation(); expandChild(grandchild) }}
+                                                    onkeydown={undefined}
+                                                    role="button"
+                                                    tabindex="0">
+                                                    <svg class="b3-list-item__arrow" class:b3-list-item__arrow--open={grandchild.open}>
+                                                        <use xlink:href="#iconRight"></use>
+                                                    </svg>
+                                                </span>
+                                            {/if}
                                             <span class="b3-list-item__text fn__flex-1">
                                                 <svg style="width:14px;height:14px;margin-right:4px;vertical-align:middle">
                                                     <use xlink:href="#iconFolder"></use>
                                                 </svg>
                                                 {grandchild.name}/
-                                                {#if grandchild.loaded}
-                                                    <span style="color: var(--b3-theme-on-surface); font-size: 0.85em; margin-left: 8px;">
-                                                        ({gTotal} {i18n.imageCount ?? "图片"}, {grandchild.videoCount} {i18n.videoCount ?? "视频"})
-                                                    </span>
-                                                {/if}
+                                                <span style="color: var(--b3-theme-on-surface); font-size: 0.85em; margin-left: 8px;">
+                                                    ({gTotal} {i18n.imageCount ?? "图片"}, {grandchild.videoCount} {i18n.videoCount ?? "视频"})
+                                                </span>
                                             </span>
                                         </div>
                                     {/each}

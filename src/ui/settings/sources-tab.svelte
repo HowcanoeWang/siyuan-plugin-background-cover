@@ -4,8 +4,9 @@
     import { isDesktop } from "../../utils/fs"
     import { scanSource } from "../../services/sourceManager"
     import { renderImage, renderVideo } from "../../services/bgRender"
-    import { svelteDialog } from "../../libs/dialog"
+    import { svelteDialog, confirmDialog } from "../../libs/dialog"
     import { pluginAssetsDir } from "../../constants"
+    import { removeFile } from "../../utils/api"
     import LocalDirDialog from "../local-dir-dialog.svelte"
     import AssetPicker from "../sources/asset-picker.svelte"
     import type { ImageItem } from "../../types"
@@ -202,6 +203,45 @@
             })
             .catch(() => {})
     }
+
+    async function clearCache() {
+        const group = groups.find(g => g.type === 'upload')
+        if (!group || group.files.length === 0) return
+        const confirmed = await new Promise<boolean>(resolve => {
+            confirmDialog({
+                title: i18n.clear ?? "清空",
+                content: `${group.files.length} ${i18n.noFiles ?? 'files'} ${i18n.clear ?? 'clear'}`,
+                confirm: () => resolve(true),
+                cancel: () => resolve(false),
+                width: "360px",
+            })
+        })
+        if (!confirmed) return
+        for (const file of group.files) {
+            await removeFile(file.apiPath)
+        }
+        refreshAll()
+    }
+
+    function openInFileManager(group: SourceGroup) {
+        const wsDir = (window as any).siyuan?.config?.system?.workspaceDir ?? ''
+        let absPath = group.path
+        if (group.type === 'upload' || group.type === 'assets') {
+            absPath = wsDir + absPath
+        }
+        try {
+            const shell = (window as any).require?.('electron')?.shell
+            if (shell) {
+                shell.openPath(absPath)
+            } else {
+                const { exec } = (window as any).require?.('child_process') ?? {}
+                if (exec) {
+                    const cmd = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'explorer' : 'xdg-open'
+                    exec(`${cmd} "${absPath}"`)
+                }
+            }
+        } catch { /* ignore */ }
+    }
 </script>
 
 <div class="config__tab-container" data-name="sources" style="height: 100%; display: flex; flex-direction: column;">
@@ -225,6 +265,9 @@
                 {#each groups as group, i}
                     {@const imgCount = group.files.filter(f => f.type === 'image').length}
                     {@const vidCount = group.files.filter(f => f.type === 'video').length}
+                    {@const groupIcon = group.type === 'upload' ? '#iconDatabase'
+                        : group.type === 'assets' ? '#iconFilesRoot' : '#iconFolder'}
+                    {@const displayLabel = group.type === 'assets' ? `assets/${group.label}` : group.label}
 
                     <div
                         class="b3-list-item b3-list-item--narrow toggle"
@@ -240,18 +283,29 @@
                                 <use xlink:href="#iconRight"></use>
                             </svg>
                         </span>
+                        <svg class="b3-list-item__graphic"><use xlink:href={groupIcon}></use></svg>
                         <span class="b3-list-item__text fn__flex-1">
-                            {group.label}
+                            {displayLabel}
                             <span style="color: var(--b3-theme-on-surface); font-size: 0.85em;">
                                 ( 图片: {imgCount}  视频: {vidCount} )
                             </span>
                         </span>
+                        {#if isDesktop() && !group.inaccessible}
+                            <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                                aria-label="打开文件夹"
+                                onclick={(e: MouseEvent) => { e.stopPropagation(); openInFileManager(group) }}
+                                onkeydown={undefined}
+                                role="button"
+                                tabindex="0">
+                                <svg><use xlink:href="#iconOpenWindow"></use></svg>
+                            </span>
+                        {/if}
                         {#if group.removable}
                             <span class="b3-list-item__action"
                                 onclick={(e: MouseEvent) => { e.stopPropagation(); removeGroup(i) }}
                                 onkeydown={undefined}
                                 role="button"
-                                tabindex="0">✕ {i18n.remove ?? "移除"}</span>
+                                tabindex="0">✕</span>
                         {/if}
                         {#if group.inaccessible}
                             <span style="color: var(--b3-theme-error); font-size: 0.85em; margin-left: 8px;">{i18n.pathInaccessible ?? "不可访问"}</span>
@@ -270,9 +324,13 @@
                                         onkeydown={undefined}
                                         role="button"
                                         tabindex="0">
-                                        {#if file.type === 'video'}🎬{:else}🖼{/if} {file.name}
+                                        <svg style="width:14px;height:14px;margin-right:4px;vertical-align:middle">
+                                            <use xlink:href={file.type === 'video' ? '#iconVideo' : '#iconImage'}></use>
+                                        </svg>
+                                        {file.name}
                                     </span>
-                                    <span class="b3-list-item__action b3-tooltips b3-tooltips__w"                                         aria-label={i18n.setAsBackground ?? "设为背景"}
+                                    <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                                        aria-label={i18n.setAsBackground ?? "设为背景"}
                                         onclick={(e: MouseEvent) => { e.preventDefault(); setAsBackground(file) }}
                                         onkeydown={undefined}
                                         role="button"
@@ -284,6 +342,13 @@
                             {#if group.files.length === 0}
                                 <div class="b3-list-item b3-list-item--narrow" style="color: var(--b3-theme-on-surface);">
                                     <span class="b3-list-item__text">{i18n.noFiles ?? "暂无文件"}</span>
+                                </div>
+                            {:else if group.type === 'upload'}
+                                <div class="b3-list-item b3-list-item--narrow" style="justify-content: flex-end; padding: 4px 8px;">
+                                    <button class="b3-button b3-button--outline fn__size200"
+                                        onclick={clearCache}>
+                                        {i18n.clear ?? "清空"}
+                                    </button>
                                 </div>
                             {/if}
                         </div>
@@ -307,13 +372,13 @@
                 <img src={previewSrc} alt="preview" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px;" />
             {:else if selectedItem && selectedItem.type === 'video'}
                 <div style="color: var(--b3-theme-on-surface); text-align: center;">
-                    <div style="font-size: 2em;">🎬</div>
+                    <svg style="width:48px;height:48px;opacity:0.6"><use xlink:href="#iconVideo"></use></svg>
                     <div>{selectedItem.name}</div>
                     <div style="font-size: 0.85em; margin-top: 4px;">{i18n.videoNoPreview ?? "视频文件 — 不支持预览"}</div>
                 </div>
             {:else}
                 <div style="color: var(--b3-theme-on-surface); text-align: center;">
-                    <div style="font-size: 2em;">🖼</div>
+                    <svg style="width:48px;height:48px;opacity:0.6"><use xlink:href="#iconImage"></use></svg>
                     <div>{i18n.noPreviewHint ?? "点击文件列表中图片以预览"}</div>
                 </div>
             {/if}
