@@ -2,7 +2,7 @@
   "name": "siyuan-plugin-background-cover",
   "author": "HowcanoeWang",
   "url": "https://github.com/HowcanoeWang/siyuan-plugin-background-cover",
-  "version": "1.0.0-dev",
+  "version": "1.0.0",
   "minAppVersion": "3.2.1",
   "backends": [
     "windows",
@@ -25,8 +25,8 @@
     "zh_CN": "替换背景图片"
   },
   "description": {
-    "default": "Add a picture you like to cover the entire Siyuan Note",
-    "zh_CN": "添加一张你喜欢的图片铺满整个思源笔记"
+    "default": "Add a background you like to cover the entire Siyuan Note",
+    "zh_CN": "添加一张你喜欢的背景铺满整个思源笔记"
   },
   "readme": {
     "default": "README.md",
