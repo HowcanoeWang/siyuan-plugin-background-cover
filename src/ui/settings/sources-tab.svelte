@@ -224,8 +224,14 @@
             })
         })
         if (!confirmed) return
+        const wasCurrentDeleted = group.files.some(f => f.url === configStore.get("currentFile"))
         for (const file of group.files) {
             await removeFile(file.apiPath)
+        }
+        if (wasCurrentDeleted) {
+            configStore.set("currentFile", null)
+            configStore.save()
+            ;(window as any).bgCoverPlugin?.plugin?.randomSelect?.()
         }
         refreshAll()
     }
@@ -251,7 +257,13 @@
     }
 
     async function deleteFile(file: ImageItem) {
+        const wasCurrent = file.url === configStore.get("currentFile")
         await removeFile(file.apiPath)
+        if (wasCurrent) {
+            configStore.set("currentFile", null)
+            configStore.save()
+            ;(window as any).bgCoverPlugin?.plugin?.randomSelect?.()
+        }
         refreshAll()
     }
 
