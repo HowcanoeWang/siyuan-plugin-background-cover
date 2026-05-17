@@ -75,7 +75,7 @@ export function renderImage(url: string): void {
 
     if (videoEl) {
         videoEl.style.display = 'none'
-        videoEl.pause()
+        try { videoEl.pause() } catch { /* ignored */ }
         videoEl.removeAttribute('src')
     }
     canvasEl.style.display = ''
