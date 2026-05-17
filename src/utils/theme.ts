@@ -1,25 +1,73 @@
-/**
- * 获取当前主题名字和模式
- */
-export function getCurrentThemeInfo() {
-    // 0 -> light, 1 -> dark
-    const themeMode = (window as any).siyuan.config.appearance.mode
-    let themeName = ''
-    
-    if (themeMode === 0 ) {
-        themeName = (window as any).siyuan.config.appearance.themeLight
-    }else{
-        themeName = (window as any).siyuan.config.appearance.themeDark
-    }
-
-    return [themeMode, themeName]
+export interface ThemeInfo {
+    name: string
+    label: string
 }
 
-export function getInstalledThemes() {
-    // in siyan 2.1.30, theme data structure changed to:
-    // 不需要加载缓存就能直接获取主题字段和对应的名字了
-    const lightThemes = (window as any).siyuan.config.appearance.lightThemes;
-    const darkThemes = (window as any).siyuan.config.appearance.darkThemes;
+import { log } from "./logger"
 
-    return [lightThemes, darkThemes]
+function getAppearance() {
+    return (window as any).siyuan?.config?.appearance
+}
+
+export function getInstalledThemes(): [ThemeInfo[], ThemeInfo[]] {
+    const appearance = getAppearance()
+    if (!appearance) return [[], []]
+
+    const light: ThemeInfo[] = (appearance.lightThemes ?? [])
+        .filter((t: any) => t?.name)
+        .map((t: any) => ({ name: t.name, label: t.label ?? t.name }))
+
+    const dark: ThemeInfo[] = (appearance.darkThemes ?? [])
+        .filter((t: any) => t?.name)
+        .map((t: any) => ({ name: t.name, label: t.label ?? t.name }))
+
+    log("[bgCover] getInstalledThemes: light =", light.length, "dark =", dark.length)
+    return [light, dark]
+}
+
+export function getCurrentThemeInfo(): [number, string] {
+    const appearance = getAppearance()
+    if (!appearance) return [0, '']
+    if (appearance.mode === 0) return [0, appearance.themeLight ?? '']
+    return [1, appearance.themeDark ?? '']
+}
+
+export function getCurrentThemeName(): string {
+    const appearance = getAppearance()
+    if (!appearance) return ''
+    return appearance.mode === 0
+        ? (appearance.themeLight ?? '')
+        : (appearance.themeDark ?? '')
+}
+
+export function isCurrentThemeDisabled(
+    disabledThemes: { light: string[]; dark: string[] }
+): boolean {
+    const appearance = getAppearance()
+    if (!appearance) return false
+    const mode = appearance.mode === 0 ? 'light' : 'dark'
+    const name = mode === 'light' ? (appearance.themeLight ?? '') : (appearance.themeDark ?? '')
+    return disabledThemes[mode]?.includes(name) ?? false
+}
+
+export function watchTheme(
+    onChange: (mode: 'light' | 'dark', name: string) => void
+): () => void {
+    const observer = new MutationObserver(() => {
+        const appearance = getAppearance()
+        if (!appearance) return
+        const mode: 'light' | 'dark' = appearance.mode === 0 ? 'light' : 'dark'
+        const name = mode === 'light'
+            ? (appearance.themeLight ?? '')
+            : (appearance.themeDark ?? '')
+        log("[bgCover] watchTheme: detected change ->", mode, name)
+        onChange(mode, name)
+    })
+
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme-mode'],
+    })
+
+    return () => observer.disconnect()
 }

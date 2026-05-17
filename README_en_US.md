@@ -27,29 +27,55 @@ Default background cover artist ——
 
 ## Features
 
-- [X] The plugin backend supports all platforms (Considering the UI interaction, support for **narrow-screen mobile devices** is not available)
-- [X] Tiling a picture as a background for SiYuan Notes
-- [X] Compatible theme
-- [X] Manually adjust the transparency
-- [X] Manually adjust the blur effects of the background
-- [X] Cached folder for background image library
-  - [X] Upload single local image files
-  - [X] Upload all images in a local folder
-- [x] Choose and switch a background image
-  - [x] Choosing by manual
-  - [X] Random select by manual action
-  - [X] Choosing randomly on launch
+- [X] Full platform support (desktop / mobile / browser)
+- [X] Images and videos as SiYuan Note background (auto-detect extension, canvas / video dual-mode rendering)
+- [X] Three background source types, unified management
+  - [X] Local folder direct reading (desktop only, zero upload)
+  - [X] SiYuan assets sub-folder referencing (all platforms)
+  - [X] Upload files to plugin cache (all platforms, supports network URL download)
+- [X] Background resource management
+  - [X] Multi-file / entire directory upload
+  - [X] File deletion, folder location, cache clearing
+  - [X] Mouse hover file thumbnail preview
+- [X] Background selection and switching
+  - [X] Manual selection
+  - [X] Manual random selection
+  - [X] Scheduled auto-random switching
+  - [X] Random selection on startup
+- [X] Manually adjust transparency (weighted algorithm for readability)
+- [X] Manually adjust background blur
+- [X] Background image X/Y offset control
+- [X] Theme blocking (disable plugin on specific themes)
+- [X] Shortcut key support
 
 
 ## Implementation
 
-Add a `<canvas>` element within the `<HTML>` element, at the same level as `<head>` and `<body>`. The `<canvas>` element should be tiled and centered, and placed at the bottom layer of the notebook to serve as the background for images. Then, add the `style='opacity: xxx'` attribute to the `<body>` element to achieve transparency for the notebook panel. This replaces the previous CSS transparency mode to avoid compatibility issues with all themes.
+Add `<canvas>` and `<video>` elements within the `<HTML>` element, at the same level as `<head>` and `<body>`. These elements are tiled and centered, placed at the bottom layer to serve as the background. Based on file extension, the engine automatically selects canvas (for images) or video (for videos) for rendering. Add `style='opacity: xxx'` to the `<body>` element to achieve transparency for the notebook panel.
+
+Background resources are managed through three source types: `local` (desktop-only local folders, using `window.require('fs/promises')` for direct reading and `file:///` for rendering, zero upload), `upload` (plugin cache directory, supports file upload and URL download), and `assets` (SiYuan note resource sub-folder referencing, zero additional storage).
 
 The range of transparency that can be set by the user is `[0.1, 1]`. However, to ensure readability of the notebook content, a weighted logic `f(x) = 0.99 - 0.25x` is used. The weighted transparency range is `[0.74, 0.99]`. Since different themes have completely different color settings, the same transparency setting may not appear consistent across different themes.
 
 ## ChangeLogs
 
 <details open>
+<summary><b>May 2026 — v1.0.0 Refactoring Edition</b></summary>
+
+**26.05.18**
+
+* <b style='color:red'>Breaking Change</b>: Full refactoring. Old v0.x configurations are incompatible and require reconfiguration.
+* <b>Build Upgrade</b>: Webpack → Vite 5, pure TS template strings → Svelte 5 components, added Vitest testing framework.
+* <b>Background Source Refactoring</b>: Added local folder direct reading (desktop), assets sub-folder referencing, URL download, three source types unified random pool management.
+* <b>Video Background</b>: Support .mp4, .webm, .ogg, .mov videos as background, automatic rendering mode switching.
+* <b>UI Rewrite</b>: Brand new 5-tab settings panel, topbar dropdown menu, file tree preview, thumbnail hover preview.
+* <b>Storage Migration</b>: All configs migrated to local.json single-layer storage, removed ts-md5 and other legacy dependencies.
+* <b>Removed Features</b>: CSS transparency mode, Live2D stub code, Bug report dialog, Android limitation notice, Demo images, sizeMode switching.
+* <b>Full Platform Support</b>: Available on desktop / mobile / browser-desktop / browser-mobile (non-desktop platforms auto-hide local folder features).
+
+</details>
+
+<details>
 <summary><b>Nov 2025</b></summary>
 
 **25.11.24**

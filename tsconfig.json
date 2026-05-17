@@ -1,13 +1,37 @@
 {
-  "compilerOptions": {
-    "noImplicitAny": true,
-    "module": "commonjs",
-    "target": "es6",
-    "lib": ["es6", "dom", "es2017", "esnext"],
-    "resolveJsonModule": true,
-    "esModuleInterop": true
-  },
-  "include": [
-    "src/**/*.ts"
-  ],
+    "compilerOptions": {
+        "target": "ESNext",
+        "useDefineForClassFields": true,
+        "module": "ESNext",
+        "lib": ["ES2020", "DOM", "DOM.Iterable"],
+        "skipLibCheck": true,
+        "moduleResolution": "Node",
+        "allowSyntheticDefaultImports": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": true,
+        "jsx": "preserve",
+        "strict": false,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true,
+        "allowJs": true,
+        "checkJs": true,
+        "types": ["node", "vite/client", "svelte"],
+        "paths": {
+            "@/*": ["./src/*"],
+            "@/libs/*": ["./src/libs/*"]
+        }
+    },
+    "include": [
+        "scripts/**/*.ts",
+        "src/**/*.ts",
+        "src/**/*.d.ts",
+        "src/**/*.svelte",
+        "tests/**/*.ts"
+    ],
+    "references": [
+        { "path": "./tsconfig.node.json" }
+    ],
+    "root": "."
 }

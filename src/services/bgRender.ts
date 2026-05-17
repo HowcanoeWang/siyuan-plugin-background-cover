@@ -1,210 +1,169 @@
-import { confmngr } from "../utils/configs";
+import { IMAGE_EXTS, VIDEO_EXTS } from "../constants"
+import { log } from "../utils/logger"
 
-import * as tps from "../types";
-import * as cst from "../constants";
+let canvasEl: HTMLCanvasElement | null = null
+let videoEl: HTMLVideoElement | null = null
+let currentMode: 'image' | 'video' | null = null
+let autoRefreshTimer: ReturnType<typeof setInterval> | null = null
 
-import * as fileManagerUI from "../ui/fileManager";
-import * as settingsUI from "../ui/settings";
-import * as topbarUI from "../ui/topbar";
-
-import {showNotImplementDialog} from "../ui/notice";
-
-import { error, debug } from "../utils/logger";
-import { getCurrentThemeInfo } from "../utils/theme";
-
-let autoRefreshTimer: NodeJS.Timeout | null = null;
-
-export function createBgLayer() {
-    var bgLayer = document.createElement('canvas');
-    bgLayer.id = "bglayer";
-    
-    ///////////////////////////////////////////////
-    // 载入scss修复思源笔记v3.1.26重载插件会丢失的bug //
-    ///////////////////////////////////////////////
-    // bgLayer.className = "bglayer";
-    // 直接设置样式
-    bgLayer.style.backgroundRepeat = 'no-repeat';
-    bgLayer.style.backgroundAttachment = 'fixed';
-    bgLayer.style.backgroundSize = 'cover';
-    bgLayer.style.backgroundPosition = 'center center';
-    bgLayer.style.width = '100%';
-    bgLayer.style.height = '100%';
-    bgLayer.style.position = 'absolute';
-    bgLayer.style.zIndex = '-10000';
-
-    var htmlElement = document.documentElement;
-    htmlElement.insertBefore(bgLayer, document.head);
-
-    debug('[bgRender][createBgLayer] bgLayer created')
-
-    // <video id="v1" loop="true" autoplay="autoplay" muted="" class="bglayer" style="object-fit: cover; object-position: 50% 70%;">
-    //     <source src="plugins/siyuan-plugin-background-cover/assets/videos/aaa.mp4" type="video/mp4">
-    // </video>
+export function getCurrentMode(): 'image' | 'video' | null {
+    return currentMode
 }
 
-// 添加视频背景
-// export function createBgLayer() {
-//     var bgLayer = document.createElement('video');
-//     bgLayer.id = "bglayer";
-//     bgLayer.className = "bglayer";
-//     bgLayer.loop = true;
-//     bgLayer.autoplay = true;
-//     bgLayer.muted = true;
-//     bgLayer.style.objectFit = "cover";
-//     bgLayer.style.objectPosition = "50% 70%";
-//     bgLayer.innerHTML = '<source src="plugins/siyuan-plugin-background-cover/static/output.mp4" type="video/mp4">';
-
-
-//     var htmlElement = document.documentElement;
-//     htmlElement.insertBefore(bgLayer, document.head);
-
-//     debug('[bgRender][createBgLayer] bgLayer created')
-
-//     // <video id="v1" loop="true" autoplay="autoplay" muted="" class="bglayer" style="object-fit: cover; object-position: 50% 70%;">
-//     //     <source src="plugins/siyuan-plugin-background-cover/assets/videos/aaa.mp4" type="video/mp4">
-//     // </video>
-// }
-
-
-export function useDefaultLiaoLiaoBg() {
-    debug(`[bgRender][applySettings] 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图`)
-    changeBackgroundContent(cst.demoImgURL, tps.bgMode.image)
-    confmngr.set('crtBgObj', undefined);
+function detectType(url: string): 'image' | 'video' | null {
+    const clean = url.split('?')[0]
+    const ext = '.' + (clean.split('.').pop()?.toLowerCase() ?? '')
+    if (VIDEO_EXTS.has(ext)) return 'video'
+    if (IMAGE_EXTS.has(ext)) return 'image'
+    return null
 }
 
-export function changeBackgroundContent(background: string, mode: tps.bgMode) {
-    var bgLayer = document.getElementById('bglayer');
+export function createBgLayer(): void {
+    if (canvasEl || videoEl) return
 
-    if (mode === tps.bgMode.image) {
-        debug(`[bgRender][changeBackgroundContent] 替换当前背景图片为${background}`)
-        bgLayer.style.setProperty('background-image', `url('${background}')`);
-    } else if (mode == tps.bgMode.video) {
-        showNotImplementDialog();
-    } else {
-        error(`[SwitchBgCover Plugin][Error] Background type [${mode}] is not supported, `, 7000, "error");
+    canvasEl = document.createElement('canvas')
+    canvasEl.id = 'bglayer'
+    canvasEl.style.backgroundRepeat = 'no-repeat'
+    canvasEl.style.backgroundAttachment = 'fixed'
+    canvasEl.style.backgroundSize = 'cover'
+    canvasEl.style.backgroundPosition = '50% 50%'
+    canvasEl.style.width = '100%'
+    canvasEl.style.height = '100%'
+    canvasEl.style.position = 'absolute'
+    canvasEl.style.zIndex = '-10000'
+    canvasEl.style.display = 'none'
+
+    videoEl = document.createElement('video')
+    videoEl.id = 'bgvideo'
+    videoEl.autoplay = true
+    videoEl.loop = true
+    videoEl.muted = true
+    videoEl.playsInline = true
+    videoEl.style.objectFit = 'cover'
+    videoEl.style.objectPosition = '50% 50%'
+    videoEl.style.width = '100%'
+    videoEl.style.height = '100%'
+    videoEl.style.position = 'absolute'
+    videoEl.style.zIndex = '-9999'
+    videoEl.style.display = 'none'
+    videoEl.style.pointerEvents = 'none'
+
+    const htmlEl = document.documentElement
+    htmlEl.insertBefore(canvasEl, document.head)
+    htmlEl.insertBefore(videoEl, document.head)
+}
+
+export function destroyBgLayer(): void {
+    stopAutoRefresh()
+    document.body.style.removeProperty('opacity')
+    canvasEl?.remove()
+    videoEl?.remove()
+    canvasEl = null
+    videoEl = null
+    currentMode = null
+}
+
+export function render(url: string): void {
+    const type = detectType(url)
+    if (type === 'image') renderImage(url)
+    else if (type === 'video') renderVideo(url)
+}
+
+export function renderImage(url: string): void {
+    if (!canvasEl) return
+    log("[bgCover] renderImage:", url.split('/').pop())
+    currentMode = 'image'
+
+    if (videoEl) {
+        videoEl.style.display = 'none'
+        try { videoEl.pause() } catch { /* ignored */ }
+        videoEl.removeAttribute('src')
     }
-};
-
-export function isdisabledTheme(){
-    var disabledTheme = confmngr.get('disabledTheme')
-    const themeModeText = ['light', 'dark']
-    const [themeMode, themeName] = getCurrentThemeInfo();
-
-    var result = disabledTheme[themeModeText[themeMode]][themeName];
-    debug(`[bgRender][isdisabledTheme] search mode='${themeModeText[themeMode]}', name='${themeName}' result is ${result}`)
-
-    return result;
+    canvasEl.style.display = ''
+    canvasEl.style.backgroundImage = `url('${url}')`
 }
 
-export function changeOpacity(alpha: number) {
-    let opacity = 0.99 - 0.25 * alpha;
+export function renderVideo(url: string): void {
+    if (!videoEl) return
+    log("[bgCover] renderVideo:", url.split('/').pop())
+    currentMode = 'video'
 
-    if (confmngr.get('activate') && !isdisabledTheme() && alpha !== 0) {
-        document.body.style.setProperty('opacity', opacity.toString());
-    } else {
-        document.body.style.removeProperty('opacity');
+    if (canvasEl) canvasEl.style.display = 'none'
+    videoEl.style.display = ''
+    videoEl.src = url
+    const playPromise = videoEl.play()
+    if (playPromise) {
+        playPromise.catch((e) => {
+            if (e.name !== 'AbortError') {
+                console.warn('[bgCover] video play failed:', e)
+            }
+        })
     }
 }
 
-export function changeBlur(blur: number) {
-    var bgLayer = document.getElementById('bglayer');
-    bgLayer.style.setProperty('filter', `blur(${blur}px)`)
+export function clearLayer(): void {
+    log("[bgCover] clearLayer")
+    if (canvasEl) {
+        canvasEl.style.display = 'none'
+        canvasEl.style.backgroundImage = ''
+    }
+    if (videoEl) {
+        videoEl.style.display = 'none'
+        try { videoEl.pause() } catch { /* not implemented in jsdom */ }
+        videoEl.removeAttribute('src')
+    }
+    currentMode = null
 }
 
-export function changeBgPosition(x: string, y: string) {
-    var bgLayer = document.getElementById('bglayer');
-
-    if (x == null || x == undefined) {
-        debug(`[bgRender][changeBgPosition] xy未定义，不进行改变`)
-        bgLayer.style.setProperty('background-position', `center`);
-    } else {
-        debug(`[bgRender][changeBgPosition] 修改background-position为${x}% ${y}%`)
-        bgLayer.style.setProperty('background-position', `${x}% ${y}%`);
+export function setVisible(visible: boolean): void {
+    log("[bgCover] setVisible:", visible)
+    if (canvasEl) canvasEl.style.display = visible && currentMode === 'image' ? '' : 'none'
+    if (videoEl) videoEl.style.display = visible && currentMode === 'video' ? '' : 'none'
+    if (!visible) {
+        document.body.style.removeProperty('opacity')
     }
 }
 
-export async function applySettings() {
-    window.bgCoverPlugin.isDev = confmngr.get('inDev');
-    
-    var bgLayer = document.getElementById('bglayer');
-    debug(bgLayer);
+export function changeOpacity(raw: number): void {
+    const clamped = Math.max(0.1, Math.min(1, raw))
+    const opacity = 0.99 - 0.25 * clamped
+    document.body.style.opacity = String(opacity)
+}
 
-    if (confmngr.get('activate') && !isdisabledTheme() ) {
-        bgLayer.style.removeProperty('display');
-    } else {
-        bgLayer.style.setProperty('display', 'none');
+export function changeBlur(val: number): void {
+    const px = Math.max(0, Math.min(10, val))
+    const filter = px > 0 ? `blur(${px}px)` : ''
+
+    if (currentMode === 'image' && canvasEl) {
+        canvasEl.style.filter = filter
+    } else if (currentMode === 'video' && videoEl) {
+        videoEl.style.filter = filter
     }
+}
 
-    // 清除旧的定时器
-    if (autoRefreshTimer) {
-        clearInterval(autoRefreshTimer);
-        autoRefreshTimer = null;
-        debug('[bgRender][applySettings] Cleared existing auto-refresh timer.');
+export function changePosition(x: number, y: number): void {
+    if (!canvasEl || currentMode !== 'image') return
+    canvasEl.style.backgroundPosition = `${x}% ${y}%`
+}
+
+export function applyOverrides(x?: number, y?: number, defaultX?: number, defaultY?: number): void {
+    if (currentMode !== 'image') return
+    const posX = x ?? defaultX ?? 50
+    const posY = y ?? defaultY ?? 50
+    changePosition(posX, posY)
+}
+
+export function startAutoRefresh(callback: () => void, intervalMs: number): void {
+    stopAutoRefresh()
+    if (intervalMs <= 0) return
+    log("[bgCover] startAutoRefresh: interval =", intervalMs, "ms")
+    autoRefreshTimer = setInterval(callback, intervalMs)
+}
+
+export function stopAutoRefresh(): void {
+    if (autoRefreshTimer !== null) {
+        log("[bgCover] stopAutoRefresh")
+        clearInterval(autoRefreshTimer)
+        autoRefreshTimer = null
     }
-
-    // 缓存文件夹中没有图片 | 用户刚刚使用这个插件 | 用户刚刚重置了插件数据 | 当前文件404找不到
-    const cacheImgNum = fileManagerUI.getCacheImgNum()
-    debug(`[bgRender][applySettings] cacheImgNum= ${cacheImgNum}`)
-    if (cacheImgNum === 0) {
-        // 没有缓存任何图片，使用默认的了了妹图片ULR来当作背景图
-        useDefaultLiaoLiaoBg();
-    } else if (confmngr.get('crtBgObj') === undefined) {
-        // 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张
-        debug(`[bgRender][applySettings] 缓存中有1张以上的图片，但是设置的bjObj却是undefined，随机抽一张`)
-        await topbarUI.selectPictureRandom();
-    } else {
-        // 缓存中有1张以上的图片，bjObj也有内容且图片存在
-        debug(`[bgRender][applySettings] 缓存中有1张以上的图片，bjObj也有内容且图片存在`)
-        let crtBgObj = confmngr.get('crtBgObj')
-        let crtHash = crtBgObj?.hash ?? '';
-        if (crtHash === '') {
-            crtHash = "emptyCrtObj"
-        }
-
-        let fileidx = confmngr.get('fileidx')
-        // 如果当前背景图有效，并且没有开启自动刷新功能，则加载config中记录的crtBgObj
-        if (crtBgObj && crtHash in fileidx) {
-            debug(`[bgRender][applySettings] 当前背景图有效，加载当前图片`)
-            changeBackgroundContent(crtBgObj.path, crtBgObj.mode)
-        } else {
-            // 当bjObj找不到404或不存在时，则随机选一张替换作为bjObj
-            debug(`[bgRender][applySettings] 当前背景图无效或丢失，随机选择一张替换`)
-            await topbarUI.selectPictureRandom();
-        }
-
-        // 如果开启了自动刷新且时间不为0，则设置新的定时器
-        debug(confmngr.get('autoRefreshTime'), `judgement result:`, confmngr.get('autoRefreshTime') > 0)
-        if (confmngr.get('autoRefresh') && confmngr.get('autoRefreshTime') > 0) {
-            const refreshTime = confmngr.get('autoRefreshTime') * 60 * 1000; // convert minutes to seconds to ms
-            autoRefreshTimer = setInterval(() => {
-                topbarUI.selectPictureRandom(false); // pass false to avoid notice on auto-refresh
-            }, refreshTime);
-            debug(`[bgRender][applySettings] Set up auto-refresh timer for every ${refreshTime / 1000} seconds.`);
-        }
-    }
-
-    changeOpacity(confmngr.get('opacity'))
-    changeBlur(confmngr.get('blur'))
-    if (confmngr.get('crtBgObj') === undefined){
-        changeBgPosition(null, null)
-    }else{
-        // 0.5.0版本后数据结构重构，放弃直接修改crtBgObj的.offx offy
-        // 因为需要考虑到不同的设备有不同的设置，而这个设置不应该同步
-        // 所以使用存在local配置中的'bgObjCfg' -> [img.hash].offx offy来进行记录和控制
-        let bgObjCfg = confmngr.get('bgObjCfg')
-
-        let crtBgObj = confmngr.get('crtBgObj');
-        let crtBgObjHash = crtBgObj?.hash ?? '';
-
-        var offx: string = '50'  // 默认居中
-        var offy: string = '50'
-        if (crtBgObjHash in bgObjCfg) {
-            offx = bgObjCfg[crtBgObjHash].offx
-            offy = bgObjCfg[crtBgObjHash].offy
-        }
-
-        changeBgPosition(offx, offy)
-    }
-    
-    settingsUI.updateSettingPanelElementStatus()
 }

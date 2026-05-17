@@ -1,163 +1,212 @@
 import {
     Plugin,
     getFrontend,
-    getBackend,
-} from "siyuan";
+} from "siyuan"
 
-import { confmngr } from './utils/configs';
+import { svelteDialog } from "./libs/dialog"
+import { configStore } from "./stores/config"
+import { destroyBgLayer, createBgLayer, renderImage, renderVideo, changeOpacity, changeBlur, changePosition, setVisible, startAutoRefresh, stopAutoRefresh } from "./services/bgRender"
+import { scanAll, pickRandom } from "./services/sourceManager"
+import { diyIcon, pickDefaultBackground, DEFAULT_BACKGROUNDS, IMAGE_EXTS, VIDEO_EXTS } from "./constants"
+import { debug, log } from "./utils/logger"
+import { isCurrentThemeDisabled, watchTheme } from "./utils/theme"
+import SettingsPanel from "./ui/settings/settings.svelte"
+import { buildTopBarMenu } from "./ui/topbar-menu"
 
-import { info, debug} from './utils/logger'
-import { getCurrentThemeInfo} from './utils/theme';
-
-import * as cst from './constants';
-import * as bgRender from "./services/bgRender"
-
-import * as topbarUI from "./ui/topbar";
-import * as noticeUI from "./ui/notice";
-import * as settingsUI from "./ui/settings";
-import * as fileManagerUI from "./ui/fileManager"
+export { svelteDialog }
 
 export default class BgCoverPlugin extends Plugin {
 
-    public isMobileLayout: boolean;
-    public isBrowser: boolean;
-    public isAndroidBackend: boolean;
-    public htmlThemeNode = document.getElementsByTagName('html')[0];
+    public isMobileLayout: boolean
+    private _unwatchTheme: (() => void) | null = null
 
     async onload() {
-        const frontEnd = getFrontend();
-        const backEnd = getBackend();
+        const frontEnd = getFrontend()
+        this.isMobileLayout = frontEnd === "mobile" || frontEnd === "browser-mobile"
 
-        this.isMobileLayout = frontEnd === "mobile" || frontEnd === "browser-mobile";
-        this.isBrowser = frontEnd.includes("browser");
-        this.isAndroidBackend = backEnd === "android";
+        await configStore.load()
 
-        window.bgCoverPlugin = {
+        await configStore.cleanOldConfigIfNeeded()
+
+        ;(window as any).bgCoverPlugin = {
             i18n: this.i18n,
             isMobileLayout: this.isMobileLayout,
-            isBrowser: this.isBrowser,
-            isAndroid: this.isAndroidBackend,
-            isDev: false,
-        };
-        debug(`设置全局变量window.bgCoverPlugin`, window.bgCoverPlugin)
+            plugin: this,
+            configStore,
+        }
 
-        // 图标的制作参见帮助文档
-        this.addIcons(cst.diyIcon.iconLogo);
+        this.addIcons(diyIcon.iconLogo)
 
-        await topbarUI.initTopbar(this);
+        this.addCommand({ langKey: "selectPictureManualLabel", hotkey: "⇧⌘F6", callback: () => this.openSetting("sources") })
+        this.addCommand({ langKey: "selectPictureRandomLabel", hotkey: "⇧⌘F7", callback: () => this.randomSelect() })
+        this.addCommand({ langKey: "openBackgroundLabel", hotkey: "⇧⌘F4", callback: () => this.toggleBackground() })
+        this.addCommand({ langKey: "reduceBackgroundOpacityLabel", hotkey: "⇧⌘7", callback: () => {
+            const v = Math.max(0, configStore.get("opacity") - 0.05)
+            configStore.setAndSave("opacity", v)
+            changeOpacity(v)
+        }})
+        this.addCommand({ langKey: "addBackgroundOpacityLabel", hotkey: "⇧⌘8", callback: () => {
+            const v = Math.min(1, configStore.get("opacity") + 0.05)
+            configStore.setAndSave("opacity", v)
+            changeOpacity(v)
+        }})
+        this.addCommand({ langKey: "reduceBackgroundBlurLabel", hotkey: "⇧⌘9", callback: () => {
+            const v = Math.max(0, configStore.get("blur") - 1)
+            configStore.setAndSave("blur", v)
+            changeBlur(v)
+        }})
+        this.addCommand({ langKey: "addBackgroundBlurLabel", hotkey: "⇧⌘0", callback: () => {
+            const v = Math.min(10, configStore.get("blur") + 1)
+            configStore.setAndSave("blur", v)
+            changeBlur(v)
+        }})
 
-        // 绑定快捷键
-        this.addCommand({
-            langKey: "selectPictureManualLabel",
-            hotkey: "⇧⌘F6",
-            callback: () => {
-                topbarUI.selectPictureByHand();
+        if (configStore.get("activate")) {
+            createBgLayer()
+            if (configStore.get("changeBgOnStart")) {
+                await this.randomSelect()
             }
-        });
-        this.addCommand({
-            langKey: "selectPictureRandomLabel",
-            hotkey: "⇧⌘F7",
-            callback: () => {
-                topbarUI.selectPictureRandom(true);
+            const currentFile = configStore.get("currentFile")
+            if (DEFAULT_BACKGROUNDS.includes(currentFile ?? '')) {
+                configStore.set("currentFile", pickDefaultBackground())
+                configStore.save()
             }
-        });
-        this.addCommand({
-            langKey: "openBackgroundLabel",
-            hotkey: "⇧⌘F4",
-            callback: () => {
-                topbarUI.pluginOnOff();
+            if (!configStore.get("currentFile")) {
+                const assetDirs = configStore.get("assetDirs")
+                const localFolders = configStore.get("localFolders")
+                const pool = await scanAll(assetDirs, localFolders)
+                if (pool.length === 0) {
+                    configStore.set("currentFile", pickDefaultBackground())
+                    configStore.save()
+                }
             }
-        });
-        this.addCommand({
-            langKey: "reduceBackgroundOpacityLabel",
-            hotkey: "⇧⌘7",
-            callback: () => {
-                settingsUI.opacityShortcut(false);
+            this.applyBackground()
+        }
 
-            }
-        });
-        this.addCommand({
-            langKey: "addBackgroundOpacityLabel",
-            hotkey: "⇧⌘8",
-            callback: () => {
-                settingsUI.opacityShortcut(true);
+        this._unwatchTheme = watchTheme((mode, name) => {
+            log("[bgCover] theme changed:", mode, name)
+            this.applyThemeShield()
+        })
 
-            }
-        });
-        this.addCommand({
-            langKey: "reduceBackgroundBlurLabel",
-            hotkey: "⇧⌘9",
-            callback: () => {
-                settingsUI.blurShortcut(false);
-
-            }
-        });
-        this.addCommand({
-            langKey: "addBackgroundBlurLabel",
-            hotkey: "⇧⌘0",
-            callback: () => {
-                settingsUI.blurShortcut(true);
-
-            }
-        });
-
-        // 侦测theme主题有没有发生变化
-        // const themeChangeObserver = new MutationObserver(await this.themeOnChange.bind(this));
-        // themeChangeObserver.observe(this.htmlThemeNode, { attributes: true });
-        info(this.i18n.helloPlugin);
+        log("[bgCover]", this.i18n.helloPlugin)
     }
 
-    async onLayoutReady() {
-        confmngr.setParent(this);
-        
-        //初始化数据
-        await confmngr.load();
-        window.bgCoverPlugin.isDev = confmngr.get('inDev');
+    onLayoutReady() {
+        const topBarElement = this.addTopBar({
+            icon: "iconLogo",
+            title: this.i18n.addTopBarIcon,
+            position: "right",
+            callback: () => {
+                buildTopBarMenu(topBarElement, this, {
+                    onOpenSettings: (tab?: string) => this.openSetting(tab),
+                    toggleBackground: () => this.toggleBackground(),
+                    randomSelect: () => this.randomSelect(),
+                })
+            },
+        })
+    }
 
-        bgRender.createBgLayer();
-        
-        await fileManagerUI.checkAssetsDir();
-
-        // load the user setting data
-        const [themeMode, themeName] = getCurrentThemeInfo();
-        confmngr.set('prevTheme', themeName);
-
-        await bgRender.applySettings();
-
-        debug(`frontend: ${getFrontend()}; backend: ${getBackend()}`);
-
-        // 去除检测到主题变化的提示(因为此时已经刷新了)
-        noticeUI.removeThemeRefreshDialog();
+    openSetting(activeTab?: string): void {
+        svelteDialog({
+            title: "Background Cover",
+            width: this.isMobileLayout ? "92vw" : "max(520px, 60vw)",
+            height: "max(520px, 60vh)",
+            component: SettingsPanel,
+            props: { activeTab },
+        })
     }
 
     onunload() {
-        // solve cloud sync conflicts
-        // configs.save('[index.ts][onunload]');
-
-        // remove changes when deactivate plugin
-        var bgLayer = document.getElementById('bglayer');
-        bgLayer.remove();
-        document.body.style.removeProperty('opacity');
-
-        info(`${this.i18n.byePlugin}`);
+        this._unwatchTheme?.()
+        destroyBgLayer()
+        log("[bgCover]", this.i18n.byePlugin)
     }
 
-    private async themeOnChange() {
-        const [themeMode, themeName] = getCurrentThemeInfo();
-        let prevTheme = confmngr.get('prevTheme')
-
-        debug(`Theme changed! from ${prevTheme} to ${themeMode} | ${themeName}`)
-
-        if (prevTheme !== themeName) {
-            // 更换主题时且没有重载时，提示需要刷新笔记页面
-            confmngr.set('prevTheme', themeName);
-            await confmngr.save('[index][themeOnChange]')
-            noticeUI.themeRefreshDialog();
-            // 如果重载了，这个界面会在onLoadReady时被去掉
+    async toggleBackground() {
+        const active = !configStore.get("activate")
+        log("[bgCover] toggleBackground:", active ? "activated" : "deactivated")
+        configStore.setAndSave("activate", active)
+        if (active) {
+            createBgLayer()
+            this.applyBackground()
+        } else {
+            destroyBgLayer()
         }
     }
 
-    public openSetting() {
-        settingsUI.openSettingDialog(this);
+    async randomSelect() {
+        const assetDirs = configStore.get("assetDirs")
+        const localFolders = configStore.get("localFolders")
+        const pool = await scanAll(assetDirs, localFolders)
+        if (pool.length === 0) {
+            log("[bgCover] randomSelect: pool is empty, nothing to pick")
+            return
+        }
+        const exclude = pool.length > 1 ? configStore.get("currentFile") : null
+        const item = pickRandom(pool, exclude)
+        if (!item) return
+        log("[bgCover] randomSelect: picked", item.name, "from", pool.length, "items")
+        configStore.set("currentFile", item.url)
+        configStore.save()
+        if (item.type === 'image') {
+            renderImage(item.url)
+        } else {
+            renderVideo(item.url)
+        }
+        changeOpacity(configStore.get("opacity"))
+        changeBlur(configStore.get("blur"))
+        changePosition(configStore.get("positionX"), configStore.get("positionY"))
+    }
+
+    private applyBackground() {
+        log("[bgCover] applyBackground: start")
+        try {
+            const currentFile = configStore.get("currentFile")
+            debug("[bgCover] applyBackground: currentFile =", currentFile)
+            if (!currentFile) {
+                debug("[bgCover] applyBackground: currentFile is null, skip render")
+                return
+            }
+
+            const ext = '.' + (currentFile.split('.').pop()?.toLowerCase() ?? '')
+            debug("[bgCover] applyBackground: ext =", ext)
+            if (VIDEO_EXTS.has(ext)) {
+                debug("[bgCover] applyBackground: -> renderVideo")
+                renderVideo(currentFile)
+            } else if (IMAGE_EXTS.has(ext)) {
+                debug("[bgCover] applyBackground: -> renderImage")
+                renderImage(currentFile)
+            } else {
+                console.warn(`[bgCover] applyBackground: unknown extension "${ext}" for ${currentFile}`)
+                return
+            }
+        } finally {
+            const opacity = configStore.get("opacity")
+            const blur = configStore.get("blur")
+            const px = configStore.get("positionX")
+            const py = configStore.get("positionY")
+            debug("[bgCover] applyBackground: changeOpacity =", opacity, "blur =", blur, "pos =", px, py)
+            changeOpacity(opacity)
+            changeBlur(blur)
+            changePosition(px, py)
+        }
+
+        const interval = configStore.get("autoRefreshTime")
+        stopAutoRefresh()
+        if (interval > 0) {
+            startAutoRefresh(() => this.randomSelect(), interval * 60000)
+        }
+    }
+
+    applyThemeShield() {
+        if (!configStore.get("activate")) return
+        if (isCurrentThemeDisabled(configStore.get("disabledThemes"))) {
+            log("[bgCover] applyThemeShield: theme disabled, hiding")
+            setVisible(false)
+        } else {
+            log("[bgCover] applyThemeShield: theme enabled, showing")
+            createBgLayer()
+            this.applyBackground()
+        }
     }
 }

@@ -1,31 +1,27 @@
-import packageInfo from '../plugin.json'
+import pluginJson from "../plugin.json"
 
-export const packageName = packageInfo.name
-export const packageVersion = packageInfo.version
+export const packageName = "siyuan-plugin-background-cover"
 
-export const localStorageKey = packageInfo.name
+export const packageVersion = pluginJson.version
 
-export const hashLength = 2097152;
+export const IMAGE_EXTS = new Set([
+    '.png', '.jpg', '.jpeg', '.jfif', '.gif', '.webp', '.bmp', '.svg', '.avif',
+])
 
-export const synConfigFile = 'configs.json'
-export const pluginAssetsDir = `/data/public/${packageInfo.name}`
-export const pluginAssetsId = 'pluginAssetsDir'
+export const VIDEO_EXTS = new Set([
+    '.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv',
+])
 
+export const pluginAssetsDir = `/data/public/${packageName}/`
 
-export let pluginAssetsDirOS = ''
-let dataDir = (window as any).siyuan.config.system.workspaceDir
-if ((window as any).siyuan.config.system.os === 'windows'){
-    dataDir = dataDir.replaceAll('\\', '/')
-    pluginAssetsDirOS = `${dataDir}${pluginAssetsDir}`
-}else{
-    pluginAssetsDirOS = `${dataDir}${pluginAssetsDir}`
+export const DEFAULT_BACKGROUNDS = [
+    `plugins/${packageName}/default/av71658201.mp4`,
+    `plugins/${packageName}/default/FyBE0bUakAELfeF.jpg`,
+]
+
+export function pickDefaultBackground(): string {
+    return DEFAULT_BACKGROUNDS[Math.floor(Math.random() * DEFAULT_BACKGROUNDS.length)]
 }
-
-export const cacheMaxNum = 198;
-
-export const supportedImageSuffix = [".png", ".jpeg", ".jpg", ".jiff", ".jfif"]
-
-export const demoImgURL = './plugins/siyuan-plugin-background-cover/static/FyBE0bUakAELfeF.jpg'
 
 export const diyIcon = {
     iconLogo: `<symbol id="iconLogo" viewBox="0 0 32 32">
