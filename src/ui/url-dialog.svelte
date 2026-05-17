@@ -1,11 +1,12 @@
 <script lang="ts">
     import { onDestroy } from "svelte"
     import { downloadUrl } from "../utils/api"
+    import { getFileUrl } from "../utils/fs"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
 
     interface Props {
-        onSuccess?: () => void
+        onSuccess?: (uploadUrl?: string) => void
     }
 
     let { onSuccess }: Props = $props()
@@ -85,7 +86,8 @@
 
         const ok = await downloadUrl(trimmed, destPath)
         if (ok) {
-            onSuccess?.()
+            const renderingUrl = getFileUrl(`/data/public/siyuan-plugin-background-cover/${fileName}`, 'upload')
+            onSuccess?.(renderingUrl)
         }
     }
 

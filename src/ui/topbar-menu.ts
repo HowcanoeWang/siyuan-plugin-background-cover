@@ -132,7 +132,20 @@ export function buildTopBarMenu(
             width: "520px",
             height: "auto",
             props: {
-                onSuccess: () => {
+                onSuccess: (uploadUrl?: string) => {
+                    if (uploadUrl) {
+                        configStore.set("currentFile", uploadUrl)
+                        configStore.save()
+                        import("../services/bgRender").then(m => {
+                            if (uploadUrl.match(/\.(mp4|webm|ogg|mov|avi|mkv)$/i)) {
+                                m.renderVideo(uploadUrl)
+                            } else {
+                                m.renderImage(uploadUrl)
+                            }
+                            m.changeOpacity(configStore.get("opacity"))
+                            m.changeBlur(configStore.get("blur"))
+                        })
+                    }
                     cb.onOpenSettings("sources")
                 },
             },

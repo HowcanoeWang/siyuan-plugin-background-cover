@@ -336,7 +336,22 @@
             component: UrlDialog,
             width: "520px",
             height: "auto",
-            props: { onSuccess: () => refreshAll() },
+            props: {
+                onSuccess: (uploadUrl?: string) => {
+                    if (uploadUrl) {
+                        configStore.set("currentFile", uploadUrl)
+                        configStore.save()
+                        if (uploadUrl.match(/\.(mp4|webm|ogg|mov|avi|mkv)$/i)) {
+                            renderVideo(uploadUrl)
+                        } else {
+                            renderImage(uploadUrl)
+                        }
+                        changeOpacity(configStore.get("opacity"))
+                        changeBlur(configStore.get("blur"))
+                    }
+                    refreshAll()
+                },
+            },
         })
     }
 </script>
