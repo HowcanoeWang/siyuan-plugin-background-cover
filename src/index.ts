@@ -7,7 +7,7 @@ import { svelteDialog } from "./libs/dialog"
 import { configStore } from "./stores/config"
 import { destroyBgLayer, createBgLayer, renderImage, renderVideo, changeOpacity, changeBlur, changePosition } from "./services/bgRender"
 import { scanAll, pickRandom } from "./services/sourceManager"
-import { diyIcon } from "./constants"
+import { diyIcon, pickDefaultBackground } from "./constants"
 import SettingsPanel from "./ui/settings/settings.svelte"
 import { buildTopBarMenu } from "./ui/topbar-menu"
 
@@ -58,6 +58,11 @@ export default class BgCoverPlugin extends Plugin {
 
         if (configStore.get("activate")) {
             createBgLayer()
+            if (!configStore.get("currentFile")) {
+                const url = pickDefaultBackground()
+                configStore.set("currentFile", url)
+                configStore.save()
+            }
             this.applyBackground()
         }
 
@@ -126,12 +131,15 @@ export default class BgCoverPlugin extends Plugin {
     }
 
     private applyBackground() {
-        const currentFile = configStore.get("currentFile")
-        if (currentFile) {
-            renderImage(currentFile)
-            changeOpacity(configStore.get("opacity"))
-            changeBlur(configStore.get("blur"))
-            changePosition(configStore.get("positionX"), configStore.get("positionY"))
+        let currentFile = configStore.get("currentFile")
+        if (!currentFile) {
+            currentFile = pickDefaultBackground()
+            configStore.set("currentFile", currentFile)
+            configStore.save()
         }
+        renderImage(currentFile)
+        changeOpacity(configStore.get("opacity"))
+        changeBlur(configStore.get("blur"))
+        changePosition(configStore.get("positionX"), configStore.get("positionY"))
     }
 }

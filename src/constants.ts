@@ -6,6 +6,15 @@ export const packageVersion = pluginJson.version
 
 export const pluginAssetsDir = `/data/public/${packageName}/`
 
+export const DEFAULT_BACKGROUNDS = [
+    `plugins/${packageName}/default/av71658201.mp4`,
+    `plugins/${packageName}/default/FyBE0bUakAELfeF.jpg`,
+]
+
+export function pickDefaultBackground(): string {
+    return DEFAULT_BACKGROUNDS[Math.floor(Math.random() * DEFAULT_BACKGROUNDS.length)]
+}
+
 export const diyIcon = {
     iconLogo: `<symbol id="iconLogo" viewBox="0 0 32 32">
     <path d="M26 28h-20v-4l6-10 8.219 10 5.781-4v8z"></path>
