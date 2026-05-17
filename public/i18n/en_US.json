@@ -37,7 +37,7 @@
     "loading": "Loading…",
     "noFiles": "No files",
     "noSources": "No image sources added yet",
-    "noPreviewHint": "Click image in list to preview",
+    "noPreviewHint": "Hover over image in list to preview",
     "videoNoPreview": "Video — preview not supported",
     "pathInaccessible": "Path inaccessible",
     "pathNotExist": "Path does not exist or is inaccessible",
@@ -92,5 +92,9 @@
     "videoCount": "Videos",
     "clearCacheTitle": "Clear Plugin Cache",
     "clearCacheConfirm": "Clear plugin cache? This will delete",
-    "oldConfigWarn": "Major refactor. Reset in Settings→Advanced. Old data: {path}"
+    "oldConfigWarn": "Major refactor. Reset in Settings→Advanced. Old data: data/public/siyuan-plugin-background-cover/*",
+    "activateBgDesc": "Background hidden but elements remain in DOM",
+    "switchIntervalDesc": "Auto switch interval, 0 to disable",
+    "foregroundOpacityDesc": "Range 0.1-1, drag to update",
+    "bgBlurDesc": "Range 0-10, drag to update"
 }

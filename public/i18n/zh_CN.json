@@ -37,7 +37,7 @@
     "loading": "加载中…",
     "noFiles": "暂无文件",
     "noSources": "尚未添加任何图片源",
-    "noPreviewHint": "点击文件列表中图片以预览",
+    "noPreviewHint": "鼠标悬浮在文件列表中的图片上以预览",
     "videoNoPreview": "视频文件 — 不支持预览",
     "pathInaccessible": "路径不可访问",
     "pathNotExist": "路径不存在或无法访问",
@@ -92,5 +92,9 @@
     "videoCount": "视频",
     "clearCacheTitle": "清空插件缓存",
     "clearCacheConfirm": "确认清空插件缓存？此操作将删除",
-    "oldConfigWarn": "背景插件大版本重构，建议前往 设置→高级 重置。旧数据路径: {path}"
+    "oldConfigWarn": "背景插件大版本重构，建议前往 设置→高级 重置。旧数据路径: data/public/siyuan-plugin-background-cover/*",
+    "activateBgDesc": "关闭后背景图片不显示(但背景元素还存在于html代码中)",
+    "switchIntervalDesc": "定时自动切换时间，设置为0则不定时切换",
+    "foregroundOpacityDesc": "范围(0.1-1), 鼠标拖动后更新",
+    "bgBlurDesc": "范围(0-10), 鼠标拖动后更新"
 }
