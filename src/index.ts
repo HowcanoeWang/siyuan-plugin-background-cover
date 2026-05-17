@@ -85,14 +85,7 @@ export default class BgCoverPlugin extends Plugin {
 
         this._unwatchTheme = watchTheme((mode, name) => {
             log("[bgCover] theme changed:", mode, name)
-            if (!configStore.get("activate")) return
-            if (isCurrentThemeDisabled(configStore.get("disabledThemes"))) {
-                log("[bgCover] theme is disabled, hiding background")
-                setVisible(false)
-            } else {
-                createBgLayer()
-                this.applyBackground()
-            }
+            this.applyThemeShield()
         })
 
         log("[bgCover]", this.i18n.helloPlugin)
@@ -202,6 +195,18 @@ export default class BgCoverPlugin extends Plugin {
         stopAutoRefresh()
         if (interval > 0) {
             startAutoRefresh(() => this.randomSelect(), interval * 60000)
+        }
+    }
+
+    applyThemeShield() {
+        if (!configStore.get("activate")) return
+        if (isCurrentThemeDisabled(configStore.get("disabledThemes"))) {
+            log("[bgCover] applyThemeShield: theme disabled, hiding")
+            setVisible(false)
+        } else {
+            log("[bgCover] applyThemeShield: theme enabled, showing")
+            createBgLayer()
+            this.applyBackground()
         }
     }
 }

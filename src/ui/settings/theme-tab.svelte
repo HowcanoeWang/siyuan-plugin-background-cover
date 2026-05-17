@@ -33,7 +33,7 @@
         if (idx >= 0) list.splice(idx, 1)
         else list.push(name)
         configStore.setAndSave("disabledThemes", { ...dt, [key]: list })
-        ;(window as any).bgCoverPlugin?.plugin?.applyBackground?.()
+        ;(window as any).bgCoverPlugin?.plugin?.applyThemeShield?.()
     }
 </script>
 

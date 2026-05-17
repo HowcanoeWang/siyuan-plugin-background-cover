@@ -28,7 +28,8 @@ export function getInstalledThemes(): [ThemeInfo[], ThemeInfo[]] {
 export function getCurrentThemeInfo(): [number, string] {
     const appearance = getAppearance()
     if (!appearance) return [0, '']
-    return [appearance.mode ?? 0, appearance.themeDark ?? '']
+    if (appearance.mode === 0) return [0, appearance.themeLight ?? '']
+    return [1, appearance.themeDark ?? '']
 }
 
 export function getCurrentThemeName(): string {
