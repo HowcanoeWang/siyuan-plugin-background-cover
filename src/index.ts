@@ -6,9 +6,10 @@ import {
 
 import { svelteDialog } from "./libs/dialog"
 import { configStore } from "./stores/config"
-import { destroyBgLayer, createBgLayer, renderImage, renderVideo, changeOpacity, changeBlur, changePosition } from "./services/bgRender"
+import { destroyBgLayer, createBgLayer, renderImage, renderVideo, changeOpacity, changeBlur, changePosition, setVisible } from "./services/bgRender"
 import { scanAll, pickRandom } from "./services/sourceManager"
 import { diyIcon, pickDefaultBackground, IMAGE_EXTS, VIDEO_EXTS } from "./constants"
+import { isCurrentThemeDisabled, watchTheme } from "./utils/theme"
 import SettingsPanel from "./ui/settings/settings.svelte"
 import { buildTopBarMenu } from "./ui/topbar-menu"
 
@@ -17,6 +18,7 @@ export { svelteDialog }
 export default class BgCoverPlugin extends Plugin {
 
     public isMobileLayout: boolean
+    private _unwatchTheme: (() => void) | null = null
 
     async onload() {
         const frontEnd = getFrontend()
@@ -78,6 +80,16 @@ export default class BgCoverPlugin extends Plugin {
             this.applyBackground()
         }
 
+        this._unwatchTheme = watchTheme(() => {
+            if (!configStore.get("activate")) return
+            if (isCurrentThemeDisabled(configStore.get("disabledThemes"))) {
+                setVisible(false)
+            } else {
+                createBgLayer()
+                this.applyBackground()
+            }
+        })
+
         console.log(this.i18n.helloPlugin)
     }
 
@@ -107,6 +119,7 @@ export default class BgCoverPlugin extends Plugin {
     }
 
     onunload() {
+        this._unwatchTheme?.()
         destroyBgLayer()
         console.log(this.i18n.byePlugin)
     }

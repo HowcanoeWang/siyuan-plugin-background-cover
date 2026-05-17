@@ -1,77 +1,122 @@
 <script lang="ts">
     import { onMount } from "svelte"
     import { configStore } from "../../stores/config"
-    import { getInstalledThemes } from "../../utils/theme"
+    import { getInstalledThemes, getCurrentThemeInfo } from "../../utils/theme"
+    import type { ThemeInfo } from "../../utils/theme"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
 
     let disabledThemes = $state(configStore.get("disabledThemes"))
-    let darkThemes = $state<string[]>([])
-    let lightThemes = $state<string[]>([])
+    let lightItems = $state<ThemeInfo[]>([])
+    let darkItems = $state<ThemeInfo[]>([])
+    let currentMode = $state(0)
+    let currentThemeName = $state('')
 
     onMount(() => {
         const [light, dark] = getInstalledThemes()
-        lightThemes = light.map(t => t.name)
-        darkThemes = dark.map(t => t.name)
+        lightItems = light
+        darkItems = dark
+        const [mode, name] = getCurrentThemeInfo()
+        currentMode = mode
+        currentThemeName = name
     })
 
     $effect(() => {
         disabledThemes = configStore.get("disabledThemes")
     })
 
-    function toggleDarkTheme(name: string) {
+    function toggleTheme(mode: 'light' | 'dark', name: string) {
         const dt = configStore.get("disabledThemes")
-        const dark = [...dt.dark]
-        const idx = dark.indexOf(name)
-        if (idx >= 0) dark.splice(idx, 1)
-        else dark.push(name)
-        configStore.setAndSave("disabledThemes", { ...dt, dark })
-    }
-
-    function toggleLightTheme(name: string) {
-        const dt = configStore.get("disabledThemes")
-        const light = [...dt.light]
-        const idx = light.indexOf(name)
-        if (idx >= 0) light.splice(idx, 1)
-        else light.push(name)
-        configStore.setAndSave("disabledThemes", { ...dt, light })
+        const key = mode === 'light' ? 'light' : 'dark'
+        const list = [...dt[key]]
+        const idx = list.indexOf(name)
+        if (idx >= 0) list.splice(idx, 1)
+        else list.push(name)
+        configStore.setAndSave("disabledThemes", { ...dt, [key]: list })
+        ;(window as any).bgCoverPlugin?.plugin?.applyBackground?.()
     }
 </script>
 
-<div class="config__tab-container" data-name="theme" style="display: flex; flex-direction: column; gap: 8px;">
-    <div class="b3-label">{i18n.disabledThemesTitle ?? "屏蔽主题 (在下列主题不显示背景)"}</div>
+<div class="config__tab-container" data-name="theme">
+    <div class="config-bazaar__panel">
 
-    <div class="fn__hr"></div>
+        <div class="fn__flex config-bazaar__title">
+            <div>{i18n.lightThemes ?? "浅色主题"}</div>
+        </div>
+        <div class="config-bazaar__content">
+            {#if lightItems.length === 0}
+                <div style="color: var(--b3-theme-on-surface); padding: 8px;">
+                    {i18n.noLightThemes ?? "暂无已安装的浅色主题"}
+                </div>
+            {:else}
+                <div class="b3-cards">
+                    {#each lightItems as theme (theme.name)}
+                        <div class="b3-card b3-card--wrap">
+                            <div class="fn__flex-1 fn__flex-column">
+                                <div class="b3-card__info b3-card__info--left fn__flex-1">
+                                    <span
+                                        style:color={currentMode === 0 && currentThemeName === theme.name
+                                            ? 'var(--b3-theme-primary)' : ''}
+                                    >
+                                        {theme.name}
+                                        {#if currentMode === 0 && currentThemeName === theme.name}
+                                            [当前主题]
+                                        {/if}
+                                    </span>
+                                    <div class="b3-card__desc">{theme.label}</div>
+                                </div>
+                            </div>
+                            <div class="b3-card__actions b3-card__actions--right">
+                                <span class="fn__space"></span>
+                                <input class="b3-switch fn__flex-center" type="checkbox"
+                                    checked={disabledThemes.light.includes(theme.name)}
+                                    onchange={() => toggleTheme('light', theme.name)}
+                                />
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+            {/if}
+        </div>
 
-    <div class="b3-label">{i18n.darkThemes ?? "深色主题"}</div>
-    {#if darkThemes.length === 0}
-        <div style="color: var(--b3-theme-on-surface); padding: 8px;">{i18n.noDarkThemes ?? "暂无已安装的深色主题"}</div>
-    {:else}
-        {#each darkThemes as name}
-            <div class="b3-list-item">
-                <span class="b3-list-item__text fn__flex-1">{name}</span>
-                <input class="b3-switch fn__flex-center" type="checkbox"
-                    checked={disabledThemes.dark.includes(name)}
-                    onchange={() => toggleDarkTheme(name)}
-                />
-            </div>
-        {/each}
-    {/if}
+        <div class="fn__flex config-bazaar__title">
+            <div>{i18n.darkThemes ?? "深色主题"}</div>
+        </div>
+        <div class="config-bazaar__content">
+            {#if darkItems.length === 0}
+                <div style="color: var(--b3-theme-on-surface); padding: 8px;">
+                    {i18n.noDarkThemes ?? "暂无已安装的深色主题"}
+                </div>
+            {:else}
+                <div class="b3-cards">
+                    {#each darkItems as theme (theme.name)}
+                        <div class="b3-card b3-card--wrap">
+                            <div class="fn__flex-1 fn__flex-column">
+                                <div class="b3-card__info b3-card__info--left fn__flex-1">
+                                    <span
+                                        style:color={currentMode === 1 && currentThemeName === theme.name
+                                            ? 'var(--b3-theme-primary)' : ''}
+                                    >
+                                        {theme.name}
+                                        {#if currentMode === 1 && currentThemeName === theme.name}
+                                            [当前主题]
+                                        {/if}
+                                    </span>
+                                    <div class="b3-card__desc">{theme.label}</div>
+                                </div>
+                            </div>
+                            <div class="b3-card__actions b3-card__actions--right">
+                                <span class="fn__space"></span>
+                                <input class="b3-switch fn__flex-center" type="checkbox"
+                                    checked={disabledThemes.dark.includes(theme.name)}
+                                    onchange={() => toggleTheme('dark', theme.name)}
+                                />
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+            {/if}
+        </div>
 
-    <div class="fn__hr"></div>
-
-    <div class="b3-label">{i18n.lightThemes ?? "浅色主题"}</div>
-    {#if lightThemes.length === 0}
-        <div style="color: var(--b3-theme-on-surface); padding: 8px;">{i18n.noLightThemes ?? "暂无已安装的浅色主题"}</div>
-    {:else}
-        {#each lightThemes as name}
-            <div class="b3-list-item">
-                <span class="b3-list-item__text fn__flex-1">{name}</span>
-                <input class="b3-switch fn__flex-center" type="checkbox"
-                    checked={disabledThemes.light.includes(name)}
-                    onchange={() => toggleLightTheme(name)}
-                />
-            </div>
-        {/each}
-    {/if}
+    </div>
 </div>
