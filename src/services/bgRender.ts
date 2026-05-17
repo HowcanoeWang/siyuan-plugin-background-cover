@@ -1,10 +1,9 @@
+import { IMAGE_EXTS, VIDEO_EXTS } from "../constants"
+
 let canvasEl: HTMLCanvasElement | null = null
 let videoEl: HTMLVideoElement | null = null
 let currentMode: 'image' | 'video' | null = null
 let autoRefreshTimer: ReturnType<typeof setInterval> | null = null
-
-const VIDEO_EXTENSIONS = new Set(['.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv'])
-const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg', '.avif'])
 
 export function getCurrentMode(): 'image' | 'video' | null {
     return currentMode
@@ -13,8 +12,8 @@ export function getCurrentMode(): 'image' | 'video' | null {
 function detectType(url: string): 'image' | 'video' | null {
     const clean = url.split('?')[0]
     const ext = '.' + (clean.split('.').pop()?.toLowerCase() ?? '')
-    if (VIDEO_EXTENSIONS.has(ext)) return 'video'
-    if (IMAGE_EXTENSIONS.has(ext)) return 'image'
+    if (VIDEO_EXTS.has(ext)) return 'video'
+    if (IMAGE_EXTS.has(ext)) return 'image'
     return null
 }
 

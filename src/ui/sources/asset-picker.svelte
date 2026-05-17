@@ -12,7 +12,7 @@
         videoCount: number
         children: DirNode[]
         open: boolean
-        loading: boolean
+        loaded: boolean
     }
 
     interface Props {
@@ -26,78 +26,64 @@
     let loading = $state(true)
 
     onMount(async () => {
-        roots = await loadChildren("/data/assets/")
-        loading = false
-    })
-
-    async function loadChildren(dirPath: string): Promise<DirNode[]> {
-        const items = await readDirItems(dirPath)
-        const nodes: DirNode[] = []
-
+        const items = await readDirItems("/data/assets/")
         for (const item of items) {
             if (!item.isDir) continue
-            const childPath = dirPath.endsWith('/') ? dirPath + item.name : dirPath + '/' + item.name
-
-            const node: DirNode = {
+            roots.push({
                 name: item.name,
-                path: childPath,
+                path: "/data/assets/" + item.name,
                 imageCount: 0,
                 videoCount: 0,
                 children: [],
                 open: false,
-                loading: false,
-            }
-
-            const childItems = await readDirItems(childPath + '/')
-            for (const child of childItems) {
-                if (child.isDir) {
-                    node.children.push({
-                        name: child.name,
-                        path: childPath + '/' + child.name,
-                        imageCount: 0,
-                        videoCount: 0,
-                        children: [],
-                        open: false,
-                        loading: true,
-                    })
-                } else {
-                    const type = classifyFileType(child.name)
-                    if (type === 'image') node.imageCount++
-                    else if (type === 'video') node.videoCount++
-                }
-            }
-
-            nodes.push(node)
+                loaded: false,
+            })
         }
+        roots.sort((a, b) => a.name.localeCompare(b.name))
+        loading = false
+    })
 
-        return nodes.sort((a, b) => a.name.localeCompare(b.name))
-    }
-
-    async function toggleNode(node: DirNode) {
-        if (node.open) {
-            node.open = false
+    async function expandChild(node: DirNode) {
+        if (node.loaded) {
+            node.open = !node.open
             return
         }
 
-        if (node.loading && node.children.length > 0) {
-            node.loading = false
-            node.children = await loadChildren(node.path + '/')
+        node.imageCount = 0
+        node.videoCount = 0
+        node.children = []
+
+        const items = await readDirItems(node.path + '/')
+        for (const child of items) {
+            if (child.isDir) {
+                node.children.push({
+                    name: child.name,
+                    path: node.path + '/' + child.name,
+                    imageCount: 0,
+                    videoCount: 0,
+                    children: [],
+                    open: false,
+                    loaded: false,
+                })
+            } else {
+                const type = classifyFileType(child.name)
+                if (type === 'image') node.imageCount++
+                else if (type === 'video') node.videoCount++
+            }
         }
+        node.children.sort((a, b) => a.name.localeCompare(b.name))
+        node.loaded = true
         node.open = true
     }
 
-    function selectDir(path: string) {
-        selectedDir = path
+    function selectDir(path: string, total: number) {
+        if (total > 0) selectedDir = path
     }
 
     function getRelPath(fullPath: string): string {
         return fullPath.startsWith('data/assets/')
             ? fullPath.slice('data/assets/'.length)
             : fullPath
-    }
-
-    function getTotalCount(node: DirNode): number {
-        return node.imageCount + node.videoCount
     }
 
     function confirm() {
@@ -107,8 +93,6 @@
 </script>
 
 <div style="display: flex; flex-direction: column; gap: 8px; padding: 8px; width: 100%;">
-    <div class="b3-label">{i18n.addAssetsDirTitle ?? "选择 data/assets/ 下的子文件夹作为图片源"}</div>
-
     <div class="b3-list b3-list--border b3-list--background" style="max-height: 400px; overflow-y: auto;">
         {#if loading}
             <div class="b3-list-item" style="color: var(--b3-theme-on-surface); padding: 16px; text-align: center;">
@@ -119,22 +103,19 @@
                 {i18n.noFolderSelected ?? "尚未选择任何文件夹"}
             </div>
         {:else}
-            {#each roots as root}
-                {@const total = getTotalCount(root)}
+            {#each roots as root (root.path)}
+                {@const rTotal = root.imageCount + root.videoCount}
                 <div
                     class="b3-list-item b3-list-item--narrow toggle"
                     class:b3-list-item--focus={selectedDir === root.path}
-                    style:opacity={total > 0 ? "1" : "0.45"}
-                    onclick={() => total > 0 && selectDir(root.path)}
+                    style:opacity={root.loaded && rTotal === 0 ? "0.45" : "1"}
+                    onclick={() => selectDir(root.path, rTotal)}
                     onkeydown={undefined}
                     role="button"
-                    tabindex={total > 0 ? 0 : -1}
+                    tabindex="0"
                 >
                     <span class="b3-list-item__toggle b3-list-item__toggle--hl"
-                        onclick={(e: MouseEvent) => {
-                            e.stopPropagation()
-                            if (root.children.length > 0) toggleNode(root)
-                        }}
+                        onclick={(e: MouseEvent) => { e.stopPropagation(); expandChild(root) }}
                         onkeydown={undefined}
                         role="button"
                         tabindex="0">
@@ -143,34 +124,90 @@
                         </svg>
                     </span>
                     <span class="b3-list-item__text fn__flex-1">
-                        {root.name}
-                        <span style="color: var(--b3-theme-on-surface); font-size: 0.85em;">
-                            ({i18n.imageCount ?? "图片"}: {root.imageCount}, {i18n.videoCount ?? "视频"}: {root.videoCount})
-                        </span>
+                        <svg style="width:14px;height:14px;margin-right:4px;vertical-align:middle">
+                            <use xlink:href="#iconFolder"></use>
+                        </svg>
+                        {root.name}/
+                        {#if root.loaded}
+                            <span style="color: var(--b3-theme-on-surface); font-size: 0.85em; margin-left: 8px;">
+                                ({rTotal} {i18n.imageCount ?? "图片"}, {root.videoCount} {i18n.videoCount ?? "视频"})
+                            </span>
+                        {/if}
                     </span>
                 </div>
 
-                {#if root.open && root.children.length > 0}
+                {#if root.open}
                     <div class="b3-list__panel">
-                        {#each root.children as child}
-                            {@const childTotal = getTotalCount(child)}
+                        {#each root.children as child (child.path)}
+                            {@const cTotal = child.imageCount + child.videoCount}
                             <div
-                                class="b3-list-item b3-list-item--narrow"
+                                class="b3-list-item b3-list-item--narrow toggle"
                                 class:b3-list-item--focus={selectedDir === child.path}
-                                style:opacity={childTotal > 0 ? "1" : "0.45"}
-                                style:padding-left="40px"
-                                onclick={() => childTotal > 0 && selectDir(child.path)}
+                                style:opacity={child.loaded && cTotal === 0 ? "0.45" : "1"}
+                                onclick={() => selectDir(child.path, cTotal)}
                                 onkeydown={undefined}
                                 role="button"
-                                tabindex={childTotal > 0 ? 0 : -1}
+                                tabindex="0"
                             >
+                                <span class="b3-list-item__toggle b3-list-item__toggle--hl"
+                                    onclick={(e: MouseEvent) => { e.stopPropagation(); expandChild(child) }}
+                                    onkeydown={undefined}
+                                    role="button"
+                                    tabindex="0">
+                                    <svg class="b3-list-item__arrow" class:b3-list-item__arrow--open={child.open}>
+                                        <use xlink:href="#iconRight"></use>
+                                    </svg>
+                                </span>
                                 <span class="b3-list-item__text fn__flex-1">
-                                    {child.name}
-                                    <span style="color: var(--b3-theme-on-surface); font-size: 0.85em;">
-                                        ({i18n.imageCount ?? "图片"}: {child.imageCount}, {i18n.videoCount ?? "视频"}: {child.videoCount})
-                                    </span>
+                                    <svg style="width:14px;height:14px;margin-right:4px;vertical-align:middle">
+                                        <use xlink:href="#iconFolder"></use>
+                                    </svg>
+                                    {child.name}/
+                                    {#if child.loaded}
+                                        <span style="color: var(--b3-theme-on-surface); font-size: 0.85em; margin-left: 8px;">
+                                            ({cTotal} {i18n.imageCount ?? "图片"}, {child.videoCount} {i18n.videoCount ?? "视频"})
+                                        </span>
+                                    {/if}
                                 </span>
                             </div>
+
+                            {#if child.open}
+                                <div class="b3-list__panel">
+                                    {#each child.children as grandchild (grandchild.path)}
+                                        {@const gTotal = grandchild.imageCount + grandchild.videoCount}
+                                        <div
+                                            class="b3-list-item b3-list-item--narrow toggle"
+                                            class:b3-list-item--focus={selectedDir === grandchild.path}
+                                            style:opacity={grandchild.loaded && gTotal === 0 ? "0.45" : "1"}
+                                            onclick={() => selectDir(grandchild.path, gTotal)}
+                                            onkeydown={undefined}
+                                            role="button"
+                                            tabindex="0"
+                                        >
+                                            <span class="b3-list-item__toggle b3-list-item__toggle--hl"
+                                                onclick={(e: MouseEvent) => { e.stopPropagation(); expandChild(grandchild) }}
+                                                onkeydown={undefined}
+                                                role="button"
+                                                tabindex="0">
+                                                <svg class="b3-list-item__arrow" class:b3-list-item__arrow--open={grandchild.open}>
+                                                    <use xlink:href="#iconRight"></use>
+                                                </svg>
+                                            </span>
+                                            <span class="b3-list-item__text fn__flex-1">
+                                                <svg style="width:14px;height:14px;margin-right:4px;vertical-align:middle">
+                                                    <use xlink:href="#iconFolder"></use>
+                                                </svg>
+                                                {grandchild.name}/
+                                                {#if grandchild.loaded}
+                                                    <span style="color: var(--b3-theme-on-surface); font-size: 0.85em; margin-left: 8px;">
+                                                        ({gTotal} {i18n.imageCount ?? "图片"}, {grandchild.videoCount} {i18n.videoCount ?? "视频"})
+                                                    </span>
+                                                {/if}
+                                            </span>
+                                        </div>
+                                    {/each}
+                                </div>
+                            {/if}
                         {/each}
                     </div>
                 {/if}

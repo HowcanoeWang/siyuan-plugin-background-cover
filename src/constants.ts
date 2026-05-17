@@ -4,6 +4,14 @@ export const packageName = "siyuan-plugin-background-cover"
 
 export const packageVersion = pluginJson.version
 
+export const IMAGE_EXTS = new Set([
+    '.png', '.jpg', '.jpeg', '.jfif', '.gif', '.webp', '.bmp', '.svg', '.avif',
+])
+
+export const VIDEO_EXTS = new Set([
+    '.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv',
+])
+
 export const pluginAssetsDir = `/data/public/${packageName}/`
 
 export const DEFAULT_BACKGROUNDS = [

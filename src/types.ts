@@ -39,13 +39,8 @@ export interface SourceConfig {
     label: string
 }
 
-export const IMAGE_EXTS = new Set([
-    '.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg', '.avif',
-])
-
-export const VIDEO_EXTS = new Set([
-    '.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv',
-])
+import { IMAGE_EXTS, VIDEO_EXTS } from "./constants"
+export { IMAGE_EXTS, VIDEO_EXTS }
 
 export function classifyFileType(filename: string): 'image' | 'video' | null {
     const ext = filename.includes('.')
