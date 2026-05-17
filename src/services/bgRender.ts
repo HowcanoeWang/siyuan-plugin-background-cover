@@ -142,12 +142,14 @@ export function changeBlur(val: number): void {
 }
 
 export function changePosition(x: number, y: number): void {
-    if (!canvasEl || currentMode !== 'image') return
-    canvasEl.style.backgroundPosition = `${x}% ${y}%`
+    if (currentMode === 'image' && canvasEl) {
+        canvasEl.style.backgroundPosition = `${x}% ${y}%`
+    } else if (currentMode === 'video' && videoEl) {
+        videoEl.style.objectPosition = `${x}% ${y}%`
+    }
 }
 
 export function applyOverrides(x?: number, y?: number, defaultX?: number, defaultY?: number): void {
-    if (currentMode !== 'image') return
     const posX = x ?? defaultX ?? 50
     const posY = y ?? defaultY ?? 50
     changePosition(posX, posY)

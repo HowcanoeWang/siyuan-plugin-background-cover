@@ -1,6 +1,6 @@
 <script lang="ts">
     import { configStore } from "../../stores/config"
-    import { createBgLayer, renderImage, changeOpacity, changeBlur, changePosition, getCurrentMode, startAutoRefresh, stopAutoRefresh } from "../../services/bgRender"
+    import { createBgLayer, renderImage, changeOpacity, changeBlur, changePosition, startAutoRefresh, stopAutoRefresh } from "../../services/bgRender"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
 
@@ -12,9 +12,6 @@
     let changeBgOnStart = $state(configStore.get("changeBgOnStart"))
     let autoRefreshTime = $state(configStore.get("autoRefreshTime"))
     let currentFile = $state(configStore.get("currentFile"))
-
-    let currentMode = $state(getCurrentMode())
-    let posDisabled = $derived(currentMode !== 'image')
 
     function handleActivateChange() {
         activate = !activate
@@ -38,9 +35,6 @@
         }
     }
 
-    $effect(() => {
-        currentMode = getCurrentMode()
-    })
 </script>
 
 <div class="config__tab-container" data-name="config">
@@ -56,7 +50,6 @@
                 <label>X</label>
                 <input class="b3-slider fn__size50"
                     type="range" min="0" max="100" step="5"
-                    disabled={posDisabled} style:opacity={posDisabled ? "0.1" : "1"}
                     bind:value={positionX}
                     oninput={() => changePosition(positionX, positionY)}
                     onchange={() => configStore.setAndSave("positionX", positionX)}
@@ -66,7 +59,6 @@
                 <label>Y</label>
                 <input class="b3-slider fn__size50"
                     type="range" min="0" max="100" step="5"
-                    disabled={posDisabled} style:opacity={posDisabled ? "0.1" : "1"}
                     bind:value={positionY}
                     oninput={() => changePosition(positionX, positionY)}
                     onchange={() => configStore.setAndSave("positionY", positionY)}
