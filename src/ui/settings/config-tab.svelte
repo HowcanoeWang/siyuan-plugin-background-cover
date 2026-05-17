@@ -2,6 +2,8 @@
     import { configStore } from "../../stores/config"
     import { createBgLayer, renderImage, changeOpacity, changeBlur, changePosition } from "../../services/bgRender"
 
+    const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
+
     let activate = $state(configStore.get("activate"))
     let opacity = $state(configStore.get("opacity"))
     let blur = $state(configStore.get("blur"))
@@ -29,7 +31,7 @@
 <div class="config__tab-container" data-name="config" style="display: flex; flex-direction: column; gap: 16px;">
     <div class="b3-label">
         <div class="fn__flex" style="gap: 12px; align-items: center;">
-            <code class="fn__code">{currentFile ?? "(无)"}</code>
+            <code class="fn__code">{currentFile ?? i18n.none ?? "(无)"}</code>
             <span class="fn__space"></span>
             <label>X</label>
             <input
@@ -52,7 +54,7 @@
 
     <div class="b3-label">
         <div class="fn__flex">
-            <span class="fn__flex-1">开启背景</span>
+            <span class="fn__flex-1">{i18n.activateBg ?? "开启背景"}</span>
             <input class="b3-switch fn__flex-center" type="checkbox"
                 bind:checked={activate}
                 onchange={handleActivateChange}
@@ -63,29 +65,29 @@
     <div class="fn__hr"></div>
 
     <div class="b3-label">
-        <div>自动刷新</div>
+        <div>{i18n.autoRefresh ?? "自动刷新"}</div>
         <div class="fn__flex" style="gap: 12px; margin-top: 4px;">
-            <span class="fn__flex-1">启动时自动更换背景</span>
+            <span class="fn__flex-1">{i18n.autoRefreshDesc ?? "启动时自动更换背景"}</span>
             <input class="b3-switch fn__flex-center" type="checkbox"
                 bind:checked={autoRefresh}
                 onchange={() => configStore.set("autoRefresh", autoRefresh)}
             />
         </div>
         <div class="fn__flex" style="gap: 8px;">
-            <span>定时切换间隔</span>
+            <span>{i18n.switchInterval ?? "定时切换间隔"}</span>
             <input class="b3-text-field fn__size200" type="number"
                 min="0" max="36000"
                 bind:value={autoRefreshTime}
                 disabled={!autoRefresh}
                 onchange={() => configStore.set("autoRefreshTime", autoRefreshTime)}
             />
-            <span>分钟</span>
+            <span>{i18n.minutes ?? "分钟"}</span>
         </div>
     </div>
 
     <div class="b3-label">
         <div class="b3-tooltips b3-tooltips__n" aria-label={String(opacity)}>
-            <span>前景透明度</span>
+            <span>{i18n.foregroundOpacity ?? "前景透明度"}</span>
             <input class="b3-slider fn__size200" type="range"
                 min="0.1" max="1" step="0.05"
                 bind:value={opacity}
@@ -97,7 +99,7 @@
 
     <div class="b3-label">
         <div class="b3-tooltips b3-tooltips__n" aria-label={String(blur)}>
-            <span>背景虚化</span>
+            <span>{i18n.bgBlur ?? "背景虚化"}</span>
             <input class="b3-slider fn__size200" type="range"
                 min="0" max="10" step="1"
                 bind:value={blur}

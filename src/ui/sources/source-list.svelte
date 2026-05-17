@@ -1,6 +1,8 @@
 <script lang="ts">
     import { ImageItem } from "../../types"
 
+    const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
+
     interface Props {
         sourceType: "upload" | "assets" | "local"
         label: string
@@ -40,17 +42,17 @@
         {#if canClear}
             <button class="b3-button b3-button--outline fn__flex-center"
                 onclick={onClearAll}>
-                清空
+                {i18n.clear ?? "清空"}
             </button>
         {/if}
         {#if canRemove}
             <button class="b3-button b3-button--outline fn__flex-center"
                 onclick={onRemoveSource}>
-                ✕ 移除
+                ✕ {i18n.remove ?? "移除"}
             </button>
         {/if}
         {#if inaccessible}
-            <span style="color: var(--b3-theme-error); margin-left: 8px;">路径不可访问</span>
+            <span style="color: var(--b3-theme-error); margin-left: 8px;">{i18n.pathInaccessible ?? "路径不可访问"}</span>
         {/if}
     </div>
 
@@ -64,19 +66,19 @@
                 </span>
                 <span class="b3-list-item__action"
                     onclick={() => onSetAsBackground?.(file.url)}>
-                    设为背景
+                    {i18n.setAsBackground ?? "设为背景"}
                 </span>
                 {#if canDelete}
                     <span class="b3-list-item__action"
                         onclick={() => onDeleteFile?.(file.url)}>
-                        删除
+                        {i18n.delete ?? "删除"}
                     </span>
                 {/if}
             </div>
         {/each}
         {#if files.length === 0}
             <div style="color: var(--b3-theme-on-surface); padding: 8px;">
-                暂无文件
+                {i18n.noFiles ?? "暂无文件"}
             </div>
         {/if}
     </div>

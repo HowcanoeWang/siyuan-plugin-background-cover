@@ -24,7 +24,7 @@ export function buildTopBarMenu(
 
     function showLocalDirDialog() {
         svelteDialog({
-            title: "添加本地目录",
+            title: i18n.addLocalDirTitle ?? "添加本地目录",
             component: LocalDirDialog,
             width: "520px",
             height: "auto",
@@ -101,7 +101,7 @@ export function buildTopBarMenu(
 
     function showUrlDialog() {
         svelteDialog({
-            title: "添加网络背景资源",
+            title: i18n.addUrlTitle ?? "添加网络背景资源",
             component: UrlDialog,
             width: "520px",
             height: "auto",
@@ -141,8 +141,8 @@ export function buildTopBarMenu(
             if (validFiles.length >= 30) {
                 const confirmed = await new Promise<boolean>((resolve) => {
                     confirmDialog({
-                        title: "大量文件警告",
-                        content: `此次将上传 ${validFiles.length} 张图片/视频，确定全部上传吗？`,
+                        title: i18n.bulkUploadTitle ?? "大量文件警告",
+                        content: (i18n.bulkUploadWarning ?? "此次将上传 {count} 张图片/视频，确定全部上传吗？").replace('{count}', String(validFiles.length)),
                         confirm: () => resolve(true),
                         cancel: () => resolve(false),
                         width: "420px",
@@ -197,7 +197,7 @@ export function buildTopBarMenu(
         if (isDesktop()) {
             items.push({
                 icon: "iconFolder",
-                label: "链接本地目录",
+                label: i18n.linkLocalDir ?? "链接本地目录",
                 click: showLocalDirDialog,
             })
         }
@@ -209,17 +209,17 @@ export function buildTopBarMenu(
             },
             {
                 icon: "iconFiles",
-                label: "上传多个文件",
+                label: i18n.uploadMultipleFiles ?? "上传多个文件",
                 click: pickMultipleFiles,
             },
             {
                 icon: "iconFolder",
-                label: "上传整个目录",
+                label: i18n.uploadEntireDir ?? "上传整个目录",
                 click: pickFolderFiles,
             },
             {
                 icon: "iconLink",
-                label: "添加网络资源",
+                label: i18n.addNetworkResource ?? "添加网络资源",
                 click: showUrlDialog,
             }
         )
@@ -248,7 +248,7 @@ export function buildTopBarMenu(
     })
     menu.addItem({
         icon: "iconAdd",
-        label: "添加背景",
+        label: i18n.addBackground ?? "添加背景",
         type: "submenu",
         submenu: buildAddBackgroundSubmenu(),
     })

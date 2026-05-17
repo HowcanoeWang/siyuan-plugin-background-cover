@@ -9,6 +9,8 @@
     import LocalDirDialog from "../local-dir-dialog.svelte"
     import type { ImageItem } from "../../types"
 
+    const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
+
     interface SourceGroup {
         type: 'upload' | 'assets' | 'local'
         label: string
@@ -34,7 +36,7 @@
         const uploadFiles = await scanSource('upload', pluginAssetsDir)
         newGroups.push({
             type: 'upload',
-            label: '插件缓存',
+            label: i18n.pluginCache ?? '插件缓存',
             path: pluginAssetsDir,
             removable: false,
             files: uploadFiles,
@@ -85,7 +87,7 @@
 
     function showLocalDirDialog() {
         svelteDialog({
-            title: "添加本地目录",
+            title: i18n.addLocalDirTitle ?? "添加本地目录",
             component: LocalDirDialog,
             width: "520px",
             height: "auto",
@@ -180,7 +182,7 @@
             <div class="fn__flex" style="padding: 8px 0;">
                 {#if isDesktop()}
                     <button class="b3-button b3-button--outline" onclick={showLocalDirDialog}>
-                        + 添加本地目录
+                        + {i18n.addLocalDir ?? "添加本地目录"}
                     </button>
                 {/if}
             </div>
@@ -215,10 +217,10 @@
                                 onclick={(e: MouseEvent) => { e.stopPropagation(); removeGroup(i) }}
                                 onkeydown={undefined}
                                 role="button"
-                                tabindex="0">✕ 移除</span>
+                                tabindex="0">✕ {i18n.remove ?? "移除"}</span>
                         {/if}
                         {#if group.inaccessible}
-                            <span style="color: var(--b3-theme-error); font-size: 0.85em; margin-left: 8px;">不可访问</span>
+                            <span style="color: var(--b3-theme-error); font-size: 0.85em; margin-left: 8px;">{i18n.pathInaccessible ?? "不可访问"}</span>
                         {/if}
                     </div>
 
@@ -236,7 +238,7 @@
                                         tabindex="0">
                                         {#if file.type === 'video'}🎬{:else}🖼{/if} {file.name}
                                     </span>
-                                    <span class="b3-list-item__action b3-tooltips b3-tooltips__w" aria-label="设为背景"
+                                    <span class="b3-list-item__action b3-tooltips b3-tooltips__w"                                         aria-label={i18n.setAsBackground ?? "设为背景"}
                                         onclick={(e: MouseEvent) => { e.preventDefault(); setAsBackground(file) }}
                                         onkeydown={undefined}
                                         role="button"
@@ -247,7 +249,7 @@
                             {/each}
                             {#if group.files.length === 0}
                                 <div class="b3-list-item b3-list-item--narrow" style="color: var(--b3-theme-on-surface);">
-                                    <span class="b3-list-item__text">暂无文件</span>
+                                    <span class="b3-list-item__text">{i18n.noFiles ?? "暂无文件"}</span>
                                 </div>
                             {/if}
                         </div>
@@ -256,7 +258,7 @@
 
                 {#if groups.length === 0}
                     <div class="b3-list-item" style="color: var(--b3-theme-on-surface); padding: 16px; text-align: center;">
-                        尚未添加任何图片源，请使用下方按钮添加
+                        {i18n.noSources ?? "尚未添加任何图片源，请使用下方按钮添加"}
                     </div>
                 {/if}
             </div>
@@ -273,12 +275,12 @@
                 <div style="color: var(--b3-theme-on-surface); text-align: center;">
                     <div style="font-size: 2em;">🎬</div>
                     <div>{selectedItem.name}</div>
-                    <div style="font-size: 0.85em; margin-top: 4px;">视频文件 — 不支持预览</div>
+                    <div style="font-size: 0.85em; margin-top: 4px;">{i18n.videoNoPreview ?? "视频文件 — 不支持预览"}</div>
                 </div>
             {:else}
                 <div style="color: var(--b3-theme-on-surface); text-align: center;">
                     <div style="font-size: 2em;">🖼</div>
-                    <div>点击文件列表中图片以预览</div>
+                    <div>{i18n.noPreviewHint ?? "点击文件列表中图片以预览"}</div>
                 </div>
             {/if}
         </div>

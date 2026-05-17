@@ -1,6 +1,8 @@
 <script lang="ts">
     import { configStore } from "../../stores/config"
 
+    const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
+
     let disabledThemes = $state(configStore.get("disabledThemes"))
     let darkThemes = $state<string[]>([])
     let lightThemes = $state<string[]>([])
@@ -29,13 +31,13 @@
 </script>
 
 <div class="config__tab-container" data-name="theme" style="display: flex; flex-direction: column; gap: 8px;">
-    <div class="b3-label">屏蔽主题 (在下列主题不显示背景)</div>
+    <div class="b3-label">{i18n.disabledThemesTitle ?? "屏蔽主题 (在下列主题不显示背景)"}</div>
 
     <div class="fn__hr"></div>
 
-    <div class="b3-label">深色主题</div>
+    <div class="b3-label">{i18n.darkThemes ?? "深色主题"}</div>
     {#if darkThemes.length === 0}
-        <div style="color: var(--b3-theme-on-surface); padding: 8px;">暂无已安装的深色主题</div>
+        <div style="color: var(--b3-theme-on-surface); padding: 8px;">{i18n.noDarkThemes ?? "暂无已安装的深色主题"}</div>
     {:else}
         {#each darkThemes as name}
             <div class="b3-list-item">
@@ -50,9 +52,9 @@
 
     <div class="fn__hr"></div>
 
-    <div class="b3-label">浅色主题</div>
+    <div class="b3-label">{i18n.lightThemes ?? "浅色主题"}</div>
     {#if lightThemes.length === 0}
-        <div style="color: var(--b3-theme-on-surface); padding: 8px;">暂无已安装的浅色主题</div>
+        <div style="color: var(--b3-theme-on-surface); padding: 8px;">{i18n.noLightThemes ?? "暂无已安装的浅色主题"}</div>
     {:else}
         {#each lightThemes as name}
             <div class="b3-list-item">
