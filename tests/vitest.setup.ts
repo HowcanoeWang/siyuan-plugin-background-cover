@@ -7,4 +7,6 @@ import '@testing-library/jest-dom/vitest'
     storage: {} as Record<string, any>,
     languages: { cancel: 'Cancel', confirm: 'Confirm' },
 }
-;(window as any).fetchPost = async () => ({ code: 0, data: null })
+if (!(window as any).fetchPost) {
+    ;(window as any).fetchPost = () => {}
+}

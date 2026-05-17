@@ -43,22 +43,13 @@ export function getFileUrl(apiPath: string, sourceType: 'local' | 'upload' | 'as
     return rel
 }
 
-export async function fileExists(apiPath: string, sourceType: 'local' | 'upload' | 'assets'): Promise<boolean> {
-    if (apiPath.length === 0) return false
-
-    if (sourceType === 'local' && isDesktop()) {
-        const fsp = getFsp()
-        try {
-            await fsp.access(apiPath)
-            return true
-        } catch {
-            return false
-        }
+export async function fileExistsLocal(path: string): Promise<boolean> {
+    if (!path || !isDesktop()) return false
+    const fsp = getFsp()
+    try {
+        await fsp.access(path)
+        return true
+    } catch {
+        return false
     }
-
-    const parentPath = apiPath.substring(0, apiPath.lastIndexOf('/'))
-    const targetName = apiPath.substring(apiPath.lastIndexOf('/') + 1)
-    const { readDir } = await import("./api")
-    const files = await readDir(parentPath)
-    return files.includes(targetName)
 }

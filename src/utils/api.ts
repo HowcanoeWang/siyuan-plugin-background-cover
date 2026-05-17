@@ -24,6 +24,14 @@ export async function readDir(path: string): Promise<string[]> {
         .map(item => item.name)
 }
 
+export async function fileExistsRemote(path: string): Promise<boolean> {
+    if (!path) return false
+    const parentPath = path.substring(0, path.lastIndexOf('/'))
+    const targetName = path.substring(path.lastIndexOf('/') + 1)
+    const files = await readDir(parentPath)
+    return files.includes(targetName)
+}
+
 export async function readDirItems(path: string): Promise<IDirItem[]> {
     const data = await request("/api/file/readDir", { path })
     if (!Array.isArray(data)) return []

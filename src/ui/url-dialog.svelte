@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { onDestroy } from "svelte"
     import { downloadUrl } from "../utils/api"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
@@ -11,6 +12,7 @@
 
     let url = $state("")
     let previewSrc = $state<string | null>(null)
+    let blobUrl = $state<string | null>(null)
     let validExt = $state(false)
     let checking = $state(false)
     let errorMsg = $state("")
@@ -47,7 +49,9 @@
             const contentType = resp.headers.get('content-type') ?? ''
             if (contentType.startsWith('image/')) {
                 const blob = await resp.blob()
-                previewSrc = URL.createObjectURL(blob)
+                if (blobUrl) URL.revokeObjectURL(blobUrl)
+                blobUrl = URL.createObjectURL(blob)
+                previewSrc = blobUrl
                 validExt = true
             } else if (contentType.startsWith('video/')) {
                 validExt = true
@@ -88,6 +92,10 @@
     function getFileName(): string {
         return url.trim().split('/').pop()?.split('?')[0] ?? ''
     }
+
+    onDestroy(() => {
+        if (blobUrl) URL.revokeObjectURL(blobUrl)
+    })
 </script>
 
 <div style="display: flex; flex-direction: column; gap: 12px; padding: 8px; width: 100%;">

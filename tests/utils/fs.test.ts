@@ -16,7 +16,7 @@ vi.mock("../../src/stores/config", () => ({
     },
 }))
 
-import { isDesktop, readLocalDir, getFileUrl, fileExists } from "../../src/utils/fs"
+import { isDesktop, readLocalDir, getFileUrl, fileExistsLocal } from "../../src/utils/fs"
 
 describe("fs.ts - isDesktop", () => {
     beforeEach(() => {
@@ -103,7 +103,7 @@ describe("fs.ts - getFileUrl", () => {
     })
 })
 
-describe("fs.ts - fileExists", () => {
+describe("fs.ts - fileExistsLocal", () => {
     it("desktop: 调用 fsp.access() 成功返回 true", async () => {
         (window as any).require = vi.fn((id: string) => {
             if (id === 'fs/promises') return {
@@ -111,7 +111,7 @@ describe("fs.ts - fileExists", () => {
             }
             return undefined
         })
-        expect(await fileExists('/fake/path.jpg', 'local')).toBe(true)
+        expect(await fileExistsLocal('/fake/path.jpg')).toBe(true)
     })
 
     it("desktop: fsp.access() 失败返回 false", async () => {
@@ -121,6 +121,6 @@ describe("fs.ts - fileExists", () => {
             }
             return undefined
         })
-        expect(await fileExists('/nonexistent.jpg', 'local')).toBe(false)
+        expect(await fileExistsLocal('/nonexistent.jpg')).toBe(false)
     })
 })
