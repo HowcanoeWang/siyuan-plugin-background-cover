@@ -119,25 +119,24 @@ describe("bgRender - 样式控制", () => {
         createBgLayer()
     })
 
-    it("changeOpacity 图片模式修改 body opacity", () => {
+    it("changeOpacity 图片模式修改 body opacity (加权)", () => {
         renderImage('/assets/test.jpg')
         changeOpacity(0.5)
-        expect(document.body.style.opacity).toBe('0.5')
+        expect(document.body.style.opacity).toBe('0.865')
     })
 
-    it("changeOpacity 视频模式修改 video opacity", () => {
+    it("changeOpacity 视频模式也修改 body opacity", () => {
         renderVideo('/assets/test.mp4')
         changeOpacity(0.3)
-        const video = document.getElementById('bgvideo')!
-        expect(video.style.opacity).toBe('0.3')
+        expect(document.body.style.opacity).toBe('0.915')
     })
 
-    it("changeOpacity clamp 到 0-1", () => {
+    it("changeOpacity clamp 到 0.1-1", () => {
         renderImage('/assets/test.jpg')
         changeOpacity(-0.5)
-        expect(document.body.style.opacity).toBe('0')
+        expect(document.body.style.opacity).toBe('0.965')
         changeOpacity(2.0)
-        expect(document.body.style.opacity).toBe('1')
+        expect(document.body.style.opacity).toBe('0.74')
     })
 
     it("changeBlur 图片模式设置 canvas filter", () => {

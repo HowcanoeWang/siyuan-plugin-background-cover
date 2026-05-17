@@ -87,7 +87,7 @@
         <div class="b3-tooltips b3-tooltips__n" aria-label={String(opacity)}>
             <span>前景透明度</span>
             <input class="b3-slider fn__size200" type="range"
-                min="0" max="1" step="0.05"
+                min="0.1" max="1" step="0.05"
                 bind:value={opacity}
                 oninput={() => changeOpacity(opacity)}
                 onchange={() => configStore.set("opacity", opacity)}

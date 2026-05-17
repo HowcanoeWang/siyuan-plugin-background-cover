@@ -120,15 +120,10 @@ export function setVisible(visible: boolean): void {
     }
 }
 
-export function changeOpacity(val: number): void {
-    const opacity = Math.max(0, Math.min(1, val))
-
-    if (currentMode === 'image') {
-        document.body.style.opacity = String(opacity)
-    } else if (currentMode === 'video' && videoEl) {
-        videoEl.style.opacity = String(opacity)
-        document.body.style.removeProperty('opacity')
-    }
+export function changeOpacity(raw: number): void {
+    const clamped = Math.max(0.1, Math.min(1, raw))
+    const opacity = 0.99 - 0.25 * clamped
+    document.body.style.opacity = String(opacity)
 }
 
 export function changeBlur(val: number): void {
