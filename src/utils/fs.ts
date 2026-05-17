@@ -36,17 +36,10 @@ export function getFileUrl(apiPath: string, sourceType: 'local' | 'upload' | 'as
         return `file://${apiPath}`
     }
 
-    if (isDesktop()) {
-        const wsDir = (window as any).siyuan?.config?.system?.workspaceDir ?? ''
-        const cleanPath = apiPath.startsWith('/') ? apiPath.slice(1) : apiPath
-        const sep = wsDir.endsWith('/') ? '' : '/'
-        return `file://${wsDir}${sep}${cleanPath}`
-    }
-
     let rel = apiPath
     if (rel.startsWith('/data/')) rel = rel.slice(1)
-    if (rel.startsWith('data/')) rel = '/' + rel.slice('data/'.length)
-    else if (!rel.startsWith('/')) rel = '/' + rel
+    if (rel.startsWith('data/')) rel = rel.slice(5)
+    else if (rel.startsWith('/')) rel = rel.slice(1)
     return rel
 }
 

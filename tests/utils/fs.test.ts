@@ -91,20 +91,15 @@ describe("fs.ts - getFileUrl", () => {
             .toBe('file:///home/user/Pictures/img.jpg')
     })
 
-    it("assets: 返回 /assets/... 路径", () => {
+    it("assets: 返回 assets/... 路径 (无前导/)", () => {
         expect(getFileUrl('data/assets/wallpaper/img.jpg', 'assets'))
-            .toBe('/assets/wallpaper/img.jpg')
+            .toBe('assets/wallpaper/img.jpg')
     })
 
-    it("upload desktop: 返回 file:// 协议", () => {
+    it("upload: 返回 public/... 路径 (无前导/)", () => {
         (window as any).require = vi.fn(() => ({}))
         expect(getFileUrl('data/public/plugin/img.jpg', 'upload'))
-            .toBe('file:///tmp/workspace/data/public/plugin/img.jpg')
-    })
-
-    it("upload fallback: 返回 /public/... 路径", () => {
-        expect(getFileUrl('data/public/plugin/img.jpg', 'upload'))
-            .toBe('/public/plugin/img.jpg')
+            .toBe('public/plugin/img.jpg')
     })
 })
 
