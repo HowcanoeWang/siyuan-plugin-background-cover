@@ -103,16 +103,25 @@ class ConfigStore {
         await this._cleanPublicDir()
     }
 
-    checkOldConfig(): { hasOld: boolean; path: string } {
-        const stored = (window as any).siyuan?.storage?.[STORAGE_KEY] ?? {}
-        const hasOld = stored.crtBgObj !== undefined
-                    || stored.bgObjCfg !== undefined
-                    || stored.fileidx !== undefined
-                    || stored.prevTheme !== undefined
-        const wsDir = (window as any).siyuan?.config?.system?.workspaceDir ?? ''
-        return {
-            hasOld,
-            path: `${wsDir}/data/storage/petal/${STORAGE_KEY}/`,
+    async cleanOldConfigIfNeeded(): Promise<void> {
+        const stored = (window as any).siyuan?.storage?.[STORAGE_KEY]
+        if (stored?.crtBgObj !== undefined || stored?.bgObjCfg !== undefined) {
+            console.log("[bgCover] 检测到旧版配置 (siyuan.storage)，自动重置为默认")
+            await post("/api/storage/removeLocalStorageVals", { keys: [STORAGE_KEY] })
+            this.cfg = { ...APP_CONFIG_DEFAULTS }
+            return
+        }
+
+        try {
+            const files = await post<any[]>("/api/file/readDir", {
+                path: `/data/storage/petal/${STORAGE_KEY}/`
+            })
+            if (Array.isArray(files) && files.length > 0) {
+                console.log("[bgCover] 检测到旧版 petal 数据，自动清理")
+                await post("/api/file/removeFile", { path: `/data/storage/petal/${STORAGE_KEY}/` })
+            }
+        } catch {
+            console.debug("[bgCover] cleanOldConfigIfNeeded: petal dir not found")
         }
     }
 

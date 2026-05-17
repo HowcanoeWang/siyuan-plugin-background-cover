@@ -92,7 +92,6 @@
     "videoCount": "视频",
     "clearCacheTitle": "清空插件缓存",
     "clearCacheConfirm": "确认清空插件缓存？此操作将删除",
-    "oldConfigWarn": "背景插件大版本重构，建议前往 设置→高级 重置。旧数据路径: data/public/siyuan-plugin-background-cover/*",
     "activateBgDesc": "关闭后背景图片不显示(但背景元素还存在于html代码中)",
     "switchIntervalDesc": "定时自动切换时间，设置为0则不定时切换",
     "foregroundOpacityDesc": "范围(0.1-1), 鼠标拖动后更新",

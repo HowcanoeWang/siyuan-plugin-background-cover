@@ -1,7 +1,6 @@
 import {
     Plugin,
     getFrontend,
-    showMessage,
 } from "siyuan"
 
 import { svelteDialog } from "./libs/dialog"
@@ -26,12 +25,7 @@ export default class BgCoverPlugin extends Plugin {
 
         await configStore.load()
 
-        const { hasOld, path } = configStore.checkOldConfig()
-        if (hasOld) {
-            const msg = (this.i18n.oldConfigWarn ?? "背景插件大版本重构，建议前往 设置→高级 重置。旧数据路径: {path}")
-                .replace('{path}', path)
-            showMessage(msg, 0, "error")
-        }
+        await configStore.cleanOldConfigIfNeeded()
 
         ;(window as any).bgCoverPlugin = {
             i18n: this.i18n,

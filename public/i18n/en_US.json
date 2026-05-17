@@ -92,7 +92,6 @@
     "videoCount": "Videos",
     "clearCacheTitle": "Clear Plugin Cache",
     "clearCacheConfirm": "Clear plugin cache? This will delete",
-    "oldConfigWarn": "Major refactor. Reset in Settings→Advanced. Old data: data/public/siyuan-plugin-background-cover/*",
     "activateBgDesc": "Background hidden but elements remain in DOM",
     "switchIntervalDesc": "Auto switch interval, 0 to disable",
     "foregroundOpacityDesc": "Range 0.1-1, drag to update",
