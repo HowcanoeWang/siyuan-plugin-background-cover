@@ -25,7 +25,7 @@ export function buildTopBarMenu(
     const isMobile = getFrontend() === "mobile" || getFrontend() === "browser-mobile"
 
     function showLocalDirDialog() {
-        svelteDialog({
+        const dlg = svelteDialog({
             title: i18n.addLocalDirTitle ?? "添加本地目录",
             component: LocalDirDialog,
             width: "520px",
@@ -36,6 +36,7 @@ export function buildTopBarMenu(
                     configStore.set("localFolders", folders)
                     configStore.save()
                     log("[bgCover] menu: linkLocalDir", path)
+                    dlg.close()
                     cb.onOpenSettings("sources")
                 },
             },
@@ -104,7 +105,7 @@ export function buildTopBarMenu(
     }
 
     function showAssetsDirDialog() {
-        svelteDialog({
+        const dlg = svelteDialog({
             title: i18n.addAssetsDirTitle ?? "选择 data/assets/ 下的子文件夹作为图片源",
             component: AssetPicker,
             width: "520px",
@@ -118,6 +119,7 @@ export function buildTopBarMenu(
                     configStore.set("assetDirs", dirs)
                     configStore.save()
                     log("[bgCover] menu: linkAssetsDir", paths)
+                    dlg.close()
                     cb.onOpenSettings("sources")
                 },
             },
@@ -126,7 +128,7 @@ export function buildTopBarMenu(
 
     function showUrlDialog() {
         log("[bgCover] menu: showUrlDialog")
-        svelteDialog({
+        const dlg = svelteDialog({
             title: i18n.addUrlTitle ?? "添加网络背景资源",
             component: UrlDialog,
             width: "520px",
@@ -146,6 +148,7 @@ export function buildTopBarMenu(
                             m.changeBlur(configStore.get("blur"))
                         })
                     }
+                    dlg.close()
                     cb.onOpenSettings("sources")
                 },
             },

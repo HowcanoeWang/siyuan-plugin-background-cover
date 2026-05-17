@@ -99,7 +99,7 @@
     }
 
     function showAssetDirDialog() {
-        svelteDialog({
+        const dlg = svelteDialog({
             title: i18n.addAssetsDirTitle ?? "选择 data/assets/ 下的子文件夹作为图片源",
             component: AssetPicker,
             width: "520px",
@@ -107,13 +107,14 @@
             props: {
                 onConfirm: (paths: string[]) => {
                     for (const dir of paths) addAssetFolder(dir)
+                    dlg.close()
                 },
             },
         })
     }
 
     function showLocalDirDialog() {
-        svelteDialog({
+        const dlg = svelteDialog({
             title: i18n.addLocalDirTitle ?? "添加本地目录",
             component: LocalDirDialog,
             width: "520px",
@@ -121,6 +122,7 @@
             props: {
                 onConfirm: (path: string) => {
                     addLocalFolder(path)
+                    dlg.close()
                 },
             },
         })
@@ -339,7 +341,7 @@
 
     function showAddUrlDialog() {
         log("[bgCover] showAddUrlDialog")
-        svelteDialog({
+        const dlg = svelteDialog({
             title: i18n.addUrlTitle ?? "添加网络背景资源",
             component: UrlDialog,
             width: "520px",
@@ -358,6 +360,7 @@
                         changeBlur(configStore.get("blur"))
                     }
                     refreshAll()
+                    dlg.close()
                 },
             },
         })
