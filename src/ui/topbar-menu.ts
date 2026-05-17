@@ -83,12 +83,14 @@ export function buildTopBarMenu(
             if (lastUrl) {
                 configStore.set("currentFile", lastUrl)
                 configStore.save()
-                const { renderImage, renderVideo } = await import("../services/bgRender")
+                const { renderImage, renderVideo, changeOpacity, changeBlur } = await import("../services/bgRender")
                 if (lastUrl.match(/\.(mp4|webm|ogg|mov|avi|mkv)$/i)) {
                     renderVideo(lastUrl)
                 } else {
                     renderImage(lastUrl)
                 }
+                changeOpacity(configStore.get("opacity"))
+                changeBlur(configStore.get("blur"))
             }
 
             document.body.removeChild(input)
@@ -174,12 +176,14 @@ export function buildTopBarMenu(
             if (lastUrl) {
                 configStore.set("currentFile", lastUrl)
                 configStore.save()
-                const { renderImage, renderVideo } = await import("../services/bgRender")
+                const { renderImage, renderVideo, changeOpacity, changeBlur } = await import("../services/bgRender")
                 if (lastUrl.match(/\.(mp4|webm|ogg|mov|avi|mkv)$/i)) {
                     renderVideo(lastUrl)
                 } else {
                     renderImage(lastUrl)
                 }
+                changeOpacity(configStore.get("opacity"))
+                changeBlur(configStore.get("blur"))
             }
 
             document.body.removeChild(input)
