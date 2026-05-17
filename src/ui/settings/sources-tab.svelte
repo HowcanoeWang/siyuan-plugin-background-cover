@@ -5,7 +5,7 @@
     import { scanSource } from "../../services/sourceManager"
     import { renderImage, renderVideo } from "../../services/bgRender"
     import { svelteDialog, confirmDialog } from "../../libs/dialog"
-    import { pluginAssetsDir } from "../../constants"
+    import { pluginAssetsDir, pickDefaultBackground } from "../../constants"
     import { removeFile, putFile as apiPutFile } from "../../utils/api"
     import { classifyFileType } from "../../types"
     import { log } from "../../utils/logger"
@@ -147,6 +147,8 @@
     function removeGroup(i: number) {
         const g = groups[i]
         log("[bgCover] removeGroup:", g.type, g.configKey)
+        const currentFile = configStore.get("currentFile")
+        const wasCurrentInGroup = g.files.some(f => f.url === currentFile)
         if (g.type === 'assets') {
             const dirs = [...configStore.get("assetDirs")]
             const idx = dirs.indexOf(g.configKey)
@@ -165,6 +167,9 @@
             }
         }
         clearPreview()
+        if (wasCurrentInGroup) {
+            reselectBackground()
+        }
         refreshAll()
     }
 
@@ -234,11 +239,7 @@
         for (const file of group.files) {
             await removeFile(file.apiPath)
         }
-        if (wasCurrentDeleted) {
-            configStore.set("currentFile", null)
-            configStore.save()
-            ;(window as any).bgCoverPlugin?.plugin?.randomSelect?.()
-        }
+        if (wasCurrentDeleted) await reselectBackground()
         refreshAll()
     }
 
@@ -262,15 +263,22 @@
         } catch { /* ignore */ }
     }
 
+    async function reselectBackground() {
+        configStore.set("currentFile", null)
+        await configStore.save()
+        await (window as any).bgCoverPlugin?.plugin?.randomSelect?.()
+        if (!configStore.get("currentFile")) {
+            configStore.set("currentFile", pickDefaultBackground())
+            await configStore.save()
+            ;(window as any).bgCoverPlugin?.plugin?.applyBackground?.()
+        }
+    }
+
     async function deleteFile(file: ImageItem) {
         log("[bgCover] deleteFile:", file.name)
         const wasCurrent = file.url === configStore.get("currentFile")
         await removeFile(file.apiPath)
-        if (wasCurrent) {
-            configStore.set("currentFile", null)
-            configStore.save()
-            ;(window as any).bgCoverPlugin?.plugin?.randomSelect?.()
-        }
+        if (wasCurrent) await reselectBackground()
         refreshAll()
     }
 
