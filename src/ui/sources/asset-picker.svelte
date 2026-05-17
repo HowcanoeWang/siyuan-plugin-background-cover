@@ -2,6 +2,7 @@
     import { onMount } from "svelte"
     import { readDirItems } from "../../utils/api"
     import { classifyFileType } from "../../types"
+    import { configStore } from "../../stores/config"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
 
@@ -119,6 +120,10 @@
         if (!selectedDir) return
         onConfirm?.([getRelPath(selectedDir)])
     }
+
+    function isAlreadyAdded(nodePath: string): boolean {
+        return configStore.get("assetDirs").includes(getRelPath(nodePath))
+    }
 </script>
 
 <div style="display: flex; flex-direction: column; gap: 8px; padding: 8px; width: 100%;">
@@ -154,7 +159,8 @@
                             </svg>
                         </span>
                     {/if}
-                    <span class="b3-list-item__text fn__flex-1">
+                    <span class="b3-list-item__text fn__flex-1"
+                        style:color={isAlreadyAdded(root.path) ? 'var(--b3-theme-primary)' : ''}>
                         <svg style="width:14px;height:14px;margin-right:4px;vertical-align:middle">
                             <use xlink:href="#iconFolder"></use>
                         </svg>
@@ -163,6 +169,11 @@
                             ({rTotal} {i18n.imageCount ?? "图片"}, {root.videoCount} {i18n.videoCount ?? "视频"})
                         </span>
                     </span>
+                    {#if isAlreadyAdded(root.path)}
+                        <span class="b3-list-item__action" style="color: var(--b3-theme-primary)">
+                            <svg style="width:14px;height:14px"><use xlink:href="#iconSelect"></use></svg>
+                        </span>
+                    {/if}
                 </div>
 
                 {#if root.open}
@@ -189,7 +200,8 @@
                                         </svg>
                                     </span>
                                 {/if}
-                                <span class="b3-list-item__text fn__flex-1">
+                                <span class="b3-list-item__text fn__flex-1"
+                                    style:color={isAlreadyAdded(child.path) ? 'var(--b3-theme-primary)' : ''}>
                                     <svg style="width:14px;height:14px;margin-right:4px;vertical-align:middle">
                                         <use xlink:href="#iconFolder"></use>
                                     </svg>
@@ -198,6 +210,11 @@
                                         ({cTotal} {i18n.imageCount ?? "图片"}, {child.videoCount} {i18n.videoCount ?? "视频"})
                                     </span>
                                 </span>
+                                {#if isAlreadyAdded(child.path)}
+                                    <span class="b3-list-item__action" style="color: var(--b3-theme-primary)">
+                                        <svg style="width:14px;height:14px"><use xlink:href="#iconSelect"></use></svg>
+                                    </span>
+                                {/if}
                             </div>
 
                             {#if child.open}
@@ -224,7 +241,8 @@
                                                     </svg>
                                                 </span>
                                             {/if}
-                                            <span class="b3-list-item__text fn__flex-1">
+                                            <span class="b3-list-item__text fn__flex-1"
+                                                style:color={isAlreadyAdded(grandchild.path) ? 'var(--b3-theme-primary)' : ''}>
                                                 <svg style="width:14px;height:14px;margin-right:4px;vertical-align:middle">
                                                     <use xlink:href="#iconFolder"></use>
                                                 </svg>
@@ -233,6 +251,11 @@
                                                     ({gTotal} {i18n.imageCount ?? "图片"}, {grandchild.videoCount} {i18n.videoCount ?? "视频"})
                                                 </span>
                                             </span>
+                                            {#if isAlreadyAdded(grandchild.path)}
+                                                <span class="b3-list-item__action" style="color: var(--b3-theme-primary)">
+                                                    <svg style="width:14px;height:14px"><use xlink:href="#iconSelect"></use></svg>
+                                                </span>
+                                            {/if}
                                         </div>
                                     {/each}
                                 </div>
