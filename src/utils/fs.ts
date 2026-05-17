@@ -1,4 +1,5 @@
 import { configStore } from "../stores/config"
+import { debug } from "./logger"
 
 function getFsp(): any {
     try {
@@ -26,7 +27,7 @@ export async function readLocalDir(path: string): Promise<string[]> {
             .filter((e: any) => e.isFile())
             .map((e: any) => e.name)
     } catch (err: any) {
-        console.debug('[bgCover] fs.ts readLocalDir 失败:', path, err.message)
+        debug('[bgCover] fs.ts readLocalDir 失败:', path, err.message)
         return []
     }
 }

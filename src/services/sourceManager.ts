@@ -3,6 +3,7 @@ import { readDir as readDirKernel } from '../utils/api'
 import { classifyFileType } from '../types'
 import type { ImageItem } from '../types'
 import { pluginAssetsDir } from '../constants'
+import { debug } from '../utils/logger'
 
 const ENGINE = '[bgCover] sourceManager'
 
@@ -14,13 +15,13 @@ export async function scanAll(
 
     const uploadItems = await scanSource('upload', pluginAssetsDir)
     results.push(...uploadItems)
-    console.debug(`${ENGINE} scanAll upload: ${uploadItems.length} 个文件`)
+    debug(`${ENGINE} scanAll upload: ${uploadItems.length} 个文件`)
 
     for (const dir of assetDirs) {
         if (dir.length === 0) continue
         const items = await scanSource('assets', dir)
         results.push(...items)
-        console.debug(`${ENGINE} scanAll assets[${dir}]: ${items.length} 个文件`)
+        debug(`${ENGINE} scanAll assets[${dir}]: ${items.length} 个文件`)
     }
 
     if (isDesktop()) {
@@ -28,18 +29,18 @@ export async function scanAll(
             if (dir.length === 0) continue
             const ok = await validatePath(dir)
             if (!ok) {
-                console.debug(`${ENGINE} scanAll local[${dir}]: 路径不可访问，跳过`)
+                debug(`${ENGINE} scanAll local[${dir}]: 路径不可访问，跳过`)
                 continue
             }
             const items = await scanSource('local', dir)
             results.push(...items)
-            console.debug(`${ENGINE} scanAll local[${dir}]: ${items.length} 个文件`)
+            debug(`${ENGINE} scanAll local[${dir}]: ${items.length} 个文件`)
         }
     } else {
-        console.debug(`${ENGINE} scanAll local: 非桌面端，跳过 ${localFolders.length} 个本地文件夹`)
+        debug(`${ENGINE} scanAll local: 非桌面端，跳过 ${localFolders.length} 个本地文件夹`)
     }
 
-    console.debug(`${ENGINE} scanAll total: ${results.length} 个文件`)
+    debug(`${ENGINE} scanAll total: ${results.length} 个文件`)
     return results
 }
 
@@ -77,7 +78,7 @@ export async function scanSource(
     }
 
     if (skipped.length > 0) {
-        console.debug(`${ENGINE} scanSource[${type}] 跳过不可识别的文件: [${skipped.join(', ')}]`)
+        debug(`${ENGINE} scanSource[${type}] 跳过不可识别的文件: [${skipped.join(', ')}]`)
     }
 
     return items

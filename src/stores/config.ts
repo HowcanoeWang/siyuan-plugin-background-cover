@@ -1,5 +1,6 @@
 import { fetchPost } from "siyuan"
 import { packageName } from "../constants"
+import { debug } from "../utils/logger"
 import type { AppConfig } from "../types"
 
 const STORAGE_KEY = packageName
@@ -121,7 +122,7 @@ class ConfigStore {
                 await post("/api/file/removeFile", { path: `/data/storage/petal/${STORAGE_KEY}/` })
             }
         } catch {
-            console.debug("[bgCover] cleanOldConfigIfNeeded: petal dir not found")
+            debug("[bgCover] cleanOldConfigIfNeeded: petal dir not found")
         }
     }
 

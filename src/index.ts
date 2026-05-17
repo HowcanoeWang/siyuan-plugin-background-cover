@@ -8,6 +8,7 @@ import { configStore } from "./stores/config"
 import { destroyBgLayer, createBgLayer, renderImage, renderVideo, changeOpacity, changeBlur, changePosition, setVisible, startAutoRefresh, stopAutoRefresh } from "./services/bgRender"
 import { scanAll, pickRandom } from "./services/sourceManager"
 import { diyIcon, pickDefaultBackground, IMAGE_EXTS, VIDEO_EXTS } from "./constants"
+import { debug, log } from "./utils/logger"
 import { isCurrentThemeDisabled, watchTheme } from "./utils/theme"
 import SettingsPanel from "./ui/settings/settings.svelte"
 import { buildTopBarMenu } from "./ui/topbar-menu"
@@ -87,7 +88,7 @@ export default class BgCoverPlugin extends Plugin {
             }
         })
 
-        console.log("[bgCover]", this.i18n.helloPlugin)
+        log("[bgCover]", this.i18n.helloPlugin)
     }
 
     onLayoutReady() {
@@ -118,7 +119,7 @@ export default class BgCoverPlugin extends Plugin {
     onunload() {
         this._unwatchTheme?.()
         destroyBgLayer()
-        console.log("[bgCover]", this.i18n.byePlugin)
+        log("[bgCover]", this.i18n.byePlugin)
     }
 
     async toggleBackground() {
@@ -155,19 +156,19 @@ export default class BgCoverPlugin extends Plugin {
     private applyBackground() {
         try {
             const currentFile = configStore.get("currentFile")
-            console.debug("[bgCover] applyBackground: currentFile =", currentFile)
+            debug("[bgCover] applyBackground: currentFile =", currentFile)
             if (!currentFile) {
-                console.debug("[bgCover] applyBackground: currentFile is null, skip render")
+                debug("[bgCover] applyBackground: currentFile is null, skip render")
                 return
             }
 
             const ext = '.' + (currentFile.split('.').pop()?.toLowerCase() ?? '')
-            console.debug("[bgCover] applyBackground: ext =", ext)
+            debug("[bgCover] applyBackground: ext =", ext)
             if (VIDEO_EXTS.has(ext)) {
-                console.debug("[bgCover] applyBackground: -> renderVideo")
+                debug("[bgCover] applyBackground: -> renderVideo")
                 renderVideo(currentFile)
             } else if (IMAGE_EXTS.has(ext)) {
-                console.debug("[bgCover] applyBackground: -> renderImage")
+                debug("[bgCover] applyBackground: -> renderImage")
                 renderImage(currentFile)
             } else {
                 console.warn(`[bgCover] applyBackground: unknown extension "${ext}" for ${currentFile}`)
@@ -178,7 +179,7 @@ export default class BgCoverPlugin extends Plugin {
             const blur = configStore.get("blur")
             const px = configStore.get("positionX")
             const py = configStore.get("positionY")
-            console.debug("[bgCover] applyBackground: changeOpacity =", opacity, "blur =", blur, "pos =", px, py)
+            debug("[bgCover] applyBackground: changeOpacity =", opacity, "blur =", blur, "pos =", px, py)
             changeOpacity(opacity)
             changeBlur(blur)
             changePosition(px, py)

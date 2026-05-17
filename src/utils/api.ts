@@ -1,4 +1,5 @@
 import { fetchSyncPost } from "siyuan"
+import { debug } from "./logger"
 
 interface IResponse {
     code: number
@@ -61,7 +62,7 @@ export async function downloadUrl(url: string, destPath: string): Promise<boolea
         const blob = await response.blob()
         return await putFile(destPath, blob)
     } catch (err: any) {
-        console.debug('[bgCover] api.ts downloadUrl 失败:', url, err.message)
+        debug('[bgCover] api.ts downloadUrl 失败:', url, err.message)
         return false
     }
 }
