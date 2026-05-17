@@ -68,6 +68,9 @@ export default class BgCoverPlugin extends Plugin {
 
         if (configStore.get("activate")) {
             createBgLayer()
+            if (configStore.get("autoRefresh")) {
+                await this.randomSelect()
+            }
             if (!configStore.get("currentFile")) {
                 const assetDirs = configStore.get("assetDirs")
                 const localFolders = configStore.get("localFolders")
