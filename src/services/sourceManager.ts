@@ -4,7 +4,7 @@ import { classifyFileType } from '../types'
 import type { ImageItem } from '../types'
 import { pluginAssetsDir } from '../constants'
 
-const ENGINE = 'sourceManager'
+const ENGINE = '[bgCover] sourceManager'
 
 export async function scanAll(
     assetDirs: string[] = [],

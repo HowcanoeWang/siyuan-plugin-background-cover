@@ -77,7 +77,7 @@ export function buildTopBarMenu(
                         })
                     })
                 } catch (e) {
-                    console.warn('[topbar-menu] upload failed:', file.name, e)
+                    console.warn('[bgCover] upload failed:', file.name, e)
                 }
             }
 
@@ -190,7 +190,7 @@ export function buildTopBarMenu(
                         )
                     }
                 } catch (e) {
-                    console.warn('[topbar-menu] folder upload failed:', file.name, e)
+                    console.warn('[bgCover] folder upload failed:', file.name, e)
                 }
             }
 

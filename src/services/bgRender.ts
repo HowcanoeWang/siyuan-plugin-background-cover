@@ -92,7 +92,7 @@ export function renderVideo(url: string): void {
     if (playPromise) {
         playPromise.catch((e) => {
             if (e.name !== 'AbortError') {
-                console.warn('[bgRender] video play failed:', e)
+                console.warn('[bgCover] video play failed:', e)
             }
         })
     }

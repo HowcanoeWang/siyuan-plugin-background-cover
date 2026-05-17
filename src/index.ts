@@ -93,7 +93,7 @@ export default class BgCoverPlugin extends Plugin {
             }
         })
 
-        console.log(this.i18n.helloPlugin)
+        console.log("[bgCover]", this.i18n.helloPlugin)
     }
 
     onLayoutReady() {
@@ -124,7 +124,7 @@ export default class BgCoverPlugin extends Plugin {
     onunload() {
         this._unwatchTheme?.()
         destroyBgLayer()
-        console.log(this.i18n.byePlugin)
+        console.log("[bgCover]", this.i18n.byePlugin)
     }
 
     async toggleBackground() {
