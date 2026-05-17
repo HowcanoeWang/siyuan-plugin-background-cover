@@ -91,5 +91,6 @@
     "imageCount": "Images",
     "videoCount": "Videos",
     "clearCacheTitle": "Clear Plugin Cache",
-    "clearCacheConfirm": "Clear plugin cache? This will delete"
+    "clearCacheConfirm": "Clear plugin cache? This will delete",
+    "oldConfigWarn": "Major refactor. Reset in Settings→Advanced. Old data: {path}"
 }

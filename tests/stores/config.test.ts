@@ -52,30 +52,7 @@ describe("ConfigStore", () => {
             expect(configStore.get("blur")).toBe(5)
         })
 
-        it("应该从旧格式迁移", async () => {
-            ;(window as any).siyuan.storage["siyuan-plugin-background-cover"] = {
-                activate: true,
-                bgObjCfg: { abc123: { offx: 30, offy: 70 } },
-                disabledTheme: { dark: { theme1: true, theme2: false } },
-            }
-            await configStore.load()
-
-            const overrides = configStore.get("imageOverrides")
-            expect(overrides["abc123"]).toEqual({ positionX: 30, positionY: 70 })
-
-            const dt = configStore.get("disabledThemes")
-            expect(dt.dark).toEqual(["theme1"])
-        })
-
-        it("旧格式包含 crtBgObj 时应迁移 currentFile", async () => {
-            ;(window as any).siyuan.storage["siyuan-plugin-background-cover"] = {
-                crtBgObj: { path: "/assets/bg.png", hash: "abc" },
-            }
-            await configStore.load()
-            expect(configStore.get("currentFile")).toBe("/assets/bg.png")
-        })
-
-        it("已迁移的配置不应再次触发 save", async () => {
+        it("load 不应对已有配置触发额外 save", async () => {
             ;(window as any).siyuan.storage["siyuan-plugin-background-cover"] = {
                 activate: true,
                 opacity: 0.3,
@@ -148,26 +125,5 @@ describe("ConfigStore", () => {
         })
     })
 
-    describe("迁移细节", () => {
-        it("noteAssetsFolder 应转为 assetDirs 数组", async () => {
-            ;(window as any).siyuan.storage["siyuan-plugin-background-cover"] = {
-                noteAssetsFolder: { a: "/path/a", b: "/path/b" },
-                bgObjCfg: {},
-            }
-            await configStore.load()
-            expect(configStore.get("assetDirs")).toEqual(["/path/a", "/path/b"])
-        })
-
-        it("空 disabledTheme 应转为空数组", async () => {
-            ;(window as any).siyuan.storage["siyuan-plugin-background-cover"] = {
-                bgObjCfg: {},
-                disabledTheme: { dark: {}, light: { t1: true, t2: false } },
-            }
-            await configStore.load()
-            expect(configStore.get("disabledThemes")).toEqual({
-                dark: [],
-                light: ["t1"],
-            })
-        })
-    })
 })
+

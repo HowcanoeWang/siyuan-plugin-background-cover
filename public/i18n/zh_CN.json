@@ -91,5 +91,6 @@
     "imageCount": "图片",
     "videoCount": "视频",
     "clearCacheTitle": "清空插件缓存",
-    "clearCacheConfirm": "确认清空插件缓存？此操作将删除"
+    "clearCacheConfirm": "确认清空插件缓存？此操作将删除",
+    "oldConfigWarn": "背景插件大版本重构，建议前往 设置→高级 重置。旧数据路径: {path}"
 }
