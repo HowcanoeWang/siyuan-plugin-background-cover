@@ -1,6 +1,6 @@
 <script lang="ts">
     import { configStore } from "../../stores/config"
-    import { createBgLayer, renderImage, changeOpacity, changeBlur, changePosition, getCurrentMode } from "../../services/bgRender"
+    import { createBgLayer, renderImage, changeOpacity, changeBlur, changePosition, getCurrentMode, startAutoRefresh, stopAutoRefresh } from "../../services/bgRender"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
 
@@ -18,7 +18,7 @@
 
     function handleActivateChange() {
         activate = !activate
-        configStore.set("activate", activate)
+        configStore.setAndSave("activate", activate)
         if (activate) {
             createBgLayer()
             if (currentFile) {
@@ -27,6 +27,14 @@
                 changeBlur(blur)
                 changePosition(positionX, positionY)
             }
+        }
+    }
+
+    function syncAutoRefreshTimer() {
+        stopAutoRefresh()
+        if (autoRefresh && autoRefreshTime > 0) {
+            const plugin = (window as any).bgCoverPlugin?.plugin
+            startAutoRefresh(() => plugin?.randomSelect?.(), autoRefreshTime * 60000)
         }
     }
 
@@ -51,7 +59,7 @@
                     disabled={posDisabled} style:opacity={posDisabled ? "0.1" : "1"}
                     bind:value={positionX}
                     oninput={() => changePosition(positionX, positionY)}
-                    onchange={() => configStore.set("positionX", positionX)}
+                    onchange={() => configStore.setAndSave("positionX", positionX)}
                 />
             </div>
             <div>
@@ -61,7 +69,7 @@
                     disabled={posDisabled} style:opacity={posDisabled ? "0.1" : "1"}
                     bind:value={positionY}
                     oninput={() => changePosition(positionX, positionY)}
-                    onchange={() => configStore.set("positionY", positionY)}
+                    onchange={() => configStore.setAndSave("positionY", positionY)}
                 />
             </div>
         </div>
@@ -87,7 +95,7 @@
             <span class="fn__space"></span>
             <input class="b3-switch fn__flex-center" type="checkbox"
                 bind:checked={autoRefresh}
-                onchange={() => configStore.set("autoRefresh", autoRefresh)}
+                onchange={() => { configStore.setAndSave("autoRefresh", autoRefresh); syncAutoRefreshTimer() }}
             />
         </div>
         <div class="fn__hr"></div>
@@ -98,7 +106,7 @@
                 min="0" max="36000"
                 bind:value={autoRefreshTime}
                 disabled={!autoRefresh}
-                onchange={() => configStore.set("autoRefreshTime", autoRefreshTime)}
+                onchange={() => { configStore.setAndSave("autoRefreshTime", autoRefreshTime); syncAutoRefreshTimer() }}
             />
             <span class="fn__space"></span>
             <span class="ft__on-surface fn__flex-center">{i18n.minutes ?? "分钟"}</span>
@@ -119,7 +127,7 @@
                     const el = document.activeElement?.parentElement
                     if (el) el.setAttribute('aria-label', String(opacity))
                 }}
-                onchange={() => configStore.set("opacity", opacity)}
+                onchange={() => configStore.setAndSave("opacity", opacity)}
             />
         </div>
     </label>
@@ -138,7 +146,7 @@
                     const el = document.activeElement?.parentElement
                     if (el) el.setAttribute('aria-label', String(blur))
                 }}
-                onchange={() => configStore.set("blur", blur)}
+                onchange={() => configStore.setAndSave("blur", blur)}
             />
         </div>
     </label>

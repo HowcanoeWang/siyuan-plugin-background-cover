@@ -62,7 +62,8 @@ export async function scanSource(
             continue
         }
 
-        const apiPath = `${path}${name}`
+        const cleanPath = path.endsWith('/') ? path : path + '/'
+        const apiPath = `${cleanPath}${name}`
         const url = getFileUrl(apiPath, type)
 
         items.push({

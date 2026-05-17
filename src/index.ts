@@ -6,7 +6,7 @@ import {
 
 import { svelteDialog } from "./libs/dialog"
 import { configStore } from "./stores/config"
-import { destroyBgLayer, createBgLayer, renderImage, renderVideo, changeOpacity, changeBlur, changePosition, setVisible } from "./services/bgRender"
+import { destroyBgLayer, createBgLayer, renderImage, renderVideo, changeOpacity, changeBlur, changePosition, setVisible, startAutoRefresh, stopAutoRefresh } from "./services/bgRender"
 import { scanAll, pickRandom } from "./services/sourceManager"
 import { diyIcon, pickDefaultBackground, IMAGE_EXTS, VIDEO_EXTS } from "./constants"
 import { isCurrentThemeDisabled, watchTheme } from "./utils/theme"
@@ -185,6 +185,13 @@ export default class BgCoverPlugin extends Plugin {
             changeOpacity(opacity)
             changeBlur(blur)
             changePosition(px, py)
+        }
+
+        const autoRefresh = configStore.get("autoRefresh")
+        const interval = configStore.get("autoRefreshTime")
+        stopAutoRefresh()
+        if (autoRefresh && interval > 0) {
+            startAutoRefresh(() => this.randomSelect(), interval * 60000)
         }
     }
 }
