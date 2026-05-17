@@ -89,5 +89,7 @@
     "positionX": "X Offset",
     "positionY": "Y Offset",
     "imageCount": "Images",
-    "videoCount": "Videos"
+    "videoCount": "Videos",
+    "clearCacheTitle": "Clear Plugin Cache",
+    "clearCacheConfirm": "Clear plugin cache? This will delete"
 }

@@ -207,10 +207,15 @@
     async function clearCache() {
         const group = groups.find(g => g.type === 'upload')
         if (!group || group.files.length === 0) return
+        const imgCount = group.files.filter(f => f.type === 'image').length
+        const vidCount = group.files.filter(f => f.type === 'video').length
+        const parts: string[] = []
+        if (imgCount > 0) parts.push(`${imgCount} ${i18n.imageCount ?? 'images'}`)
+        if (vidCount > 0) parts.push(`${vidCount} ${i18n.videoCount ?? 'videos'}`)
         const confirmed = await new Promise<boolean>(resolve => {
             confirmDialog({
-                title: i18n.clear ?? "清空",
-                content: `${group.files.length} ${i18n.noFiles ?? 'files'} ${i18n.clear ?? 'clear'}`,
+                title: i18n.clearCacheTitle ?? "清空插件缓存",
+                content: `${i18n.clearCacheConfirm ?? '确认删除所有插件缓存文件？将删除'} ${parts.join('、')}`,
                 confirm: () => resolve(true),
                 cancel: () => resolve(false),
                 width: "360px",
@@ -300,12 +305,22 @@
                                 <svg><use xlink:href="#iconOpenWindow"></use></svg>
                             </span>
                         {/if}
-                        {#if group.removable}
+                        {#if group.type === 'upload' && group.files.length > 0}
+                            <span class="b3-list-item__action"
+                                onclick={(e: MouseEvent) => { e.stopPropagation(); clearCache() }}
+                                onkeydown={undefined}
+                                role="button"
+                                tabindex="0">
+                                <svg><use xlink:href="#iconTrashcan"></use></svg>
+                            </span>
+                        {:else if group.removable}
                             <span class="b3-list-item__action"
                                 onclick={(e: MouseEvent) => { e.stopPropagation(); removeGroup(i) }}
                                 onkeydown={undefined}
                                 role="button"
-                                tabindex="0">✕</span>
+                                tabindex="0">
+                                <svg><use xlink:href="#iconTrashcan"></use></svg>
+                            </span>
                         {/if}
                         {#if group.inaccessible}
                             <span style="color: var(--b3-theme-error); font-size: 0.85em; margin-left: 8px;">{i18n.pathInaccessible ?? "不可访问"}</span>
@@ -343,14 +358,7 @@
                                 <div class="b3-list-item b3-list-item--narrow" style="color: var(--b3-theme-on-surface);">
                                     <span class="b3-list-item__text">{i18n.noFiles ?? "暂无文件"}</span>
                                 </div>
-                            {:else if group.type === 'upload'}
-                                <div class="b3-list-item b3-list-item--narrow" style="justify-content: flex-end; padding: 4px 8px;">
-                                    <button class="b3-button b3-button--outline fn__size200"
-                                        onclick={clearCache}>
-                                        {i18n.clear ?? "清空"}
-                                    </button>
-                                </div>
-                            {/if}
+{/if}
                         </div>
                     {/if}
                 {/each}
