@@ -9,7 +9,7 @@
     let blur = $state(configStore.get("blur"))
     let positionX = $state(configStore.get("positionX"))
     let positionY = $state(configStore.get("positionY"))
-    let autoRefresh = $state(configStore.get("autoRefresh"))
+    let changeBgOnStart = $state(configStore.get("changeBgOnStart"))
     let autoRefreshTime = $state(configStore.get("autoRefreshTime"))
     let currentFile = $state(configStore.get("currentFile"))
 
@@ -32,7 +32,7 @@
 
     function syncAutoRefreshTimer() {
         stopAutoRefresh()
-        if (autoRefresh && autoRefreshTime > 0) {
+        if (autoRefreshTime > 0) {
             const plugin = (window as any).bgCoverPlugin?.plugin
             startAutoRefresh(() => plugin?.randomSelect?.(), autoRefreshTime * 60000)
         }
@@ -94,8 +94,8 @@
             <div class="fn__flex-center fn__flex-1 ft__on-surface">{i18n.autoRefreshDesc ?? "启动时自动更换背景"}</div>
             <span class="fn__space"></span>
             <input class="b3-switch fn__flex-center" type="checkbox"
-                bind:checked={autoRefresh}
-                onchange={() => { configStore.setAndSave("autoRefresh", autoRefresh); syncAutoRefreshTimer() }}
+                bind:checked={changeBgOnStart}
+                onchange={() => { configStore.setAndSave("changeBgOnStart", changeBgOnStart); syncAutoRefreshTimer() }}
             />
         </div>
         <div class="fn__hr"></div>
@@ -105,7 +105,6 @@
             <input class="b3-text-field fn__flex-center fn__size200" type="number"
                 min="0" max="36000"
                 bind:value={autoRefreshTime}
-                disabled={!autoRefresh}
                 onchange={() => { configStore.setAndSave("autoRefreshTime", autoRefreshTime); syncAutoRefreshTimer() }}
             />
             <span class="fn__space"></span>

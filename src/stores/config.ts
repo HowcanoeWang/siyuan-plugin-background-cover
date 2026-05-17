@@ -12,7 +12,7 @@ const APP_CONFIG_DEFAULTS: AppConfig = {
     positionY: 50,
     localFolders: [],
     assetDirs: [],
-    autoRefresh: true,
+    changeBgOnStart: true,
     autoRefreshTime: 30,
     disabledThemes: { dark: [], light: [] },
     imageOverrides: {},

@@ -16,7 +16,7 @@ export interface AppConfig {
     positionY: number
     localFolders: string[]
     assetDirs: string[]
-    autoRefresh: boolean
+    changeBgOnStart: boolean
     autoRefreshTime: number
     disabledThemes: DisabledThemes
     imageOverrides: Record<string, ImageOverride>

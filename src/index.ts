@@ -68,7 +68,7 @@ export default class BgCoverPlugin extends Plugin {
 
         if (configStore.get("activate")) {
             createBgLayer()
-            if (configStore.get("autoRefresh")) {
+            if (configStore.get("changeBgOnStart")) {
                 await this.randomSelect()
             }
             if (!configStore.get("currentFile")) {
@@ -190,10 +190,9 @@ export default class BgCoverPlugin extends Plugin {
             changePosition(px, py)
         }
 
-        const autoRefresh = configStore.get("autoRefresh")
         const interval = configStore.get("autoRefreshTime")
         stopAutoRefresh()
-        if (autoRefresh && interval > 0) {
+        if (interval > 0) {
             startAutoRefresh(() => this.randomSelect(), interval * 60000)
         }
     }
