@@ -3,6 +3,8 @@ export interface ThemeInfo {
     label: string
 }
 
+import { log } from "./logger"
+
 function getAppearance() {
     return (window as any).siyuan?.config?.appearance
 }
@@ -19,6 +21,7 @@ export function getInstalledThemes(): [ThemeInfo[], ThemeInfo[]] {
         .filter((t: any) => t?.name)
         .map((t: any) => ({ name: t.name, label: t.label ?? t.name }))
 
+    log("[bgCover] getInstalledThemes: light =", light.length, "dark =", dark.length)
     return [light, dark]
 }
 
@@ -56,6 +59,7 @@ export function watchTheme(
         const name = mode === 'light'
             ? (appearance.themeLight ?? '')
             : (appearance.themeDark ?? '')
+        log("[bgCover] watchTheme: detected change ->", mode, name)
         onChange(mode, name)
     })
 

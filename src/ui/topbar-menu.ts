@@ -5,6 +5,7 @@ import { getFileUrl } from "../utils/fs"
 import { putFile as apiPutFile } from "../utils/api"
 import { classifyFileType } from "../types"
 import { svelteDialog, confirmDialog } from "../libs/dialog"
+import { log } from "../utils/logger"
 import UrlDialog from "./url-dialog.svelte"
 import LocalDirDialog from "./local-dir-dialog.svelte"
 import AssetPicker from "./sources/asset-picker.svelte"
@@ -34,6 +35,7 @@ export function buildTopBarMenu(
                     const folders = [...configStore.get("localFolders"), path]
                     configStore.set("localFolders", folders)
                     configStore.save()
+                    log("[bgCover] menu: linkLocalDir", path)
                     cb.onOpenSettings("sources")
                 },
             },
@@ -82,6 +84,7 @@ export function buildTopBarMenu(
             }
 
             if (lastUrl) {
+                log("[bgCover] menu: pickMultipleFiles done, lastUrl =", lastUrl)
                 configStore.set("currentFile", lastUrl)
                 configStore.save()
                 const { renderImage, renderVideo, changeOpacity, changeBlur } = await import("../services/bgRender")
@@ -114,6 +117,7 @@ export function buildTopBarMenu(
                     }
                     configStore.set("assetDirs", dirs)
                     configStore.save()
+                    log("[bgCover] menu: linkAssetsDir", paths)
                     cb.onOpenSettings("sources")
                 },
             },
@@ -121,6 +125,7 @@ export function buildTopBarMenu(
     }
 
     function showUrlDialog() {
+        log("[bgCover] menu: showUrlDialog")
         svelteDialog({
             title: i18n.addUrlTitle ?? "添加网络背景资源",
             component: UrlDialog,
@@ -195,6 +200,7 @@ export function buildTopBarMenu(
             }
 
             if (lastUrl) {
+                log("[bgCover] menu: pickFolderFiles done, lastUrl =", lastUrl)
                 configStore.set("currentFile", lastUrl)
                 configStore.save()
                 const { renderImage, renderVideo, changeOpacity, changeBlur } = await import("../services/bgRender")

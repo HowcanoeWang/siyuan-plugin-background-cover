@@ -78,9 +78,11 @@ export default class BgCoverPlugin extends Plugin {
             this.applyBackground()
         }
 
-        this._unwatchTheme = watchTheme(() => {
+        this._unwatchTheme = watchTheme((mode, name) => {
+            log("[bgCover] theme changed:", mode, name)
             if (!configStore.get("activate")) return
             if (isCurrentThemeDisabled(configStore.get("disabledThemes"))) {
+                log("[bgCover] theme is disabled, hiding background")
                 setVisible(false)
             } else {
                 createBgLayer()
@@ -124,6 +126,7 @@ export default class BgCoverPlugin extends Plugin {
 
     async toggleBackground() {
         const active = !configStore.get("activate")
+        log("[bgCover] toggleBackground:", active ? "activated" : "deactivated")
         configStore.setAndSave("activate", active)
         if (active) {
             createBgLayer()
@@ -137,10 +140,14 @@ export default class BgCoverPlugin extends Plugin {
         const assetDirs = configStore.get("assetDirs")
         const localFolders = configStore.get("localFolders")
         const pool = await scanAll(assetDirs, localFolders)
-        if (pool.length === 0) return
+        if (pool.length === 0) {
+            log("[bgCover] randomSelect: pool is empty, nothing to pick")
+            return
+        }
         const exclude = pool.length > 1 ? configStore.get("currentFile") : null
         const item = pickRandom(pool, exclude)
         if (!item) return
+        log("[bgCover] randomSelect: picked", item.name, "from", pool.length, "items")
         configStore.set("currentFile", item.url)
         configStore.save()
         if (item.type === 'image') {
@@ -154,6 +161,7 @@ export default class BgCoverPlugin extends Plugin {
     }
 
     private applyBackground() {
+        log("[bgCover] applyBackground: start")
         try {
             const currentFile = configStore.get("currentFile")
             debug("[bgCover] applyBackground: currentFile =", currentFile)

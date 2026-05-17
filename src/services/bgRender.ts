@@ -1,4 +1,5 @@
 import { IMAGE_EXTS, VIDEO_EXTS } from "../constants"
+import { log } from "../utils/logger"
 
 let canvasEl: HTMLCanvasElement | null = null
 let videoEl: HTMLVideoElement | null = null
@@ -70,6 +71,7 @@ export function render(url: string): void {
 
 export function renderImage(url: string): void {
     if (!canvasEl) return
+    log("[bgCover] renderImage:", url.split('/').pop())
     currentMode = 'image'
 
     if (videoEl) {
@@ -83,6 +85,7 @@ export function renderImage(url: string): void {
 
 export function renderVideo(url: string): void {
     if (!videoEl) return
+    log("[bgCover] renderVideo:", url.split('/').pop())
     currentMode = 'video'
 
     if (canvasEl) canvasEl.style.display = 'none'
@@ -99,6 +102,7 @@ export function renderVideo(url: string): void {
 }
 
 export function clearLayer(): void {
+    log("[bgCover] clearLayer")
     if (canvasEl) {
         canvasEl.style.display = 'none'
         canvasEl.style.backgroundImage = ''
@@ -112,6 +116,7 @@ export function clearLayer(): void {
 }
 
 export function setVisible(visible: boolean): void {
+    log("[bgCover] setVisible:", visible)
     if (canvasEl) canvasEl.style.display = visible && currentMode === 'image' ? '' : 'none'
     if (videoEl) videoEl.style.display = visible && currentMode === 'video' ? '' : 'none'
     if (!visible) {
@@ -151,11 +156,13 @@ export function applyOverrides(x?: number, y?: number, defaultX?: number, defaul
 export function startAutoRefresh(callback: () => void, intervalMs: number): void {
     stopAutoRefresh()
     if (intervalMs <= 0) return
+    log("[bgCover] startAutoRefresh: interval =", intervalMs, "ms")
     autoRefreshTimer = setInterval(callback, intervalMs)
 }
 
 export function stopAutoRefresh(): void {
     if (autoRefreshTimer !== null) {
+        log("[bgCover] stopAutoRefresh")
         clearInterval(autoRefreshTimer)
         autoRefreshTimer = null
     }

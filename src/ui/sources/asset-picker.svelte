@@ -3,6 +3,7 @@
     import { readDirItems } from "../../utils/api"
     import { classifyFileType } from "../../types"
     import { configStore } from "../../stores/config"
+    import { log } from "../../utils/logger"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
 
@@ -74,6 +75,7 @@
         }
 
         if (!node.loaded) {
+            log("[bgCover] assetPicker expand:", node.name)
             node.imageCount = 0
             node.videoCount = 0
             node.children = []
@@ -118,7 +120,9 @@
 
     function confirm() {
         if (!selectedDir) return
-        onConfirm?.([getRelPath(selectedDir)])
+        const rel = getRelPath(selectedDir)
+        log("[bgCover] assetPicker confirm:", rel)
+        onConfirm?.([rel])
     }
 
     function isAlreadyAdded(nodePath: string): boolean {

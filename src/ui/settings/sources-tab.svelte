@@ -8,6 +8,7 @@
     import { pluginAssetsDir } from "../../constants"
     import { removeFile, putFile as apiPutFile } from "../../utils/api"
     import { classifyFileType } from "../../types"
+    import { log } from "../../utils/logger"
     import LocalDirDialog from "../local-dir-dialog.svelte"
     import AssetPicker from "../sources/asset-picker.svelte"
     import UrlDialog from "../url-dialog.svelte"
@@ -127,6 +128,7 @@
 
     function addAssetFolder(dir: string) {
         if (!dir) return
+        log("[bgCover] addAssetFolder:", dir)
         const dirs = [...configStore.get("assetDirs"), dir]
         configStore.set("assetDirs", dirs)
         configStore.save()
@@ -135,6 +137,7 @@
 
     function addLocalFolder(path: string) {
         if (!path) return
+        log("[bgCover] addLocalFolder:", path)
         const folders = [...configStore.get("localFolders"), path]
         configStore.set("localFolders", folders)
         configStore.save()
@@ -143,6 +146,7 @@
 
     function removeGroup(i: number) {
         const g = groups[i]
+        log("[bgCover] removeGroup:", g.type, g.configKey)
         if (g.type === 'assets') {
             const dirs = [...configStore.get("assetDirs")]
             const idx = dirs.indexOf(g.configKey)
@@ -165,6 +169,7 @@
     }
 
     function setAsBackground(item: ImageItem) {
+        log("[bgCover] setAsBackground:", item.name)
         configStore.set("currentFile", item.url)
         configStore.save()
         if (item.type === 'image') {
@@ -224,6 +229,7 @@
             })
         })
         if (!confirmed) return
+        log("[bgCover] clearCache:", group.files.length, "files")
         const wasCurrentDeleted = group.files.some(f => f.url === configStore.get("currentFile"))
         for (const file of group.files) {
             await removeFile(file.apiPath)
@@ -257,6 +263,7 @@
     }
 
     async function deleteFile(file: ImageItem) {
+        log("[bgCover] deleteFile:", file.name)
         const wasCurrent = file.url === configStore.get("currentFile")
         await removeFile(file.apiPath)
         if (wasCurrent) {
@@ -289,6 +296,7 @@
                 }
             }
             document.body.removeChild(input)
+            log("[bgCover] pickMultipleFiles: uploaded", files?.length ?? 0, "files")
             refreshAll()
         })
         input.click()
@@ -315,12 +323,14 @@
                 }
             }
             document.body.removeChild(input)
+            log("[bgCover] pickFolderFiles: uploaded", files?.length ?? 0, "files")
             refreshAll()
         })
         input.click()
     }
 
     function showAddUrlDialog() {
+        log("[bgCover] showAddUrlDialog")
         svelteDialog({
             title: i18n.addUrlTitle ?? "添加网络背景资源",
             component: UrlDialog,

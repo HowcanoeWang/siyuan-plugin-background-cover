@@ -1,6 +1,6 @@
 import { fetchPost } from "siyuan"
 import { packageName } from "../constants"
-import { debug } from "../utils/logger"
+import { debug, log } from "../utils/logger"
 import type { AppConfig } from "../types"
 
 const STORAGE_KEY = packageName
@@ -53,12 +53,13 @@ class ConfigStore {
         }
 
         this.cfg = { ...APP_CONFIG_DEFAULTS, ...stored }
+        log("[bgCover] config loaded, keys:", Object.keys(this.cfg))
         this.ready = true
     }
 
     async save(): Promise<void> {
         if (!this.dirty || !this.ready) return
-
+        log("[bgCover] config save")
         await post("/api/storage/setLocalStorageVal", {
             key: STORAGE_KEY,
             val: this.cfg,
@@ -85,6 +86,7 @@ class ConfigStore {
     }
 
     async reset(): Promise<void> {
+        console.log("[bgCover] config reset to defaults")
         this.cfg = { ...APP_CONFIG_DEFAULTS }
         this.dirty = true
         await this.save()
