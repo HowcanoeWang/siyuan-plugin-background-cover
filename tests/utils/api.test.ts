@@ -5,9 +5,9 @@ vi.mock("siyuan", () => ({
 }))
 
 import { fetchSyncPost } from "siyuan"
-import { readDir, downloadUrl } from "../../src/utils/api"
+import { readSiyuanDir, downloadUrl } from "../../src/utils/api"
 
-describe("api.ts - readDir", () => {
+describe("api.ts - readSiyuanDir", () => {
     beforeEach(() => {
         vi.mocked(fetchSyncPost).mockClear()
     })
@@ -25,14 +25,14 @@ describe("api.ts - readDir", () => {
             ],
         })
 
-        const files = await readDir('data/public/plugin')
+        const files = await readSiyuanDir('data/public/plugin')
         expect(files).toEqual(['img.jpg', 'vid.mp4'])
     })
 
     it("fetchSyncPost 返回错误时返回 []", async () => {
         vi.mocked(fetchSyncPost).mockResolvedValueOnce({ code: -1, msg: 'error', data: null, cmd: "", sid: "" })
 
-        const files = await readDir('data/public/bad')
+        const files = await readSiyuanDir('data/public/bad')
         expect(files).toEqual([])
     })
 })

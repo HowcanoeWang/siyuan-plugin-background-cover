@@ -1,5 +1,5 @@
 import { fetchSyncPost } from "siyuan"
-import { debug } from "./logger"
+import { devDebug } from "./logger"
 
 interface IResponse {
     code: number
@@ -17,7 +17,7 @@ async function request(url: string, data: any): Promise<any> {
     return res.code === 0 ? res.data : null
 }
 
-export async function readDir(path: string): Promise<string[]> {
+export async function readSiyuanDir(path: string): Promise<string[]> {
     const data = await request("/api/file/readDir", { path })
     if (!Array.isArray(data)) return []
     return (data as IDirItem[])
@@ -29,7 +29,7 @@ export async function fileExistsRemote(path: string): Promise<boolean> {
     if (!path) return false
     const parentPath = path.substring(0, path.lastIndexOf('/'))
     const targetName = path.substring(path.lastIndexOf('/') + 1)
-    const files = await readDir(parentPath)
+    const files = await readSiyuanDir(parentPath)
     return files.includes(targetName)
 }
 
@@ -62,7 +62,7 @@ export async function downloadUrl(url: string, destPath: string): Promise<boolea
         const blob = await response.blob()
         return await putFile(destPath, blob)
     } catch (err: any) {
-        debug('[bgCover] api.ts downloadUrl 失败:', url, err.message)
+        devDebug('[bgCover] api.ts downloadUrl 失败:', url, err.message)
         return false
     }
 }

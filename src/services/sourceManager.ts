@@ -1,8 +1,8 @@
 import { isDesktop, readLocalDir, getFileUrl, fileExistsLocal } from '../utils/fs'
-import { readDir as readDirKernel } from '../utils/api'
+import { readSiyuanDir } from '../utils/api'
 import type { ImageItem } from '../types'
 import { pluginAssetsDir, classifyFileType } from '../constants'
-import { debug } from '../utils/logger'
+import { devDebug } from '../utils/logger'
 import { toAssetRelPath } from '../utils/path'
 
 const ENGINE = '[bgCover] sourceManager'
@@ -27,18 +27,18 @@ export async function scanAll(
         for (const dir of validLocalDirs) {
             const ok = await validatePath(dir)
             if (!ok) {
-                debug(`${ENGINE} scanAll local[${dir}]: 路径不可访问，跳过`)
+                devDebug(`${ENGINE} scanAll local[${dir}]: 路径不可访问，跳过`)
             } else {
                 tasks.push(scanSource('local', dir))
             }
         }
     } else {
-        debug(`${ENGINE} scanAll local: 非桌面端，跳过 ${localFolders.length} 个本地文件夹`)
+        devDebug(`${ENGINE} scanAll local: 非桌面端，跳过 ${localFolders.length} 个本地文件夹`)
     }
 
     const batch = await Promise.all(tasks)
     const results = batch.flat()
-    debug(`${ENGINE} scanAll total: ${results.length} 个文件`)
+    devDebug(`${ENGINE} scanAll total: ${results.length} 个文件`)
     return results
 }
 
@@ -48,7 +48,7 @@ export async function scanSource(
 ): Promise<ImageItem[]> {
     const filenames = type === 'local'
         ? await readLocalDir(path)
-        : await readDirKernel(path)
+        : await readSiyuanDir(path)
 
     const items: ImageItem[] = []
     const skipped: string[] = []
@@ -76,7 +76,7 @@ export async function scanSource(
     }
 
     if (skipped.length > 0) {
-        debug(`${ENGINE} scanSource[${type}] 跳过不可识别的文件: [${skipped.join(', ')}]`)
+        devDebug(`${ENGINE} scanSource[${type}] 跳过不可识别的文件: [${skipped.join(', ')}]`)
     }
 
     return items
@@ -104,7 +104,7 @@ export async function validatePath(path: string): Promise<boolean> {
     }
 
     try {
-        await readDirKernel(path)
+        await readSiyuanDir(path)
         return true
     } catch {
         return false

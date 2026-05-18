@@ -2,7 +2,7 @@ import { classifyFileType } from "../../constants"
 import { getFileUrl } from "../../utils/fs"
 import { putFile } from "../../utils/api"
 import { svelteDialog, confirmDialog } from "../../libs/dialog"
-import { log } from "../../utils/logger"
+import { devLog } from "../../utils/logger"
 
 import LocalDirDialog from "./local-dir-dialog.svelte"
 import AssetPicker from "./asset-picker.svelte"
@@ -41,7 +41,7 @@ export function showAssetsDirDialog(onConfirm: (paths: string[]) => void) {
 }
 
 export function showUrlDialog(onSuccess: (uploadUrl?: string) => void) {
-    log("[bgCover] dialogs: showUrlDialog")
+    devLog("[bgCover] dialogs: showUrlDialog")
     const dlg = svelteDialog({
         title: i18n().addUrlTitle,
         component: UrlDialog,

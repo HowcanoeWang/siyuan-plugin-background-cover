@@ -1,7 +1,7 @@
 import { Menu, getFrontend } from "siyuan"
 import { configStore } from "../stores/config"
 import { isDesktop } from "../utils/fs"
-import { log } from "../utils/logger"
+import { devLog } from "../utils/logger"
 import {
     showLocalDirDialog,
     showAssetsDirDialog,
@@ -9,6 +9,15 @@ import {
     pickMultipleFiles,
     pickFolderFiles,
 } from "./dialogs"
+
+interface MenuItemConfig {
+    icon: string
+    label: string
+    click: () => void
+    accelerator?: string
+    type?: string
+    submenu?: MenuItemConfig[]
+}
 
 interface MenuCallbacks {
     onOpenSettings: (tab?: string) => void
@@ -37,8 +46,8 @@ export function buildTopBarMenu(
         changeBlur(configStore.get("blur"))
     }
 
-    function buildAddBackgroundSubmenu(): any[] {
-        const items: any[] = []
+    function buildAddBackgroundSubmenu(): MenuItemConfig[] {
+        const items: MenuItemConfig[] = []
         if (isDesktop()) {
             items.push({
                 icon: "iconFolder",
@@ -47,7 +56,7 @@ export function buildTopBarMenu(
                     const folders = [...configStore.get("localFolders"), path]
                     configStore.set("localFolders", folders)
                     configStore.save()
-                    log("[bgCover] menu: linkLocalDir", path)
+                    devLog("[bgCover] menu: linkLocalDir", path)
                     cb.onOpenSettings("sources")
                 }),
             })
@@ -63,7 +72,7 @@ export function buildTopBarMenu(
                     }
                     configStore.set("assetDirs", dirs)
                     configStore.save()
-                    log("[bgCover] menu: linkAssetsDir", paths)
+                    devLog("[bgCover] menu: linkAssetsDir", paths)
                     cb.onOpenSettings("sources")
                 }),
             },
@@ -71,7 +80,7 @@ export function buildTopBarMenu(
                 icon: "iconFiles",
                 label: i18n.uploadMultipleFiles,
                 click: () => pickMultipleFiles((lastUrl) => {
-                    log("[bgCover] menu: pickMultipleFiles done, lastUrl =", lastUrl)
+                    devLog("[bgCover] menu: pickMultipleFiles done, lastUrl =", lastUrl)
                     applyLastUploaded(lastUrl)
                     cb.onOpenSettings("sources")
                 }),
@@ -80,7 +89,7 @@ export function buildTopBarMenu(
                 icon: "iconFolder",
                 label: i18n.uploadEntireDir,
                 click: () => pickFolderFiles((lastUrl) => {
-                    log("[bgCover] menu: pickFolderFiles done, lastUrl =", lastUrl)
+                    devLog("[bgCover] menu: pickFolderFiles done, lastUrl =", lastUrl)
                     applyLastUploaded(lastUrl)
                     cb.onOpenSettings("sources")
                 }),

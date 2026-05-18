@@ -8,7 +8,7 @@ import { configStore } from "./stores/config"
 import { destroyBgLayer, createBgLayer, renderImage, renderVideo, changeOpacity, changeBlur, changePosition, setVisible, startAutoRefresh, stopAutoRefresh } from "./services/bgRender"
 import { scanAll, pickRandom } from "./services/sourceManager"
 import { pluginTopIcon, pickDefaultBackground, DEFAULT_BACKGROUNDS, IMAGE_EXTS, VIDEO_EXTS } from "./constants"
-import { debug, log } from "./utils/logger"
+import { devDebug, devLog } from "./utils/logger"
 import { isCurrentThemeDisabled, watchTheme } from "./utils/theme"
 import SettingsPanel from "./ui/settings/settings.svelte"
 import { buildTopBarMenu } from "./ui/topbar-menu"
@@ -84,11 +84,11 @@ export default class BgCoverPlugin extends Plugin {
         }
 
         this._unwatchTheme = watchTheme((mode, name) => {
-            log("[bgCover] theme changed:", mode, name)
+            devLog("[bgCover] theme changed:", mode, name)
             this.applyThemeShield()
         })
 
-        log("[bgCover]", this.i18n.helloPlugin)
+        devLog("[bgCover]", this.i18n.helloPlugin)
     }
 
     onLayoutReady() {
@@ -119,12 +119,12 @@ export default class BgCoverPlugin extends Plugin {
     onunload() {
         this._unwatchTheme?.()
         destroyBgLayer()
-        log("[bgCover]", this.i18n.byePlugin)
+        devLog("[bgCover]", this.i18n.byePlugin)
     }
 
     async toggleBackground() {
         const active = !configStore.get("activate")
-        log("[bgCover] toggleBackground:", active ? "activated" : "deactivated")
+        devLog("[bgCover] toggleBackground:", active ? "activated" : "deactivated")
         configStore.setAndSave("activate", active)
         if (active) {
             createBgLayer()
@@ -139,13 +139,13 @@ export default class BgCoverPlugin extends Plugin {
         const localFolders = configStore.get("localFolders")
         const pool = await scanAll(assetDirs, localFolders)
         if (pool.length === 0) {
-            log("[bgCover] randomSelect: pool is empty, nothing to pick")
+            devLog("[bgCover] randomSelect: pool is empty, nothing to pick")
             return
         }
         const exclude = pool.length > 1 ? configStore.get("currentFile") : null
         const item = pickRandom(pool, exclude)
         if (!item) return
-        log("[bgCover] randomSelect: picked", item.name, "from", pool.length, "items")
+        devLog("[bgCover] randomSelect: picked", item.name, "from", pool.length, "items")
         configStore.set("currentFile", item.url)
         configStore.save()
         if (item.type === 'image') {
@@ -159,22 +159,22 @@ export default class BgCoverPlugin extends Plugin {
     }
 
     private applyBackground() {
-        log("[bgCover] applyBackground: start")
+        devLog("[bgCover] applyBackground: start")
         try {
             const currentFile = configStore.get("currentFile")
-            debug("[bgCover] applyBackground: currentFile =", currentFile)
+            devDebug("[bgCover] applyBackground: currentFile =", currentFile)
             if (!currentFile) {
-                debug("[bgCover] applyBackground: currentFile is null, skip render")
+                devDebug("[bgCover] applyBackground: currentFile is null, skip render")
                 return
             }
 
             const ext = '.' + (currentFile.split('.').pop()?.toLowerCase() ?? '')
-            debug("[bgCover] applyBackground: ext =", ext)
+            devDebug("[bgCover] applyBackground: ext =", ext)
             if (VIDEO_EXTS.has(ext)) {
-                debug("[bgCover] applyBackground: -> renderVideo")
+                devDebug("[bgCover] applyBackground: -> renderVideo")
                 renderVideo(currentFile)
             } else if (IMAGE_EXTS.has(ext)) {
-                debug("[bgCover] applyBackground: -> renderImage")
+                devDebug("[bgCover] applyBackground: -> renderImage")
                 renderImage(currentFile)
             } else {
                 console.warn(`[bgCover] applyBackground: unknown extension "${ext}" for ${currentFile}`)
@@ -185,7 +185,7 @@ export default class BgCoverPlugin extends Plugin {
             const blur = configStore.get("blur")
             const px = configStore.get("positionX")
             const py = configStore.get("positionY")
-            debug("[bgCover] applyBackground: changeOpacity =", opacity, "blur =", blur, "pos =", px, py)
+            devDebug("[bgCover] applyBackground: changeOpacity =", opacity, "blur =", blur, "pos =", px, py)
             changeOpacity(opacity)
             changeBlur(blur)
             changePosition(px, py)
@@ -201,10 +201,10 @@ export default class BgCoverPlugin extends Plugin {
     applyThemeShield() {
         if (!configStore.get("activate")) return
         if (isCurrentThemeDisabled(configStore.get("disabledThemes"))) {
-            log("[bgCover] applyThemeShield: theme disabled, hiding")
+            devLog("[bgCover] applyThemeShield: theme disabled, hiding")
             setVisible(false)
         } else {
-            log("[bgCover] applyThemeShield: theme enabled, showing")
+            devLog("[bgCover] applyThemeShield: theme enabled, showing")
             createBgLayer()
             this.applyBackground()
         }

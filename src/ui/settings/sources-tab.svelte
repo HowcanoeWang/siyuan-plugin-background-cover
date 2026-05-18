@@ -8,7 +8,7 @@
     import { pluginAssetsDir, pickDefaultBackground } from "../../constants"
     import { removeFile } from "../../utils/api"
     import { toAssetRelPath } from "../../utils/path"
-    import { log } from "../../utils/logger"
+    import { devLog } from "../../utils/logger"
     import {
         showLocalDirDialog,
         showAssetsDirDialog,
@@ -34,7 +34,7 @@
     let groups = $state<SourceGroup[]>([])
     let selectedItem = $state<ImageItem | null>(null)
     let previewSrc = $state<string | null>(null)
-    let prevUrl = $state<string | null>(null)
+    let previewObjectUrl = $state<string | null>(null)
 
     onMount(() => {
         refreshAll()
@@ -113,7 +113,7 @@
 
     function addAssetFolder(dir: string) {
         if (!dir) return
-        log("[bgCover] addAssetFolder:", dir)
+        devLog("[bgCover] addAssetFolder:", dir)
         const dirs = [...configStore.get("assetDirs"), dir]
         configStore.set("assetDirs", dirs)
         configStore.save()
@@ -122,7 +122,7 @@
 
     function addLocalFolder(path: string) {
         if (!path) return
-        log("[bgCover] addLocalFolder:", path)
+        devLog("[bgCover] addLocalFolder:", path)
         const folders = [...configStore.get("localFolders"), path]
         configStore.set("localFolders", folders)
         configStore.save()
@@ -131,7 +131,7 @@
 
     function removeGroup(i: number) {
         const g = groups[i]
-        log("[bgCover] removeGroup:", g.type, g.configKey)
+        devLog("[bgCover] removeGroup:", g.type, g.configKey)
         const currentFile = configStore.get("currentFile")
         const wasCurrentInGroup = g.files.some(f => f.url === currentFile)
         if (g.type === 'assets') {
@@ -159,7 +159,7 @@
     }
 
     function setAsBackground(item: ImageItem) {
-        log("[bgCover] setAsBackground:", item.name)
+        devLog("[bgCover] setAsBackground:", item.name)
         configStore.set("currentFile", item.url)
         configStore.save()
         if (item.type === 'image') {
@@ -180,22 +180,22 @@
     }
 
     function clearPreview() {
-        if (prevUrl) URL.revokeObjectURL(prevUrl)
+        if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl)
         selectedItem = null
         previewSrc = null
-        prevUrl = null
+        previewObjectUrl = null
     }
 
     function loadPreview(url: string) {
-        if (prevUrl) URL.revokeObjectURL(prevUrl)
-        prevUrl = null
+        if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl)
+        previewObjectUrl = null
         previewSrc = null
         fetch(url)
             .then(r => r.blob())
             .then(b => {
                 if (selectedItem?.url === url) {
-                    prevUrl = URL.createObjectURL(b)
-                    previewSrc = prevUrl
+                    previewObjectUrl = URL.createObjectURL(b)
+                    previewSrc = previewObjectUrl
                 }
             })
             .catch(() => {})
@@ -218,7 +218,7 @@
             })
         })
         if (!confirmed) return
-        log("[bgCover] clearCache:", group.files.length, "files")
+        devLog("[bgCover] clearCache:", group.files.length, "files")
         const wasCurrentDeleted = group.files.some(f => f.url === configStore.get("currentFile"))
         for (const file of group.files) {
             await removeFile(file.apiPath)
@@ -259,7 +259,7 @@
     }
 
     async function deleteFile(file: ImageItem) {
-        log("[bgCover] deleteFile:", file.name)
+        devLog("[bgCover] deleteFile:", file.name)
         const wasCurrent = file.url === configStore.get("currentFile")
         await removeFile(file.apiPath)
         if (wasCurrent) await reselectBackground()
