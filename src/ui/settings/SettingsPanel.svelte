@@ -1,9 +1,9 @@
 <script lang="ts">
-    import ConfigTab from "./config-tab.svelte"
-    import SourcesTab from "./sources-tab.svelte"
-    import ThemeTab from "./theme-tab.svelte"
-    import AdvancedTab from "./advanced-tab.svelte"
-    import AboutTab from "./about-tab.svelte"
+    import ConfigTab from "./ConfigTab.svelte"
+    import SourcesTab from "./SourcesTab.svelte"
+    import ThemeTab from "./ThemeTab.svelte"
+    import AdvancedTab from "./AdvancedTab.svelte"
+    import AboutTab from "./AboutTab.svelte"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
 

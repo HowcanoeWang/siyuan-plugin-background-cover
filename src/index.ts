@@ -10,8 +10,8 @@ import { scanAll, pickRandom } from "./services/sourceManager"
 import { pluginTopIcon, pickDefaultBackground, DEFAULT_BACKGROUNDS, IMAGE_EXTS, VIDEO_EXTS } from "./constants"
 import { devDebug, devLog } from "./utils/logger"
 import { isCurrentThemeDisabled, watchTheme } from "./utils/theme"
-import SettingsPanel from "./ui/settings/settings.svelte"
-import { buildTopBarMenu } from "./ui/topbar-menu"
+import SettingsPanel from "./ui/settings/SettingsPanel.svelte"
+import { buildTopBarMenu } from "./ui/topbarMenu"
 
 export { svelteDialog }
 

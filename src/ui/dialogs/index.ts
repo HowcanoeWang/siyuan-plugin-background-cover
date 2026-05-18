@@ -4,9 +4,9 @@ import { putFile } from "../../utils/api"
 import { svelteDialog, confirmDialog } from "../../libs/dialog"
 import { devLog } from "../../utils/logger"
 
-import LocalDirDialog from "./local-dir-dialog.svelte"
-import AssetPicker from "./asset-picker.svelte"
-import UrlDialog from "./url-dialog.svelte"
+import LocalDirDialog from "./LocalDirDialog.svelte"
+import AssetPicker from "./AssetPicker.svelte"
+import UrlDialog from "./UrlDialog.svelte"
 
 const i18n = () => (window as any).bgCoverPlugin?.i18n ?? {}
 
