@@ -133,11 +133,11 @@
     <div class="b3-list b3-list--border b3-list--background" style="max-height: 400px; overflow-y: auto;">
         {#if loading}
             <div class="b3-list-item" style="color: var(--b3-theme-on-surface); padding: 16px; text-align: center;">
-                {i18n.loading ?? "加载中…"}
+                {i18n.loading}
             </div>
         {:else if roots.length === 0}
             <div class="b3-list-item" style="color: var(--b3-theme-on-surface); padding: 16px; text-align: center;">
-                {i18n.noFolderSelected ?? "尚未选择任何文件夹"}
+                {i18n.noFolderSelected}
             </div>
         {:else}
             {#each roots as root (root.path)}
@@ -169,7 +169,7 @@
                         </svg>
                         {root.name}/
                         <span style="color: var(--b3-theme-on-surface); font-size: 0.85em; margin-left: 8px;">
-                            ({rTotal} {i18n.imageCount ?? "图片"}, {root.videoCount} {i18n.videoCount ?? "视频"})
+                            ({rTotal} {i18n.imageCount}, {root.videoCount} {i18n.videoCount})
                         </span>
                     </span>
                     {#if isAlreadyAdded(root.path)}
@@ -210,7 +210,7 @@
                                     </svg>
                                     {child.name}/
                                     <span style="color: var(--b3-theme-on-surface); font-size: 0.85em; margin-left: 8px;">
-                                        ({cTotal} {i18n.imageCount ?? "图片"}, {child.videoCount} {i18n.videoCount ?? "视频"})
+                                        ({cTotal} {i18n.imageCount}, {child.videoCount} {i18n.videoCount})
                                     </span>
                                 </span>
                                 {#if isAlreadyAdded(child.path)}
@@ -251,7 +251,7 @@
                                                 </svg>
                                                 {grandchild.name}/
                                                 <span style="color: var(--b3-theme-on-surface); font-size: 0.85em; margin-left: 8px;">
-                                                    ({gTotal} {i18n.imageCount ?? "图片"}, {grandchild.videoCount} {i18n.videoCount ?? "视频"})
+                                                    ({gTotal} {i18n.imageCount}, {grandchild.videoCount} {i18n.videoCount})
                                                 </span>
                                             </span>
                                             {#if isAlreadyAdded(grandchild.path)}
@@ -274,7 +274,7 @@
         <button class="b3-button b3-button--text"
             disabled={!selectedDir}
             onclick={confirm}>
-            {i18n.confirm ?? "确认"}
+            {i18n.confirm}
         </button>
     </div>
 </div>

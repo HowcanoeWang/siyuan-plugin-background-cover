@@ -26,7 +26,7 @@ export function buildTopBarMenu(
 
     function showLocalDirDialog() {
         const dlg = svelteDialog({
-            title: i18n.addLocalDirTitle ?? "添加本地目录",
+            title: i18n.addLocalDirTitle,
             component: LocalDirDialog,
             width: "520px",
             height: "auto",
@@ -106,7 +106,7 @@ export function buildTopBarMenu(
 
     function showAssetsDirDialog() {
         const dlg = svelteDialog({
-            title: i18n.addAssetsDirTitle ?? "选择 data/assets/ 下的子文件夹作为图片源",
+            title: i18n.addAssetsDirTitle,
             component: AssetPicker,
             width: "520px",
             height: "auto",
@@ -129,7 +129,7 @@ export function buildTopBarMenu(
     function showUrlDialog() {
         log("[bgCover] menu: showUrlDialog")
         const dlg = svelteDialog({
-            title: i18n.addUrlTitle ?? "添加网络背景资源",
+            title: i18n.addUrlTitle,
             component: UrlDialog,
             width: "520px",
             height: "auto",
@@ -183,9 +183,8 @@ export function buildTopBarMenu(
             if (validFiles.length >= 30) {
                 const confirmed = await new Promise<boolean>((resolve) => {
                     confirmDialog({
-                        title: i18n.bulkUploadTitle ?? "大量文件警告",
-                        content: (i18n.bulkUploadWarning ?? "此次将上传 {count} 张图片/视频，确定全部上传吗？").replace('{count}', String(validFiles.length)),
-                        confirm: () => resolve(true),
+                        title: i18n.bulkUploadTitle,
+                        content: (i18n.bulkUploadWarning).replace('{count}', String(validFiles.length)),                        confirm: () => resolve(true),
                         cancel: () => resolve(false),
                         width: "420px",
                     })
@@ -240,29 +239,29 @@ export function buildTopBarMenu(
         if (isDesktop()) {
             items.push({
                 icon: "iconFolder",
-                label: i18n.linkLocalDir ?? "链接本地目录",
+                label: i18n.linkLocalDir,
                 click: showLocalDirDialog,
             })
         }
         items.push(
             {
                 icon: "iconFilesRoot",
-                label: i18n.addNoteAssetsDirectoryLabel ?? "链接资源目录",
+                label: i18n.addNoteAssetsDirectoryLabel,
                 click: showAssetsDirDialog,
             },
             {
                 icon: "iconFiles",
-                label: i18n.uploadMultipleFiles ?? "上传多个文件",
+                label: i18n.uploadMultipleFiles,
                 click: pickMultipleFiles,
             },
             {
                 icon: "iconFolder",
-                label: i18n.uploadEntireDir ?? "上传整个目录",
+                label: i18n.uploadEntireDir,
                 click: pickFolderFiles,
             },
             {
                 icon: "iconLink",
-                label: i18n.addNetworkResource ?? "添加网络资源",
+                label: i18n.addNetworkResource,
                 click: showUrlDialog,
             }
         )
@@ -272,18 +271,18 @@ export function buildTopBarMenu(
     const menu = new Menu("bgCoverMenu", () => {})
     menu.addItem({
         icon: "iconIndent",
-        label: i18n.selectPictureLabel ?? "Select Pictures",
+        label: i18n.selectPictureLabel,
         type: "submenu",
         submenu: [
             {
                 icon: "iconHand",
-                label: i18n.selectPictureManualLabel ?? "Manual Selection",
+                label: i18n.selectPictureManualLabel,
                 accelerator: pluginInstance?.commands?.[0]?.customHotkey,
                 click: () => cb.onOpenSettings("sources"),
             },
             {
                 icon: "iconMark",
-                label: i18n.selectPictureRandomLabel ?? "Random Selection",
+                label: i18n.selectPictureRandomLabel,
                 accelerator: pluginInstance?.commands?.[1]?.customHotkey,
                 click: () => cb.randomSelect(),
             },
@@ -291,22 +290,22 @@ export function buildTopBarMenu(
     })
     menu.addItem({
         icon: "iconAdd",
-        label: i18n.addBackground ?? "添加背景",
+        label: i18n.addBackground,
         type: "submenu",
         submenu: buildAddBackgroundSubmenu(),
     })
     menu.addItem({
         icon: configStore.get("activate") ? "iconClose" : "iconSelect",
         label: configStore.get("activate")
-            ? i18n.closeBackgroundLabel ?? "Close Background"
-            : i18n.openBackgroundLabel ?? "Open Background",
+            ? i18n.closeBackgroundLabel
+            : i18n.openBackgroundLabel,
         accelerator: pluginInstance?.commands?.[2]?.customHotkey,
         click: () => cb.toggleBackground(),
     })
     menu.addSeparator()
     menu.addItem({
         icon: "iconSettings",
-        label: i18n.settingLabel ?? "Settings",
+        label: i18n.settingLabel,
         click: () => cb.onOpenSettings(),
     })
 

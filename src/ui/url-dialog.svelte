@@ -35,7 +35,7 @@
         previewSrc = null
 
         if (!checkExt(trimmed)) {
-            errorMsg = i18n.urlSuffixInvalid ?? "URL 后缀不在支持的图片/视频格式列表中"
+            errorMsg = i18n.urlSuffixInvalid
             checking = false
             return
         }
@@ -43,7 +43,7 @@
         try {
             const resp = await fetch(trimmed)
             if (!resp.ok) {
-                errorMsg = `${i18n.fetchFailed ?? "无法获取资源"} (HTTP ${resp.status})`
+                errorMsg = `${i18n.fetchFailed} (HTTP ${resp.status})`
                 checking = false
                 return
             }
@@ -57,10 +57,10 @@
             } else if (contentType.startsWith('video/')) {
                 validExt = true
             } else {
-                errorMsg = i18n.notImageOrVideo ?? "URL 指向的资源不是图片或视频"
+                errorMsg = i18n.notImageOrVideo
             }
         } catch {
-            errorMsg = i18n.networkFailed ?? "网络请求失败，请确认 URL 正确"
+            errorMsg = i18n.networkFailed
         }
         checking = false
     }
@@ -114,7 +114,7 @@
         border: 1px dashed var(--b3-border-color); border-radius: 6px;
         background: var(--b3-theme-surface);">
         {#if checking}
-            <span style="color: var(--b3-theme-on-surface);">{i18n.detecting ?? "正在检测…"}</span>
+            <span style="color: var(--b3-theme-on-surface);">{i18n.detecting}</span>
         {:else if previewSrc}
             <img src={previewSrc} alt="preview"
                 style="max-width: 100%; max-height: 300px; object-fit: contain; border-radius: 4px;" />
@@ -122,12 +122,12 @@
             <div style="text-align: center; color: var(--b3-theme-on-surface);">
                 <div style="font-size: 2em;">🎬</div>
                 <div>{getFileName()}</div>
-                <div style="font-size: 0.85em; margin-top: 4px;">{i18n.videoNoPreview ?? "视频文件 — 不支持预览"}</div>
+                <div style="font-size: 0.85em; margin-top: 4px;">{i18n.videoNoPreview}</div>
             </div>
         {:else if errorMsg}
             <span style="color: var(--b3-theme-error); text-align: center; padding: 12px;">{errorMsg}</span>
         {:else}
-            <span style="color: var(--b3-theme-on-surface);">{i18n.enterUrlHint ?? "粘贴图片/视频 URL 后自动检测"}</span>
+            <span style="color: var(--b3-theme-on-surface);">{i18n.enterUrlHint}</span>
         {/if}
     </div>
 
@@ -135,7 +135,7 @@
         <button class="b3-button b3-button--text"
             disabled={!validExt}
             onclick={handleUpload}>
-            {i18n.upload ?? "上传"}
+            {i18n.upload}
         </button>
     </div>
 </div>

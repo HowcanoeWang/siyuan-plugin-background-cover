@@ -16,11 +16,11 @@
     let currentTab = $state(activeTab)
 
     const tabs = [
-        { name: "config",   icon: "#iconEdit",     label: i18n.tabGlobal ?? "全局设置" },
-        { name: "sources",  icon: "#iconImage",    label: i18n.tabSources ?? "数据管理" },
-        { name: "theme",    icon: "#iconTheme",    label: i18n.tabThemes ?? "屏蔽主题" },
-        { name: "advanced", icon: "#iconRiffCard", label: i18n.tabAdvanced ?? "高级设置" },
-        { name: "about",    icon: "#iconInfo",     label: i18n.tabAbout ?? "关于" },
+        { name: "config",   icon: "#iconEdit",     label: i18n.tabGlobal },
+        { name: "sources",  icon: "#iconImage",    label: i18n.tabSources },
+        { name: "theme",    icon: "#iconTheme",    label: i18n.tabThemes },
+        { name: "advanced", icon: "#iconRiffCard", label: i18n.tabAdvanced },
+        { name: "about",    icon: "#iconInfo",     label: i18n.tabAbout },
     ]
 </script>
 

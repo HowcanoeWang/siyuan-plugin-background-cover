@@ -43,7 +43,7 @@
         const uploadFiles = await scanSource('upload', pluginAssetsDir)
         newGroups.push({
             type: 'upload',
-            label: i18n.pluginCache ?? '插件缓存',
+            label: i18n.pluginCache,
             path: pluginAssetsDir,
             removable: false,
             files: uploadFiles,
@@ -99,7 +99,7 @@
 
     function showAssetDirDialog() {
         const dlg = svelteDialog({
-            title: i18n.addAssetsDirTitle ?? "选择 data/assets/ 下的子文件夹作为图片源",
+            title: i18n.addAssetsDirTitle,
             component: AssetPicker,
             width: "520px",
             height: "auto",
@@ -114,7 +114,7 @@
 
     function showLocalDirDialog() {
         const dlg = svelteDialog({
-            title: i18n.addLocalDirTitle ?? "添加本地目录",
+            title: i18n.addLocalDirTitle,
             component: LocalDirDialog,
             width: "520px",
             height: "auto",
@@ -223,13 +223,12 @@
         const imgCount = group.files.filter(f => f.type === 'image').length
         const vidCount = group.files.filter(f => f.type === 'video').length
         const parts: string[] = []
-        if (imgCount > 0) parts.push(`${imgCount} ${i18n.imageCount ?? 'images'}`)
-        if (vidCount > 0) parts.push(`${vidCount} ${i18n.videoCount ?? 'videos'}`)
+        if (imgCount > 0) parts.push(`${imgCount} ${i18n.imageCount}`)
+        if (vidCount > 0) parts.push(`${vidCount} ${i18n.videoCount}`)
         const confirmed = await new Promise<boolean>(resolve => {
             confirmDialog({
-                title: i18n.clearCacheTitle ?? "清空插件缓存",
-                content: `${i18n.clearCacheConfirm ?? '确认删除所有插件缓存文件？将删除'} ${parts.join('、')}`,
-                confirm: () => resolve(true),
+                title: i18n.clearCacheTitle,
+                content: `${i18n.clearCacheConfirm} ${parts.join('、')}`,                confirm: () => resolve(true),
                 cancel: () => resolve(false),
                 width: "360px",
             })
@@ -341,7 +340,7 @@
     function showAddUrlDialog() {
         log("[bgCover] showAddUrlDialog")
         const dlg = svelteDialog({
-            title: i18n.addUrlTitle ?? "添加网络背景资源",
+            title: i18n.addUrlTitle,
             component: UrlDialog,
             width: "520px",
             height: "auto",
@@ -375,11 +374,11 @@
             <div class="fn__flex" style="padding: 8px 0; gap: 8px;">
                 {#if isDesktop()}
                     <button class="b3-button b3-button--outline" onclick={showLocalDirDialog}>
-                        + {i18n.addLocalDir ?? "添加本地目录"}
+                        + {i18n.addLocalDir}
                     </button>
                 {/if}
                 <button class="b3-button b3-button--outline" onclick={showAssetDirDialog}>
-                    + {i18n.linkAssetsDir ?? "链接资源目录"}
+                    + {i18n.linkAssetsDir}
                 </button>
             </div>
 
@@ -409,24 +408,24 @@
                         <span class="b3-list-item__text fn__flex-1">
                             {displayLabel}
                             <span style="color: var(--b3-theme-on-surface); font-size: 0.85em;">
-                                ( 图片: {imgCount}  视频: {vidCount} )
+                                ( {i18n.fileCountSummary.replace('{img}', `${imgCount}`).replace('{vid}', `${vidCount}`)} )
                             </span>
                         </span>
                         {#if group.type === 'upload'}
                             <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
-                                aria-label={i18n.uploadMultipleFiles ?? "上传多个文件"}
+                                aria-label={i18n.uploadMultipleFiles}
                                 onclick={(e: MouseEvent) => { e.stopPropagation(); pickMultipleFiles() }}
                                 onkeydown={undefined} role="button" tabindex="0">
                                 <svg><use xlink:href="#iconFiles"></use></svg>
                             </span>
                             <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
-                                aria-label={i18n.uploadEntireDir ?? "上传整个目录"}
+                                aria-label={i18n.uploadEntireDir}
                                 onclick={(e: MouseEvent) => { e.stopPropagation(); pickFolderFiles() }}
                                 onkeydown={undefined} role="button" tabindex="0">
                                 <svg><use xlink:href="#iconFolder"></use></svg>
                             </span>
                             <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
-                                aria-label={i18n.addNetworkResource ?? "添加网络资源"}
+                                aria-label={i18n.addNetworkResource}
                                 onclick={(e: MouseEvent) => { e.stopPropagation(); showAddUrlDialog() }}
                                 onkeydown={undefined} role="button" tabindex="0">
                                 <svg><use xlink:href="#iconLink"></use></svg>
@@ -434,7 +433,7 @@
                         {/if}
                         {#if isDesktop() && !group.inaccessible}
                             <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
-                                aria-label="打开文件夹"
+                                aria-label={i18n.openFolderLabel}
                                 onclick={(e: MouseEvent) => { e.stopPropagation(); openInFileManager(group) }}
                                 onkeydown={undefined}
                                 role="button"
@@ -453,7 +452,7 @@
                         {/if}
                         {#if group.type === 'upload' && group.files.length > 0}
                             <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
-                                aria-label={i18n.clearCacheTitle ?? "清空插件缓存"}
+                                aria-label={i18n.clearCacheTitle}
                                 onclick={(e: MouseEvent) => { e.stopPropagation(); clearCache() }}
                                 onkeydown={undefined}
                                 role="button"
@@ -462,7 +461,7 @@
                             </span>
                         {/if}
                         {#if group.inaccessible}
-                            <span style="color: var(--b3-theme-error); font-size: 0.85em; margin-left: 8px;">{i18n.pathInaccessible ?? "不可访问"}</span>
+                            <span style="color: var(--b3-theme-error); font-size: 0.85em; margin-left: 8px;">{i18n.pathInaccessible}</span>
                         {/if}
                     </div>
 
@@ -486,7 +485,7 @@
                                     </span>
                                     {#if group.type === 'upload'}
                                         <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
-                                            aria-label={i18n.delete ?? "删除"}
+                                            aria-label={i18n.delete}
                                             onclick={(e: MouseEvent) => { e.preventDefault(); e.stopPropagation(); deleteFile(file) }}
                                             onkeydown={undefined}
                                             role="button"
@@ -498,7 +497,7 @@
                             {/each}
                             {#if group.files.length === 0}
                                 <div class="b3-list-item b3-list-item--narrow" style="color: var(--b3-theme-on-surface);">
-                                    <span class="b3-list-item__text">{i18n.noFiles ?? "暂无文件"}</span>
+                                    <span class="b3-list-item__text">{i18n.noFiles}</span>
                                 </div>
                             {/if}
                         </div>
@@ -507,7 +506,7 @@
 
                 {#if groups.length === 0}
                     <div class="b3-list-item" style="color: var(--b3-theme-on-surface); padding: 16px; text-align: center;">
-                        {i18n.noSources ?? "尚未添加任何图片源，请使用下方按钮添加"}
+                        {i18n.noSources}
                     </div>
                 {/if}
             </div>
@@ -524,12 +523,12 @@
                 <div style="color: var(--b3-theme-on-surface); text-align: center;">
                     <svg style="width:48px;height:48px;opacity:0.6"><use xlink:href="#iconVideo"></use></svg>
                     <div>{selectedItem.name}</div>
-                    <div style="font-size: 0.85em; margin-top: 4px;">{i18n.videoNoPreview ?? "视频文件 — 不支持预览"}</div>
+                    <div style="font-size: 0.85em; margin-top: 4px;">{i18n.videoNoPreview}</div>
                 </div>
             {:else}
                 <div style="color: var(--b3-theme-on-surface); text-align: center;">
                     <svg style="width:48px;height:48px;opacity:0.6"><use xlink:href="#iconImage"></use></svg>
-                    <div>{i18n.noPreviewHint ?? "点击文件列表中图片以预览"}</div>
+                    <div>{i18n.noPreviewHint}</div>
                 </div>
             {/if}
         </div>

@@ -21,7 +21,6 @@
     "uploadMultipleFiles": "上传多个文件",
     "uploadEntireDir": "上传整个目录",
     "addNetworkResource": "添加网络资源",
-    "confirmUpload": "确定上传",
     "refresh": "刷新",
     "clear": "清空",
     "remove": "移除",
@@ -56,14 +55,12 @@
     "activateBg": "开启背景",
     "autoRefresh": "自动刷新",
     "autoRefreshDesc": "启动时自动更换背景",
-    "switchInterval": "定时切换间隔",
     "minutes": "分钟",
     "foregroundOpacity": "前景透明度",
     "bgBlur": "背景虚化",
     "pluginCache": "插件缓存(云同步)",
     "addLocalDir": "添加本地目录",
     "none": "(无)",
-    "disabledThemesTitle": "屏蔽主题 (在下列主题不显示背景)",
     "darkThemes": "深色主题",
     "lightThemes": "浅色主题",
     "noDarkThemes": "暂无已安装的深色主题",
@@ -95,5 +92,9 @@
     "activateBgDesc": "关闭后背景图片不显示(但背景元素还存在于html代码中)",
     "switchIntervalDesc": "定时自动切换时间，设置为0则不定时切换",
     "foregroundOpacityDesc": "范围(0.1-1), 鼠标拖动后更新",
-    "bgBlurDesc": "范围(0-10), 鼠标拖动后更新"
+    "bgBlurDesc": "范围(0-10), 鼠标拖动后更新",
+    "currentThemeLabel": "[当前主题]",
+    "dirScanResult": "发现 {imgCount} 张图片, {vidCount} 个视频 — ✅",
+    "fileCountSummary": "图片: {img}  视频: {vid}",
+    "openFolderLabel": "打开文件夹"
 }

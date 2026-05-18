@@ -40,9 +40,9 @@
 <div class="config__tab-container" data-name="config">
     <label class="fn__flex b3-label">
         <div class="fn__flex-1">
-            {i18n.currentFile ?? "当前背景图片"}
+            {i18n.currentFile}
             <div class="b3-label__text">
-                <code class="fn__code">{currentFile ?? i18n.none ?? "(无)"}</code>
+                <code class="fn__code">{currentFile ?? i18n.none}</code>
             </div>
         </div>
         <div class="fn__flex-center">
@@ -69,8 +69,8 @@
 
     <label class="fn__flex b3-label config__item">
         <div class="fn__flex-1">
-            {i18n.activateBg ?? "开启背景"}
-            <div class="b3-label__text">{i18n.activateBgDesc ?? "关闭后背景图片不显示(但背景元素还存在于html代码中)"}</div>
+            {i18n.activateBg}
+            <div class="b3-label__text">{i18n.activateBgDesc}</div>
         </div>
         <span class="fn__space"></span>
         <input class="b3-switch fn__flex-center" type="checkbox"
@@ -80,10 +80,10 @@
     </label>
 
     <div class="b3-label">
-        <div>{i18n.autoRefresh ?? "自动刷新"}</div>
+        <div>{i18n.autoRefresh}</div>
         <div class="fn__hr"></div>
         <div class="fn__flex config__item">
-            <div class="fn__flex-center fn__flex-1 ft__on-surface">{i18n.autoRefreshDesc ?? "启动时自动更换背景"}</div>
+            <div class="fn__flex-center fn__flex-1 ft__on-surface">{i18n.autoRefreshDesc}</div>
             <span class="fn__space"></span>
             <input class="b3-switch fn__flex-center" type="checkbox"
                 bind:checked={changeBgOnStart}
@@ -92,7 +92,7 @@
         </div>
         <div class="fn__hr"></div>
         <div class="fn__flex config__item">
-            <div class="fn__flex-center fn__flex-1 ft__on-surface">{i18n.switchIntervalDesc ?? "定时自动切换时间，设置为0则不定时切换"}</div>
+            <div class="fn__flex-center fn__flex-1 ft__on-surface">{i18n.switchIntervalDesc}</div>
             <span class="fn__space"></span>
             <input class="b3-text-field fn__flex-center fn__size200" type="number"
                 min="0" max="36000"
@@ -100,14 +100,14 @@
                 onchange={() => { configStore.setAndSave("autoRefreshTime", autoRefreshTime); syncAutoRefreshTimer() }}
             />
             <span class="fn__space"></span>
-            <span class="ft__on-surface fn__flex-center">{i18n.minutes ?? "分钟"}</span>
+            <span class="ft__on-surface fn__flex-center">{i18n.minutes}</span>
         </div>
     </div>
 
     <label class="fn__flex b3-label config__item">
         <div class="fn__flex-1">
-            {i18n.foregroundOpacity ?? "前景透明度"}
-            <div class="b3-label__text">{i18n.foregroundOpacityDesc ?? "范围(0.1-1), 鼠标拖动后更新"}</div>
+            {i18n.foregroundOpacity}
+            <div class="b3-label__text">{i18n.foregroundOpacityDesc}</div>
         </div>
         <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label={String(opacity)}>
             <input class="b3-slider fn__size200" type="range"
@@ -125,8 +125,8 @@
 
     <label class="fn__flex b3-label config__item">
         <div class="fn__flex-1">
-            {i18n.bgBlur ?? "背景虚化"}
-            <div class="b3-label__text">{i18n.bgBlurDesc ?? "范围(0-10), 鼠标拖动后更新"}</div>
+            {i18n.bgBlur}
+            <div class="b3-label__text">{i18n.bgBlurDesc}</div>
         </div>
         <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label={String(blur)}>
             <input class="b3-slider fn__size200" type="range"

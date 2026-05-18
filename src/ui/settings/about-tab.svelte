@@ -9,7 +9,7 @@
         Background Cover Plugin v{packageVersion}
     </div>
     <div class="ft__breakword" style="text-align: center;">
-        {i18n.aboutDesc ?? "添加一张你喜欢的图片铺满整个思源笔记"}
+        {i18n.aboutDesc}
     </div>
     <div class="fn__hr"></div>
     <div class="ft__breakword" style="text-align: center;">
@@ -19,6 +19,6 @@
         </a>
     </div>
     <div class="ft__breakword" style="text-align: center; font-size: 0.85em; color: var(--b3-theme-on-surface);">
-        {i18n.aboutAuthor ?? "Author: HowcanoeWang | MIT License"}
+        {i18n.aboutAuthor}
     </div>
 </div>

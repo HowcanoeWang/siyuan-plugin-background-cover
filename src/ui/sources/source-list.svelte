@@ -35,24 +35,24 @@
         <span class="fn__flex-1">
              {label}
             <span style="color: var(--b3-theme-on-surface); font-size: 0.85em;">
-                (图片: {imageCount} 视频: {videoCount})
+                ({i18n.fileCountSummary.replace('{img}', `${imageCount}`).replace('{vid}', `${videoCount}`)})
             </span>
         </span>
         <span class="fn__space"></span>
         {#if canClear}
             <button class="b3-button b3-button--outline fn__flex-center"
                 onclick={onClearAll}>
-                {i18n.clear ?? "清空"}
+                {i18n.clear}
             </button>
         {/if}
         {#if canRemove}
             <button class="b3-button b3-button--outline fn__flex-center"
                 onclick={onRemoveSource}>
-                ✕ {i18n.remove ?? "移除"}
+                ✕ {i18n.remove}
             </button>
         {/if}
         {#if inaccessible}
-            <span style="color: var(--b3-theme-error); margin-left: 8px;">{i18n.pathInaccessible ?? "路径不可访问"}</span>
+            <span style="color: var(--b3-theme-error); margin-left: 8px;">{i18n.pathInaccessible}</span>
         {/if}
     </div>
 
@@ -66,19 +66,19 @@
                 </span>
                 <span class="b3-list-item__action"
                     onclick={() => onSetAsBackground?.(file.url)}>
-                    {i18n.setAsBackground ?? "设为背景"}
+                    {i18n.setAsBackground}
                 </span>
                 {#if canDelete}
                     <span class="b3-list-item__action"
                         onclick={() => onDeleteFile?.(file.url)}>
-                        {i18n.delete ?? "删除"}
+                        {i18n.delete}
                     </span>
                 {/if}
             </div>
         {/each}
         {#if files.length === 0}
             <div style="color: var(--b3-theme-on-surface); padding: 8px;">
-                {i18n.noFiles ?? "暂无文件"}
+                {i18n.noFiles}
             </div>
         {/if}
     </div>

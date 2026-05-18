@@ -41,12 +41,12 @@
     <div class="config-bazaar__panel">
 
         <div class="fn__flex config-bazaar__title">
-            <div>{i18n.lightThemes ?? "浅色主题"}</div>
+            <div>{i18n.lightThemes}</div>
         </div>
         <div class="config-bazaar__content">
             {#if lightItems.length === 0}
                 <div style="color: var(--b3-theme-on-surface); padding: 8px;">
-                    {i18n.noLightThemes ?? "暂无已安装的浅色主题"}
+                    {i18n.noLightThemes}
                 </div>
             {:else}
                 <div class="b3-cards">
@@ -60,7 +60,7 @@
                                     >
                                         {theme.name}
                                         {#if currentMode === 0 && currentThemeName === theme.name}
-                                            [当前主题]
+                                            {i18n.currentThemeLabel}
                                         {/if}
                                     </span>
                                     <div class="b3-card__desc">{theme.label}</div>
@@ -80,12 +80,12 @@
         </div>
 
         <div class="fn__flex config-bazaar__title">
-            <div>{i18n.darkThemes ?? "深色主题"}</div>
+            <div>{i18n.darkThemes}</div>
         </div>
         <div class="config-bazaar__content">
             {#if darkItems.length === 0}
                 <div style="color: var(--b3-theme-on-surface); padding: 8px;">
-                    {i18n.noDarkThemes ?? "暂无已安装的深色主题"}
+                    {i18n.noDarkThemes}
                 </div>
             {:else}
                 <div class="b3-cards">
@@ -99,7 +99,7 @@
                                     >
                                         {theme.name}
                                         {#if currentMode === 1 && currentThemeName === theme.name}
-                                            [当前主题]
+                                            {i18n.currentThemeLabel}
                                         {/if}
                                     </span>
                                     <div class="b3-card__desc">{theme.label}</div>
