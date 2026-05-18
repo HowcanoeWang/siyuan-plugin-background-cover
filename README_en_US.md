@@ -8,7 +8,7 @@
 </h1>
 
 <p align="center">
-Add a picture you like to cover the entire Siyuan Note
+Add a background you like to cover the entire Siyuan Note
 <br/>
 <a href="./README.md">中文</a>
 </p>
