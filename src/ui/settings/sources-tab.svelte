@@ -1,18 +1,21 @@
 <script lang="ts">
     import { onMount } from "svelte"
     import { configStore } from "../../stores/config"
-    import { isDesktop, getFileUrl } from "../../utils/fs"
+    import { isDesktop } from "../../utils/fs"
     import { scanSource } from "../../services/sourceManager"
-    import { renderImage, renderVideo } from "../../services/bgRender"
-    import { svelteDialog, confirmDialog } from "../../libs/dialog"
+    import { renderImage, renderVideo, changeOpacity, changeBlur } from "../../services/bgRender"
+    import { confirmDialog } from "../../libs/dialog"
     import { pluginAssetsDir, pickDefaultBackground } from "../../constants"
-    import { removeFile, putFile as apiPutFile } from "../../utils/api"
-    import { classifyFileType } from "../../constants"
+    import { removeFile } from "../../utils/api"
     import { toAssetRelPath } from "../../utils/path"
     import { log } from "../../utils/logger"
-    import LocalDirDialog from "../local-dir-dialog.svelte"
-    import AssetPicker from "../sources/asset-picker.svelte"
-    import UrlDialog from "../url-dialog.svelte"
+    import {
+        showLocalDirDialog,
+        showAssetsDirDialog,
+        showUrlDialog,
+        setupMultipleFilePicker,
+        setupFolderFilePicker,
+    } from "../dialogs"
     import type { ImageItem } from "../../types"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
@@ -97,33 +100,15 @@
         groups = groups
     }
 
-    function showAssetDirDialog() {
-        const dlg = svelteDialog({
-            title: i18n.addAssetsDirTitle,
-            component: AssetPicker,
-            width: "520px",
-            height: "auto",
-            props: {
-                onConfirm: (paths: string[]) => {
-                    for (const dir of paths) addAssetFolder(dir)
-                    dlg.close()
-                },
-            },
+    function openAssetDirDialog() {
+        showAssetsDirDialog((paths: string[]) => {
+            for (const dir of paths) addAssetFolder(dir)
         })
     }
 
-    function showLocalDirDialog() {
-        const dlg = svelteDialog({
-            title: i18n.addLocalDirTitle,
-            component: LocalDirDialog,
-            width: "520px",
-            height: "auto",
-            props: {
-                onConfirm: (path: string) => {
-                    addLocalFolder(path)
-                    dlg.close()
-                },
-            },
+    function openLocalDirDialog() {
+        showLocalDirDialog((path: string) => {
+            addLocalFolder(path)
         })
     }
 
@@ -283,84 +268,27 @@
     }
 
     function pickMultipleFiles() {
-        const input = document.createElement('input')
-        input.type = 'file'
-        input.multiple = true
-        input.accept = 'image/*,video/*'
-        input.style.display = 'none'
-        document.body.appendChild(input)
-        input.addEventListener('change', async () => {
-            const files = input.files
-            if (!files || files.length === 0) {
-                document.body.removeChild(input)
-                return
-            }
-            for (let i = 0; i < files.length; i++) {
-                if (classifyFileType(files[i].name)) {
-                    await apiPutFile(
-                        `data/public/siyuan-plugin-background-cover/${files[i].name}`,
-                        files[i],
-                    )
-                }
-            }
-            document.body.removeChild(input)
-            log("[bgCover] pickMultipleFiles: uploaded", files?.length ?? 0, "files")
-            refreshAll()
-        })
-        input.click()
+        setupMultipleFilePicker(() => { refreshAll() })
     }
 
     function pickFolderFiles() {
-        const input = document.createElement('input')
-        input.type = 'file'
-        input.setAttribute('webkitdirectory', '')
-        input.style.display = 'none'
-        document.body.appendChild(input)
-        input.addEventListener('change', async () => {
-            const files = input.files
-            if (!files || files.length === 0) {
-                document.body.removeChild(input)
-                return
-            }
-            for (let i = 0; i < files.length; i++) {
-                if (classifyFileType(files[i].name)) {
-                    await apiPutFile(
-                        `data/public/siyuan-plugin-background-cover/${files[i].name}`,
-                        files[i],
-                    )
-                }
-            }
-            document.body.removeChild(input)
-            log("[bgCover] pickFolderFiles: uploaded", files?.length ?? 0, "files")
-            refreshAll()
-        })
-        input.click()
+        setupFolderFilePicker(() => { refreshAll() })
     }
 
     function showAddUrlDialog() {
-        log("[bgCover] showAddUrlDialog")
-        const dlg = svelteDialog({
-            title: i18n.addUrlTitle,
-            component: UrlDialog,
-            width: "520px",
-            height: "auto",
-            props: {
-                onSuccess: (uploadUrl?: string) => {
-                    if (uploadUrl) {
-                        configStore.set("currentFile", uploadUrl)
-                        configStore.save()
-                        if (uploadUrl.match(/\.(mp4|webm|ogg|mov|avi|mkv)$/i)) {
-                            renderVideo(uploadUrl)
-                        } else {
-                            renderImage(uploadUrl)
-                        }
-                        changeOpacity(configStore.get("opacity"))
-                        changeBlur(configStore.get("blur"))
-                    }
-                    refreshAll()
-                    dlg.close()
-                },
-            },
+        showUrlDialog((uploadUrl?: string) => {
+            if (uploadUrl) {
+                configStore.set("currentFile", uploadUrl)
+                configStore.save()
+                if (uploadUrl.match(/\.(mp4|webm|ogg|mov|avi|mkv)$/i)) {
+                    renderVideo(uploadUrl)
+                } else {
+                    renderImage(uploadUrl)
+                }
+                changeOpacity(configStore.get("opacity"))
+                changeBlur(configStore.get("blur"))
+            }
+            refreshAll()
         })
     }
 </script>
@@ -373,11 +301,11 @@
 
             <div class="fn__flex" style="padding: 8px 0; gap: 8px;">
                 {#if isDesktop()}
-                    <button class="b3-button b3-button--outline" onclick={showLocalDirDialog}>
+                    <button class="b3-button b3-button--outline" onclick={openLocalDirDialog}>
                         + {i18n.addLocalDir}
                     </button>
                 {/if}
-                <button class="b3-button b3-button--outline" onclick={showAssetDirDialog}>
+                <button class="b3-button b3-button--outline" onclick={openAssetDirDialog}>
                     + {i18n.linkAssetsDir}
                 </button>
             </div>

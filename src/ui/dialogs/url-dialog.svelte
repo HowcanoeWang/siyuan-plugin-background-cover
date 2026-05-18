@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onDestroy } from "svelte"
-    import { downloadUrl } from "../utils/api"
-    import { getFileUrl } from "../utils/fs"
+    import { downloadUrl } from "../../utils/api"
+    import { getFileUrl } from "../../utils/fs"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
 
