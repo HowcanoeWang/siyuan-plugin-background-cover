@@ -8,6 +8,7 @@
     import { pluginAssetsDir, pickDefaultBackground } from "../../constants"
     import { removeFile, putFile as apiPutFile } from "../../utils/api"
     import { classifyFileType } from "../../types"
+    import { toAssetRelPath } from "../../utils/path"
     import { log } from "../../utils/logger"
     import LocalDirDialog from "../local-dir-dialog.svelte"
     import AssetPicker from "../sources/asset-picker.svelte"
@@ -54,9 +55,7 @@
         const assetDirs = configStore.get("assetDirs")
         for (const dir of assetDirs) {
             if (!dir) continue
-            const normalized = dir.startsWith('/data/assets/') ? `assets/${dir.slice('/data/assets/'.length)}`
-                : dir.startsWith('data/assets/') ? `assets/${dir.slice('data/assets/'.length)}`
-                : dir
+            const normalized = toAssetRelPath(dir)
             const path = `/data/${normalized}`
             const label = normalized.startsWith('assets/') ? normalized.slice('assets/'.length) : normalized
             const files = await scanSource('assets', path + '/')

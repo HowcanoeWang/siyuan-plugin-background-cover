@@ -4,6 +4,7 @@ import { classifyFileType } from '../types'
 import type { ImageItem } from '../types'
 import { pluginAssetsDir } from '../constants'
 import { debug } from '../utils/logger'
+import { toAssetRelPath } from '../utils/path'
 
 const ENGINE = '[bgCover] sourceManager'
 
@@ -19,7 +20,9 @@ export async function scanAll(
 
     for (const dir of assetDirs) {
         if (dir.length === 0) continue
-        const items = await scanSource('assets', dir)
+        const normalized = toAssetRelPath(dir)
+        const path = `/data/${normalized}`
+        const items = await scanSource('assets', path + '/')
         results.push(...items)
         debug(`${ENGINE} scanAll assets[${dir}]: ${items.length} 个文件`)
     }
@@ -122,10 +125,8 @@ function getSourceLabel(type: 'local' | 'upload' | 'assets', path: string): stri
     switch (type) {
         case 'upload':
             return 'upload'
-        case 'assets': {
-            const prefix = 'data/assets/'
-            return path.startsWith(prefix) ? path.slice(prefix.length) : path
-        }
+        case 'assets':
+            return toAssetRelPath(path)
         case 'local':
             return path
     }

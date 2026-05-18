@@ -3,6 +3,7 @@
     import { readDirItems } from "../../utils/api"
     import { classifyFileType } from "../../types"
     import { configStore } from "../../stores/config"
+    import { toAssetRelPath } from "../../utils/path"
     import { log } from "../../utils/logger"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
@@ -113,9 +114,7 @@
     }
 
     function getRelPath(fullPath: string): string {
-        if (fullPath.startsWith('/data/assets/')) return `assets/${fullPath.slice('/data/assets/'.length)}`
-        if (fullPath.startsWith('data/assets/')) return `assets/${fullPath.slice('data/assets/'.length)}`
-        return fullPath
+        return toAssetRelPath(fullPath)
     }
 
     function confirm() {
