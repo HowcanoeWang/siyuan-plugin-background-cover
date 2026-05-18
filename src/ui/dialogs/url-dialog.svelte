@@ -2,6 +2,7 @@
     import { onDestroy } from "svelte"
     import { downloadUrl } from "../../utils/api"
     import { getFileUrl } from "../../utils/fs"
+    import { IMAGE_EXTS, VIDEO_EXTS } from "../../constants"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
 
@@ -11,6 +12,8 @@
 
     let { onSuccess }: Props = $props()
 
+    const VALID_EXTS = IMAGE_EXTS.union(VIDEO_EXTS)
+
     let url = $state("")
     let previewSrc = $state<string | null>(null)
     let blobUrl = $state<string | null>(null)
@@ -18,9 +21,6 @@
     let checking = $state(false)
     let errorMsg = $state("")
     let debounceTimer: ReturnType<typeof setTimeout> | null = null
-
-    const VALID_EXTS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg', '.avif',
-        '.mp4', '.webm', '.ogg', '.mov', '.avi', '.mkv'])
 
     function checkExt(u: string): boolean {
         const clean = u.split('?')[0]

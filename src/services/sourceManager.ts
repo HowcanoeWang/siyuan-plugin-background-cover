@@ -1,4 +1,4 @@
-import { isDesktop, readLocalDir, getFileUrl } from '../utils/fs'
+import { isDesktop, readLocalDir, getFileUrl, fileExistsLocal } from '../utils/fs'
 import { readDir as readDirKernel } from '../utils/api'
 import type { ImageItem } from '../types'
 import { pluginAssetsDir, classifyFileType } from '../constants'
@@ -104,12 +104,7 @@ export async function validatePath(path: string): Promise<boolean> {
     if (path.length === 0) return false
 
     if (isDesktop()) {
-        try {
-            await (window as any).require('fs/promises').access(path)
-            return true
-        } catch {
-            return false
-        }
+        return fileExistsLocal(path)
     }
 
     try {

@@ -1,4 +1,3 @@
-import { fetchPost } from "siyuan"
 import { classifyFileType } from "../../constants"
 import { getFileUrl } from "../../utils/fs"
 import { putFile } from "../../utils/api"
@@ -57,25 +56,10 @@ export function showUrlDialog(onSuccess: (uploadUrl?: string) => void) {
     })
 }
 
-function uploadSingleFileForm(file: File): Promise<string | null> {
-    return new Promise((resolve) => {
-        const formData = new FormData()
-        formData.append("path", `data/public/siyuan-plugin-background-cover/${file.name}`)
-        formData.append("isDir", "false")
-        formData.append("modTime", Math.floor(Date.now() / 1000).toString())
-        formData.append("file", file)
-
-        fetchPost("/api/file/putFile", formData, (res: any) => {
-            if (res.code === 0) {
-                resolve(getFileUrl(
-                    `data/public/siyuan-plugin-background-cover/${file.name}`,
-                    'upload'
-                ))
-            } else {
-                resolve(null)
-            }
-        })
-    })
+async function uploadSingleFileForm(file: File): Promise<string | null> {
+    const apiPath = `data/public/siyuan-plugin-background-cover/${file.name}`
+    const ok = await putFile(apiPath, file)
+    return ok ? getFileUrl(apiPath, 'upload') : null
 }
 
 export async function pickMultipleFiles(onDone?: (lastUrl: string) => void) {

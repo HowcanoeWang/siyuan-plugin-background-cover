@@ -1,6 +1,6 @@
 <script lang="ts">
     import { configStore } from "../../stores/config"
-    import { createBgLayer, renderImage, changeOpacity, changeBlur, changePosition, startAutoRefresh, stopAutoRefresh } from "../../services/bgRender"
+    import { createBgLayer, render, changeOpacity, changeBlur, changePosition, startAutoRefresh, stopAutoRefresh } from "../../services/bgRender"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
 
@@ -19,7 +19,7 @@
         if (activate) {
             createBgLayer()
             if (currentFile) {
-                renderImage(currentFile)
+                render(currentFile)
                 changeOpacity(opacity)
                 changeBlur(blur)
                 changePosition(positionX, positionY)
