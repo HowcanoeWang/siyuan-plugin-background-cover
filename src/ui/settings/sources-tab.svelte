@@ -55,39 +55,38 @@
             configKey: '',
         })
 
-        const assetDirs = configStore.get("assetDirs")
-        for (const dir of assetDirs) {
-            if (!dir) continue
+        const assetDirs = configStore.get("assetDirs").filter(Boolean)
+        const localFolders = isDesktop() ? configStore.get("localFolders").filter(Boolean) : []
+
+        const assetTasks = assetDirs.map(async (dir) => {
             const normalized = toAssetRelPath(dir)
             const path = `/data/${normalized}`
             const label = normalized.startsWith('assets/') ? normalized.slice('assets/'.length) : normalized
             const files = await scanSource('assets', path + '/')
-            newGroups.push({
-                type: 'assets',
-                label,
-                path,
-                removable: true,
-                files,
-                inaccessible: files.length === 0 && path.length > 0,
-                collapsed: false,
-                configKey: normalized,
-            })
-        }
+            return { type: 'assets' as const, label, path, files, normalized }
+        })
 
-        if (isDesktop()) {
-            const localFolders = configStore.get("localFolders")
-            for (const dir of localFolders) {
-                if (!dir) continue
-                const files = await scanSource('local', dir + (dir.endsWith('/') ? '' : '/'))
+        const localTasks = localFolders.map(async (dir) => {
+            const files = await scanSource('local', dir + (dir.endsWith('/') ? '' : '/'))
+            return { type: 'local' as const, label: dir, path: dir, files }
+        })
+
+        const allScanResults = await Promise.all([...assetTasks, ...localTasks])
+
+        for (const r of allScanResults) {
+            if (r.type === 'assets') {
                 newGroups.push({
-                    type: 'local',
-                    label: dir,
-                    path: dir,
-                    removable: true,
-                    files,
-                    inaccessible: files.length === 0,
-                    collapsed: false,
-                    configKey: dir,
+                    type: 'assets', label: r.label, path: r.path,
+                    removable: true, files: r.files,
+                    inaccessible: r.files.length === 0 && r.path.length > 0,
+                    collapsed: false, configKey: r.normalized,
+                })
+            } else {
+                newGroups.push({
+                    type: 'local', label: r.label, path: r.path,
+                    removable: true, files: r.files,
+                    inaccessible: r.files.length === 0,
+                    collapsed: false, configKey: r.label,
                 })
             }
         }

@@ -11,37 +11,33 @@ export async function scanAll(
     assetDirs: string[] = [],
     localFolders: string[] = [],
 ): Promise<ImageItem[]> {
-    const results: ImageItem[] = []
+    const tasks: Promise<ImageItem[]>[] = [
+        scanSource('upload', pluginAssetsDir),
+    ]
 
-    const uploadItems = await scanSource('upload', pluginAssetsDir)
-    results.push(...uploadItems)
-    debug(`${ENGINE} scanAll upload: ${uploadItems.length} 个文件`)
-
-    for (const dir of assetDirs) {
-        if (dir.length === 0) continue
-        const normalized = toAssetRelPath(dir)
-        const path = `/data/${normalized}`
-        const items = await scanSource('assets', path + '/')
-        results.push(...items)
-        debug(`${ENGINE} scanAll assets[${dir}]: ${items.length} 个文件`)
-    }
+    const validAssetDirs = assetDirs.filter(d => d.length > 0)
+        .map(dir => {
+            const normalized = toAssetRelPath(dir)
+            return `/data/${normalized}`
+        })
+    tasks.push(...validAssetDirs.map(path => scanSource('assets', path + '/')))
 
     if (isDesktop()) {
-        for (const dir of localFolders) {
-            if (dir.length === 0) continue
+        const validLocalDirs = localFolders.filter(d => d.length > 0)
+        for (const dir of validLocalDirs) {
             const ok = await validatePath(dir)
             if (!ok) {
                 debug(`${ENGINE} scanAll local[${dir}]: 路径不可访问，跳过`)
-                continue
+            } else {
+                tasks.push(scanSource('local', dir))
             }
-            const items = await scanSource('local', dir)
-            results.push(...items)
-            debug(`${ENGINE} scanAll local[${dir}]: ${items.length} 个文件`)
         }
     } else {
         debug(`${ENGINE} scanAll local: 非桌面端，跳过 ${localFolders.length} 个本地文件夹`)
     }
 
+    const batch = await Promise.all(tasks)
+    const results = batch.flat()
     debug(`${ENGINE} scanAll total: ${results.length} 个文件`)
     return results
 }

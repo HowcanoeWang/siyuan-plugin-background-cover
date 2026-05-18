@@ -50,21 +50,27 @@
 
     onMount(async () => {
         const items = await readDirItems("/data/assets/")
-        for (const item of items) {
-            if (!item.isDir) continue
-            const nodePath = "/data/assets/" + item.name
-            const { imageCount, videoCount, hasSubdirs } = await scanDir(nodePath)
-            roots.push({
-                name: item.name,
-                path: nodePath,
-                imageCount,
-                videoCount,
-                children: [],
-                open: false,
-                loaded: false,
-                hasSubdirs,
+        const dirNodes = items
+            .filter(item => item.isDir)
+            .map(item => ({ name: item.name, path: "/data/assets/" + item.name }))
+
+        const scans = await Promise.all(
+            dirNodes.map(async ({ name, path }) => {
+                const { imageCount, videoCount, hasSubdirs } = await scanDir(path)
+                return { name, path, imageCount, videoCount, hasSubdirs }
             })
-        }
+        )
+
+        roots = scans.map(s => ({
+            name: s.name,
+            path: s.path,
+            imageCount: s.imageCount,
+            videoCount: s.videoCount,
+            children: [],
+            open: false,
+            loaded: false,
+            hasSubdirs: s.hasSubdirs,
+        }))
         roots.sort((a, b) => a.name.localeCompare(b.name))
         loading = false
     })

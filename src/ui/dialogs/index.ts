@@ -77,17 +77,14 @@ export async function pickMultipleFiles(onDone?: (lastUrl: string) => void) {
             return
         }
 
-        let lastUrl = ""
-        for (let i = 0; i < files.length; i++) {
-            try {
-                const url = await uploadSingleFileForm(files[i])
-                if (url) lastUrl = url
-            } catch (e) {
-                console.warn('[bgCover] upload failed:', files[i].name, e)
-            }
-        }
+        const results = await Promise.all(
+            Array.from(files).map(f =>
+                uploadSingleFileForm(f).catch(() => null)
+            )
+        )
 
         document.body.removeChild(input)
+        const lastUrl = results.filter(Boolean).pop()
         if (lastUrl) onDone?.(lastUrl)
     })
     input.click()
@@ -107,12 +104,7 @@ export async function pickFolderFiles(onDone?: (lastUrl: string) => void) {
             return
         }
 
-        const validFiles: File[] = []
-        for (let i = 0; i < files.length; i++) {
-            if (classifyFileType(files[i].name) !== null) {
-                validFiles.push(files[i])
-            }
-        }
+        const validFiles = Array.from(files).filter(f => classifyFileType(f.name) !== null)
 
         if (validFiles.length === 0) {
             document.body.removeChild(input)
@@ -135,39 +127,32 @@ export async function pickFolderFiles(onDone?: (lastUrl: string) => void) {
             }
         }
 
-        let lastUrl = ""
-        for (const file of validFiles) {
-            try {
-                const ok = await putFile(
-                    `data/public/siyuan-plugin-background-cover/${file.name}`,
-                    file,
-                )
-                if (ok) {
-                    lastUrl = getFileUrl(
-                        `data/public/siyuan-plugin-background-cover/${file.name}`,
-                        'upload'
-                    )
-                }
-            } catch (e) {
-                console.warn('[bgCover] folder upload failed:', file.name, e)
-            }
-        }
+        const results = await Promise.all(
+            validFiles.map(async (file) => {
+                const apiPath = `data/public/siyuan-plugin-background-cover/${file.name}`
+                const ok = await putFile(apiPath, file).catch(() => false)
+                return ok ? getFileUrl(apiPath, 'upload') : null
+            })
+        )
 
         document.body.removeChild(input)
+        const lastUrl = results.filter(Boolean).pop()
         if (lastUrl) onDone?.(lastUrl)
     })
     input.click()
 }
 
 async function uploadFilteredFiles(files: FileList, input: HTMLInputElement) {
-    for (let i = 0; i < files.length; i++) {
-        if (classifyFileType(files[i].name)) {
-            await putFile(
-                `data/public/siyuan-plugin-background-cover/${files[i].name}`,
-                files[i],
+    await Promise.all(
+        Array.from(files)
+            .filter(f => classifyFileType(f.name))
+            .map(f =>
+                putFile(
+                    `data/public/siyuan-plugin-background-cover/${f.name}`,
+                    f,
+                )
             )
-        }
-    }
+    )
     document.body.removeChild(input)
 }
 
