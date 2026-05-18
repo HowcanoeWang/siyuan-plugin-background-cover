@@ -1,4 +1,3 @@
-import { configStore } from "../stores/config"
 import { debug } from "./logger"
 
 function getFsp(): any {
@@ -11,10 +10,6 @@ function getFsp(): any {
 
 export function isDesktop(): boolean {
     return typeof (window as any).require === 'function' && getFsp() !== null
-}
-
-export function isLocalPath(path: string): boolean {
-    return configStore.get("localFolders").some(f => path.startsWith(f))
 }
 
 export async function readLocalDir(path: string): Promise<string[]> {

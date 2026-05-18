@@ -7,7 +7,7 @@ import { svelteDialog } from "./libs/dialog"
 import { configStore } from "./stores/config"
 import { destroyBgLayer, createBgLayer, renderImage, renderVideo, changeOpacity, changeBlur, changePosition, setVisible, startAutoRefresh, stopAutoRefresh } from "./services/bgRender"
 import { scanAll, pickRandom } from "./services/sourceManager"
-import { diyIcon, pickDefaultBackground, DEFAULT_BACKGROUNDS, IMAGE_EXTS, VIDEO_EXTS } from "./constants"
+import { pluginTopIcon, pickDefaultBackground, DEFAULT_BACKGROUNDS, IMAGE_EXTS, VIDEO_EXTS } from "./constants"
 import { debug, log } from "./utils/logger"
 import { isCurrentThemeDisabled, watchTheme } from "./utils/theme"
 import SettingsPanel from "./ui/settings/settings.svelte"
@@ -35,7 +35,7 @@ export default class BgCoverPlugin extends Plugin {
             configStore,
         }
 
-        this.addIcons(diyIcon.iconLogo)
+        this.addIcons(pluginTopIcon.iconLogo)
 
         this.addCommand({ langKey: "selectPictureManualLabel", hotkey: "⇧⌘F6", callback: () => this.openSetting("sources") })
         this.addCommand({ langKey: "selectPictureRandomLabel", hotkey: "⇧⌘F7", callback: () => this.randomSelect() })

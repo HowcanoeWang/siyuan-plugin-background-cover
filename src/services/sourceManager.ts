@@ -1,8 +1,7 @@
 import { isDesktop, readLocalDir, getFileUrl } from '../utils/fs'
 import { readDir as readDirKernel } from '../utils/api'
-import { classifyFileType } from '../types'
 import type { ImageItem } from '../types'
-import { pluginAssetsDir } from '../constants'
+import { pluginAssetsDir, classifyFileType } from '../constants'
 import { debug } from '../utils/logger'
 import { toAssetRelPath } from '../utils/path'
 

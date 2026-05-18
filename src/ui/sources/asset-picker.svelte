@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte"
     import { readDirItems } from "../../utils/api"
-    import { classifyFileType } from "../../types"
+    import { classifyFileType } from "../../constants"
     import { configStore } from "../../stores/config"
     import { toAssetRelPath } from "../../utils/path"
     import { log } from "../../utils/logger"

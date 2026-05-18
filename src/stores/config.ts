@@ -85,6 +85,10 @@ class ConfigStore {
         return { ...this.cfg }
     }
 
+    isLocalPath(path: string): boolean {
+        return this.cfg.localFolders.some(f => path.startsWith(f))
+    }
+
     async reset(): Promise<void> {
         console.log("[bgCover] config reset to defaults")
         this.cfg = { ...APP_CONFIG_DEFAULTS }

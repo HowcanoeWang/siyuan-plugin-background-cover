@@ -23,7 +23,17 @@ export function pickDefaultBackground(): string {
     return DEFAULT_BACKGROUNDS[Math.floor(Math.random() * DEFAULT_BACKGROUNDS.length)]
 }
 
-export const diyIcon = {
+export function classifyFileType(filename: string): 'image' | 'video' | null {
+    const ext = filename.includes('.')
+        ? '.' + filename.split('.').pop()!.toLowerCase()
+        : ''
+
+    if (IMAGE_EXTS.has(ext)) return 'image'
+    if (VIDEO_EXTS.has(ext)) return 'video'
+    return null
+}
+
+export const pluginTopIcon = {
     iconLogo: `<symbol id="iconLogo" viewBox="0 0 32 32">
     <path d="M26 28h-20v-4l6-10 8.219 10 5.781-4v8z"></path>
     <path d="M26 15c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3c1.657 0 3 1.343 3 3z"></path>

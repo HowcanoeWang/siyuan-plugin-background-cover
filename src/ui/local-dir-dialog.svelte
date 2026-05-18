@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { classifyFileType } from "../types"
+    import { classifyFileType } from "../constants"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
 

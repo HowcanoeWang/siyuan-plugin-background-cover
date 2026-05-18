@@ -7,7 +7,7 @@
     import { svelteDialog, confirmDialog } from "../../libs/dialog"
     import { pluginAssetsDir, pickDefaultBackground } from "../../constants"
     import { removeFile, putFile as apiPutFile } from "../../utils/api"
-    import { classifyFileType } from "../../types"
+    import { classifyFileType } from "../../constants"
     import { toAssetRelPath } from "../../utils/path"
     import { log } from "../../utils/logger"
     import LocalDirDialog from "../local-dir-dialog.svelte"

@@ -8,7 +8,7 @@ vi.mock("siyuan", () => ({
 }))
 
 import { fetchSyncPost } from "siyuan"
-import { classifyFileType } from "../../src/types"
+import { classifyFileType } from "../../src/constants"
 import { scanAll, scanSource, pickRandom, validatePath } from "../../src/services/sourceManager"
 
 describe("types.ts - classifyFileType", () => {
