@@ -107,5 +107,9 @@
     "dynamicUrlHint": "Enter image API or image/video URL",
     "videoBgRecommend": "Video Background Resources",
     "videoBgRecommendDesc": "Dynamic feeds support images only. For video backgrounds, download from these sites and add via local upload.",
-    "removeDynamic": "Remove Feed"
+    "removeDynamic": "Remove Feed",
+    "presetBing1920": "Bing Daily Wallpaper (1920x1080)",
+    "presetUnsplashRandom": "Unsplash Random (1600x900)",
+    "presetImgapiScenic": "imgapi Random Scenery",
+    "presetImgXjh": "Random Anime Wallpaper (1920x1080)"
 }

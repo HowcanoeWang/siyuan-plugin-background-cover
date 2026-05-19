@@ -107,5 +107,9 @@
     "dynamicUrlHint": "输入图片 API 或图片/视频 URL",
     "videoBgRecommend": "视频背景素材推荐",
     "videoBgRecommendDesc": "动态订阅源仅支持图片背景。如需视频背景，请从以下网站下载后通过本地上传添加。",
-    "removeDynamic": "移除订阅源"
+    "removeDynamic": "移除订阅源",
+    "presetBing1920": "必应每日壁纸 (1920x1080)",
+    "presetUnsplashRandom": "Unsplash 随机图片 (1600x900)",
+    "presetImgapiScenic": "imgapi 随机风景",
+    "presetImgXjh": "岁月小筑随机动漫图片 (1920x1080)"
 }
