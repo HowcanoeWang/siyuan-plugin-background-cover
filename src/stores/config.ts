@@ -1,6 +1,6 @@
-import { fetchPost } from "siyuan"
 import { packageName } from "../constants"
 import { devDebug, devLog } from "../utils/logger"
+import { getLocalStorage, setLocalStorageVal, removeLocalStorageVals, readDirItems, removeFile } from "../utils/api"
 import type { AppConfig } from "../types"
 
 const STORAGE_KEY = packageName
@@ -23,18 +23,6 @@ const APP_CONFIG_DEFAULTS: AppConfig = {
     inDev: false,
 }
 
-function siyuanApiPost<T = any>(url: string, data?: any): Promise<T> {
-    return new Promise((resolve, reject) => {
-        fetchPost(url, data ?? {}, (response: any) => {
-            if (response.code === 0) {
-                resolve(response.data)
-            } else {
-                reject(new Error(response.msg ?? "fetchPost failed"))
-            }
-        })
-    })
-}
-
 class ConfigStore {
     private cfg: AppConfig = { ...APP_CONFIG_DEFAULTS }
     private dirty = false
@@ -46,12 +34,8 @@ class ConfigStore {
         let stored: any = (window as any).siyuan?.storage?.[STORAGE_KEY]
 
         if (stored === undefined || stored === null) {
-            try {
-                const all = await siyuanApiPost<Record<string, any>>("/api/storage/getLocalStorage")
-                stored = all?.[STORAGE_KEY] ?? {}
-            } catch {
-                stored = {}
-            }
+            const all = await getLocalStorage()
+            stored = all?.[STORAGE_KEY] ?? {}
         }
 
         this.cfg = { ...APP_CONFIG_DEFAULTS, ...stored }
@@ -62,10 +46,7 @@ class ConfigStore {
     async save(): Promise<void> {
         if (!this.dirty || !this.ready) return
         devLog("[bgCover] config save")
-        await siyuanApiPost("/api/storage/setLocalStorageVal", {
-            key: STORAGE_KEY,
-            val: this.cfg,
-        })
+        await setLocalStorageVal(STORAGE_KEY, this.cfg)
         this.dirty = false
     }
 
@@ -98,15 +79,11 @@ class ConfigStore {
         await this.save()
 
         try {
-            await siyuanApiPost("/api/storage/removeLocalStorageVals", {
-                keys: [STORAGE_KEY],
-            })
+            await removeLocalStorageVals([STORAGE_KEY])
         } catch { /* ignore */ }
 
         try {
-            await siyuanApiPost("/api/file/removeFile", {
-                path: `/data/storage/petal/${STORAGE_KEY}/configs.json`,
-            })
+            await removeFile(`/data/storage/petal/${STORAGE_KEY}/configs.json`)
         } catch { /* ignore */ }
 
         await this.cleanPublicDir()
@@ -116,18 +93,16 @@ class ConfigStore {
         const stored = (window as any).siyuan?.storage?.[STORAGE_KEY]
         if (stored?.crtBgObj !== undefined || stored?.bgObjCfg !== undefined) {
             console.log("[bgCover] 检测到旧版配置 (siyuan.storage)，自动重置为默认")
-            await siyuanApiPost("/api/storage/removeLocalStorageVals", { keys: [STORAGE_KEY] })
+            await removeLocalStorageVals([STORAGE_KEY])
             this.cfg = { ...APP_CONFIG_DEFAULTS }
             return
         }
 
         try {
-            const files = await siyuanApiPost<any[]>("/api/file/readDir", {
-                path: `/data/storage/petal/${STORAGE_KEY}/`
-            })
+            const files = await readDirItems(`/data/storage/petal/${STORAGE_KEY}/`)
             if (Array.isArray(files) && files.length > 0) {
                 console.log("[bgCover] 检测到旧版 petal 数据，自动清理")
-                await siyuanApiPost("/api/file/removeFile", { path: `/data/storage/petal/${STORAGE_KEY}/` })
+                await removeFile(`/data/storage/petal/${STORAGE_KEY}/`)
             }
         } catch {
             devDebug("[bgCover] cleanOldConfigIfNeeded: petal dir not found")
@@ -136,17 +111,11 @@ class ConfigStore {
 
     private async cleanPublicDir(): Promise<void> {
         try {
-            const files = await siyuanApiPost<any[]>("/api/file/readDir", {
-                path: `/data/public/${STORAGE_KEY}/`,
-            })
+            const files = await readDirItems(`/data/public/${STORAGE_KEY}/`)
             if (!Array.isArray(files)) return
             for (const file of files) {
                 if (file.isDir) continue
-                try {
-                    await siyuanApiPost("/api/file/removeFile", {
-                        path: `/data/public/${STORAGE_KEY}/${file.name}`,
-                    })
-                } catch { /* ignore */ }
+                await removeFile(`/data/public/${STORAGE_KEY}/${file.name}`).catch(() => {})
             }
         } catch { /* ignore */ }
     }
