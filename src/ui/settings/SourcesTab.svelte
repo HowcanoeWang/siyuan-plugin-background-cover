@@ -3,9 +3,9 @@
     import { configStore } from "../../stores/config"
     import { isDesktop } from "../../utils/fs"
     import { scanSource } from "../../services/sourceManager"
-    import { renderImage, renderVideo, renderDynamic, changeOpacity, changeBlur } from "../../services/bgRender"
+    import { renderImage, renderVideo, renderDynamic, changeOpacity, changeBlur, changePosition } from "../../services/bgRender"
     import { confirmDialog } from "../../libs/dialog"
-    import { pluginAssetsDir, pickDefaultBackground, DYNAMIC_BG_PRESETS, DYNAMIC_BG_FALLBACK_URL, isDynamicUrl } from "../../constants"
+    import { pluginAssetsDir, pickDefaultBackground, DYNAMIC_BG_PRESETS, DYNAMIC_BG_FALLBACK_URL, isDynamicUrl, VIDEO_EXTS } from "../../constants"
     import { removeFile } from "../../utils/api"
     import { toAssetRelPath } from "../../utils/path"
     import { devLog } from "../../utils/logger"
@@ -38,9 +38,71 @@
     let previewObjectUrl = $state<string | null>(null)
     let previewVideoSrc = $state<string | null>(null)
     let dynamicCollapsed = $state(false)
-    let videoNoticeCollapsed = $state(true)
     let dynamicUrls = $state<string[]>([])
     let customDynamicUrls = $state<string[]>([])
+
+    let currentBg = $state<string | null>(null)
+    let posX = $state(50)
+    let posY = $state(50)
+    let hasOverride = $state(false)
+    let xDisabled = $state(false)
+    let yDisabled = $state(false)
+
+    function detectRelevantAxis() {
+        xDisabled = false; yDisabled = false
+        if (!currentBg) return
+        const ext = '.' + (currentBg.split('.').pop()?.toLowerCase() ?? '')
+        if (VIDEO_EXTS.has(ext)) return
+        if (isDynamicUrl(currentBg)) return
+
+        const img = new Image()
+        img.onload = () => {
+            const imgAR = img.naturalWidth / img.naturalHeight
+            const vpW = document.documentElement.clientWidth
+            const vpH = document.documentElement.clientHeight
+            if (vpW === 0 || vpH === 0) return
+            const vpAR = vpW / vpH
+            xDisabled = imgAR < vpAR - 0.01
+            yDisabled = imgAR > vpAR + 0.01
+            if (xDisabled) posX = 50
+            if (yDisabled) posY = 50
+        }
+        img.src = currentBg
+    }
+
+    function syncCurrentBg() {
+        currentBg = configStore.get("currentFile")
+        const override = configStore.get("imageOverrides")[currentBg ?? '']
+        posX = override?.positionX ?? 50
+        posY = override?.positionY ?? 50
+        hasOverride = !!override
+        detectRelevantAxis()
+    }
+
+    function savePositionOverride() {
+        if (!currentBg) return
+        const overrides = { ...configStore.get("imageOverrides") }
+        if (posX === 50 && posY === 50) {
+            delete overrides[currentBg]
+        } else {
+            overrides[currentBg] = { positionX: posX, positionY: posY }
+        }
+        configStore.set("imageOverrides", overrides)
+        configStore.save()
+        hasOverride = !!overrides[currentBg]
+    }
+
+    function clearOverride(url: string) {
+        const overrides = { ...configStore.get("imageOverrides") }
+        delete overrides[url]
+        configStore.set("imageOverrides", overrides)
+        configStore.save()
+        if (url === currentBg) {
+            posX = 50; posY = 50
+            hasOverride = false
+            changePosition(50, 50)
+        }
+    }
 
     function presetDisplayName(preset: typeof DYNAMIC_BG_PRESETS[number]): string {
         return i18n[preset.nameKey] ?? preset.name
@@ -49,6 +111,7 @@
     onMount(() => {
         dynamicUrls = [...configStore.get("dynamicBgUrls")]
         customDynamicUrls = [...configStore.get("customDynamicUrls")]
+        syncCurrentBg()
         refreshAll()
     })
 
@@ -239,6 +302,9 @@
         } else {
             renderVideo(item.url)
         }
+        syncCurrentBg()
+        const ov = configStore.get("imageOverrides")[item.url]
+        if (ov) changePosition(ov.positionX ?? 50, ov.positionY ?? 50)
     }
 
     function selectPreview(item: ImageItem) {
@@ -368,270 +434,311 @@
     }
 </script>
 
-<div class="config__tab-container" data-name="sources" style="height: 100%; display: flex; flex-direction: column;">
+<div class="config__tab-container" data-name="sources">
 
-    <div class="config-assets" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0;">
+    <div class="fn__flex-column" style="height: 100%">
 
-        <div class="config-assets__list" style="flex: 0 0 55%; overflow-y: auto;">
-
-            <div class="fn__flex" style="padding: 8px 0; gap: 8px;">
-                {#if isDesktop()}
-                    <button class="b3-button b3-button--outline" onclick={openLocalDirDialog}>
-                        + {i18n.addLocalDir}
-                    </button>
-                {/if}
-                <button class="b3-button b3-button--outline" onclick={openAssetDirDialog}>
-                    + {i18n.linkAssetsDir}
-                </button>
+        {#if currentBg}
+        <label class="fn__flex b3-label">
+            <div class="fn__flex-1">
+                {i18n.currentFile}
+                <div class="b3-label__text"><code class="fn__code">{currentBg}</code></div>
             </div>
-
-            <div class="b3-list b3-list--border b3-list--background">
-                <div class="b3-list-item b3-list-item--narrow toggle"
-                    class:b3-list-item--focus={!videoNoticeCollapsed}
-                    onclick={() => videoNoticeCollapsed = !videoNoticeCollapsed}
-                    onkeydown={undefined}
-                    role="button"
-                    tabindex="0"
-                >
-                    <span class="b3-list-item__toggle b3-list-item__toggle--hl">
-                        <svg class="b3-list-item__arrow" class:b3-list-item__arrow--open={!videoNoticeCollapsed}>
-                            <use xlink:href="#iconRight"></use>
-                        </svg>
-                    </span>
-                    <svg class="b3-list-item__graphic"><use xlink:href="#iconVideo"></use></svg>
-                    <span class="b3-list-item__text fn__flex-1">{i18n.videoNoticeTitle || '推荐视频素材站'}</span>
+            <div class="fn__flex-center" style="gap: 8px; flex-shrink: 0;">
+                <div>
+                    <label>X</label>
+                    <input class="b3-slider fn__size50" type="range"
+                        min="0" max="100" step="5"
+                        bind:value={posX}
+                        disabled={xDisabled}
+                        title={xDisabled ? i18n.axisDisabledX : ''}
+                        oninput={() => changePosition(posX, posY)}
+                        onchange={savePositionOverride}
+                    />
                 </div>
-                {#if !videoNoticeCollapsed}
-                    <div class="b3-list__panel">
-                        <div class="b3-list-item b3-list-item--narrow" style="font-size: 0.85em; color: var(--b3-theme-on-surface);">
-                            <span class="b3-list-item__text">{i18n.videoBgRecommendDesc || '动态订阅源仅支持图片。如需视频背景请下载后通过本地上传添加。'}</span>
-                        </div>
-                        <div class="b3-list-item b3-list-item--narrow">
-                            <span class="b3-list-item__text" style="gap: 8px;">
-                                <a href="https://www.pexels.com/videos/" target="_blank" rel="noopener noreferrer" style="padding-right: 8px;font-size: 0.85em;">Pexels</a>
-                                <a href="https://pixabay.com/videos/" target="_blank" rel="noopener noreferrer" style="padding-right: 8px;font-size: 0.85em;">Pixabay</a>
-                                <a href="https://coverr.co/" target="_blank" rel="noopener noreferrer" style="padding-right: 8px;font-size: 0.85em;">Coverr</a>
-                                <a href="https://videezy.com/" target="_blank" rel="noopener noreferrer" style="padding-right: 8px;font-size: 0.85em;">Videezy</a>
-                            </span>
-                        </div>
-                    </div>
-                {/if}
-
-                <div class="b3-list-item b3-list-item--narrow toggle"
-                    class:b3-list-item--focus={!dynamicCollapsed}
-                    onclick={() => dynamicCollapsed = !dynamicCollapsed}
-                    onkeydown={undefined}
-                    role="button"
-                    tabindex="0"
-                >
-                    <span class="b3-list-item__toggle b3-list-item__toggle--hl">
-                        <svg class="b3-list-item__arrow" class:b3-list-item__arrow--open={!dynamicCollapsed}>
-                            <use xlink:href="#iconRight"></use>
-                        </svg>
-                    </span>
-                    <svg class="b3-list-item__graphic"><use xlink:href="#iconCloud"></use></svg>
-                    <span class="b3-list-item__text fn__flex-1">{i18n.dynamicBgGroup} ({i18n.dynamicBGGroupHint})</span>
-                    <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
-                        aria-label={i18n.addDynamicUrl || '添加订阅源'}
-                        onclick={(e: MouseEvent) => { e.stopPropagation(); addDynamicUrl() }}
-                        onkeydown={undefined} role="button" tabindex="0">
-                        <svg><use xlink:href="#iconAdd"></use></svg>
-                    </span>
+                <div>
+                    <label>Y</label>
+                    <input class="b3-slider fn__size50" type="range"
+                        min="0" max="100" step="5"
+                        bind:value={posY}
+                        disabled={yDisabled}
+                        title={yDisabled ? i18n.axisDisabledY : ''}
+                        oninput={() => changePosition(posX, posY)}
+                        onchange={savePositionOverride}
+                    />
                 </div>
-                {#if !dynamicCollapsed}
-                    <div class="b3-list__panel">
-                        {#each DYNAMIC_BG_PRESETS as preset}
-                            <label class="b3-list-item b3-list-item--narrow b3-list-item--hide-action"
-                                class:b3-list-item--focus={configStore.get("currentFile") === preset.url}
-                                onclick={() => setDynamicAsBackground(preset.url)}
-                            >
-                                <span class="fn__flex-1">
-                                    <input type="checkbox"
-                                        checked={dynamicUrls.includes(preset.url)}
-                                        onchange={() => togglePreset(preset.url)}
-                                        onclick={(e: MouseEvent) => e.stopPropagation()}
-                                    />
-                                    <span style="margin-left: 8px;">
-                                        {presetDisplayName(preset)}
-                                        <span style="color: var(--b3-theme-on-surface);">
-                                            {preset.url}
-                                        </span>
-                                    </span>
-                                </span>
-                            </label>
-                        {/each}
-                        {#each customDynamicUrls as url}
-                            <label class="b3-list-item b3-list-item--narrow b3-list-item--hide-action"
-                                class:b3-list-item--focus={configStore.get("currentFile") === url}
-                                onclick={() => setDynamicAsBackground(url)}
-                            >
-                                <span class="fn__flex-1">
-                                    <input type="checkbox"
-                                        checked={dynamicUrls.includes(url)}
-                                        onchange={() => toggleCustomDynamic(url)}
-                                        onclick={(e: MouseEvent) => e.stopPropagation()}
-                                    />
-                                    <span style="margin-left: 8px; word-break: break-all;">
-                                        {url}
-                                    </span>
-                                </span>
-                                <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
-                                    aria-label={i18n.removeDynamic || '移除订阅源'}
-                                    onclick={(e: MouseEvent) => { e.preventDefault(); e.stopPropagation(); removeCustomDynamic(url) }}
-                                    onkeydown={undefined} role="button" tabindex="0">
-                                    <svg><use xlink:href="#iconTrashcan"></use></svg>
-                                </span>
-                            </label>
-                        {/each}
-                    </div>
-                {/if}
+            </div>
+        </label>
+        {/if}
 
-                {#each groups as group, i}
-                    {@const imgCount = group.files.filter(f => f.type === 'image').length}
-                    {@const vidCount = group.files.filter(f => f.type === 'video').length}
-                    {@const groupIcon = group.type === 'upload' ? '#iconDatabase'
-                        : group.type === 'assets' ? '#iconFilesRoot' : '#iconFolder'}
-                    {@const displayLabel = group.type === 'assets' ? `assets/${group.label}` : group.label}
+        <div class="b3-label">
+            <div class="fn__flex-1">
+                {i18n.videoNoticeTitle || '推荐视频素材站'}
+                <span class="fn__space"></span>
+                <a href="https://www.pexels.com/videos/" target="_blank" rel="noopener noreferrer">Pexels</a>
+                <span class="fn__space"></span>
+                <a href="https://pixabay.com/videos/" target="_blank" rel="noopener noreferrer">Pixabay</a>
+                <span class="fn__space"></span>
+                <a href="https://www.videezy.com/" target="_blank" rel="noopener noreferrer">Videezy</a>
+                <span class="fn__space"></span>
+                <a href="https://coverr.co/" target="_blank" rel="noopener noreferrer">Coverr</a>
+                <div class="b3-label__text" style="display: flex; gap: 12px; ">
+                    {i18n.videoBgRecommendDesc || '动态订阅源仅支持图片。如需视频背景请下载后通过本地上传添加。'}
+                </div>
+            </div>
+        </div>
 
-                    <div
-                        class="b3-list-item b3-list-item--narrow toggle"
-                        class:b3-list-item--focus={!group.collapsed}
-                        style:opacity={group.inaccessible ? "0.45" : "1"}
-                        onclick={() => toggleGroup(i)}
+        <div class="fn__flex-1">
+
+            <div class="config-assets" style="padding: 0 24px;">
+
+                <div class="fn__flex">
+                    {#if isDesktop()}
+                    <button class="b3-button b3-button--outline fn__flex-center fn__size200" onclick={openLocalDirDialog}>
+                        <svg><use xlink:href="#iconUpload"></use></svg> {i18n.addLocalDir}
+                    </button>
+                    {/if}
+                    <div class="fn__space"></div>
+                    <button class="b3-button b3-button--outline fn__flex-center fn__size200" onclick={openAssetDirDialog}>
+                        <svg><use xlink:href="#iconUpload"></use></svg> {i18n.linkAssetsDir}
+                    </button>
+                </div>
+
+                <div class="fn__hr"></div>
+
+                <div class="b3-list b3-list--border b3-list--background  config-assets__list">
+
+                    <div class="b3-list-item b3-list-item--narrow toggle"
+                        class:b3-list-item--focus={!dynamicCollapsed}
+                        onclick={() => dynamicCollapsed = !dynamicCollapsed}
                         onkeydown={undefined}
                         role="button"
                         tabindex="0"
                     >
                         <span class="b3-list-item__toggle b3-list-item__toggle--hl">
-                            <svg class="b3-list-item__arrow" class:b3-list-item__arrow--open={!group.collapsed}>
+                            <svg class="b3-list-item__arrow" class:b3-list-item__arrow--open={!dynamicCollapsed}>
                                 <use xlink:href="#iconRight"></use>
                             </svg>
                         </span>
-                        <svg class="b3-list-item__graphic"><use xlink:href={groupIcon}></use></svg>
-                        <span class="b3-list-item__text fn__flex-1">
-                            {displayLabel}
-                            <span style="color: var(--b3-theme-on-surface); font-size: 0.85em;">
-                                ( {i18n.fileCountSummary.replace('{img}', `${imgCount}`).replace('{vid}', `${vidCount}`)} )
-                            </span>
+                        <svg class="b3-list-item__graphic"><use xlink:href="#iconCloud"></use></svg>
+                        <span class="b3-list-item__text fn__flex-1">{i18n.dynamicBgGroup} ({i18n.dynamicBGGroupHint})</span>
+                        <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                            aria-label={i18n.addDynamicUrl || '添加订阅源'}
+                            onclick={(e: MouseEvent) => { e.stopPropagation(); addDynamicUrl() }}
+                            onkeydown={undefined} role="button" tabindex="0">
+                            <svg><use xlink:href="#iconAdd"></use></svg>
                         </span>
-                        {#if group.type === 'upload'}
-                            <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
-                                aria-label={i18n.uploadMultipleFiles}
-                                onclick={(e: MouseEvent) => { e.stopPropagation(); pickMultipleFiles() }}
-                                onkeydown={undefined} role="button" tabindex="0">
-                                <svg><use xlink:href="#iconFiles"></use></svg>
-                            </span>
-                            <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
-                                aria-label={i18n.uploadEntireDir}
-                                onclick={(e: MouseEvent) => { e.stopPropagation(); pickFolderFiles() }}
-                                onkeydown={undefined} role="button" tabindex="0">
-                                <svg><use xlink:href="#iconFolder"></use></svg>
-                            </span>
-                            <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
-                                aria-label={i18n.uploadNetworkResource}
-                                onclick={(e: MouseEvent) => { e.stopPropagation(); showAddUrlDialog() }}
-                                onkeydown={undefined} role="button" tabindex="0">
-                                <svg><use xlink:href="#iconLink"></use></svg>
-                            </span>
-                        {/if}
-                        {#if isDesktop() && !group.inaccessible}
-                            <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
-                                aria-label={i18n.openFolderLabel}
-                                onclick={(e: MouseEvent) => { e.stopPropagation(); openInFileManager(group) }}
-                                onkeydown={undefined}
-                                role="button"
-                                tabindex="0">
-                                <svg><use xlink:href="#iconOpenWindow"></use></svg>
-                            </span>
-                        {/if}
-                        {#if group.removable}
-                            <span class="b3-list-item__action"
-                                onclick={(e: MouseEvent) => { e.stopPropagation(); removeGroup(i) }}
-                                onkeydown={undefined}
-                                role="button"
-                                tabindex="0">
-                                <svg><use xlink:href="#iconTrashcan"></use></svg>
-                            </span>
-                        {/if}
-                        {#if group.type === 'upload' && group.files.length > 0}
-                            <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
-                                aria-label={i18n.clearCacheTitle}
-                                onclick={(e: MouseEvent) => { e.stopPropagation(); clearCache() }}
-                                onkeydown={undefined}
-                                role="button"
-                                tabindex="0">
-                                <svg><use xlink:href="#iconTrashcan"></use></svg>
-                            </span>
-                        {/if}
-                        {#if group.inaccessible}
-                            <span style="color: var(--b3-theme-error); font-size: 0.85em; margin-left: 8px;">{i18n.pathInaccessible}</span>
-                        {/if}
                     </div>
-
-                    {#if !group.collapsed}
+                    {#if !dynamicCollapsed}
                         <div class="b3-list__panel">
-                            {#each group.files as file}
-                                <label
-                                    class="b3-list-item b3-list-item--narrow b3-list-item--hide-action"
-                                    class:b3-list-item--focus={selectedItem?.url === file.url}
-                                    onclick={() => setAsBackground(file)}
+                            {#each DYNAMIC_BG_PRESETS as preset}
+                                <label class="b3-list-item b3-list-item--narrow b3-list-item--hide-action"
+                                    class:b3-list-item--focus={configStore.get("currentFile") === preset.url}
+                                    onclick={() => setDynamicAsBackground(preset.url)}
                                 >
-                                    <span class="b3-list-item__text fn__flex-1"
-                                        onmouseover={() => selectPreview(file)}
-                                        onkeydown={undefined}
-                                        role="button"
-                                        tabindex="0">
-                                        <svg style="width:14px;height:14px;margin-right:4px;vertical-align:middle">
-                                            <use xlink:href={file.type === 'video' ? '#iconVideo' : '#iconImage'}></use>
-                                        </svg>
-                                        {file.name}
+                                    <span class="fn__flex-1">
+                                        <input type="checkbox"
+                                            checked={dynamicUrls.includes(preset.url)}
+                                            onchange={() => togglePreset(preset.url)}
+                                            onclick={(e: MouseEvent) => e.stopPropagation()}
+                                        />
+                                        <span style="margin-left: 8px;">
+                                            {presetDisplayName(preset)}
+                                            <span style="color: var(--b3-theme-on-surface);">
+                                                {preset.url}
+                                            </span>
+                                        </span>
                                     </span>
-                                    {#if group.type === 'upload'}
-                                        <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
-                                            aria-label={i18n.delete}
-                                            onclick={(e: MouseEvent) => { e.preventDefault(); e.stopPropagation(); deleteFile(file) }}
+                                </label>
+                            {/each}
+                            {#each customDynamicUrls as url}
+                                <label class="b3-list-item b3-list-item--narrow b3-list-item--hide-action"
+                                    class:b3-list-item--focus={configStore.get("currentFile") === url}
+                                    onclick={() => setDynamicAsBackground(url)}
+                                >
+                                    <span class="fn__flex-1">
+                                        <input type="checkbox"
+                                            checked={dynamicUrls.includes(url)}
+                                            onchange={() => toggleCustomDynamic(url)}
+                                            onclick={(e: MouseEvent) => e.stopPropagation()}
+                                        />
+                                        <span style="margin-left: 8px; word-break: break-all;">
+                                            {url}
+                                        </span>
+                                    </span>
+                                    <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                                        aria-label={i18n.removeDynamic || '移除订阅源'}
+                                        onclick={(e: MouseEvent) => { e.preventDefault(); e.stopPropagation(); removeCustomDynamic(url) }}
+                                        onkeydown={undefined} role="button" tabindex="0">
+                                        <svg><use xlink:href="#iconTrashcan"></use></svg>
+                                    </span>
+                                </label>
+                            {/each}
+                        </div>
+                    {/if}
+
+                    {#each groups as group, i}
+                        {@const imgCount = group.files.filter(f => f.type === 'image').length}
+                        {@const vidCount = group.files.filter(f => f.type === 'video').length}
+                        {@const groupIcon = group.type === 'upload' ? '#iconDatabase'
+                            : group.type === 'assets' ? '#iconFilesRoot' : '#iconFolder'}
+                        {@const displayLabel = group.type === 'assets' ? `assets/${group.label}` : group.label}
+
+                        <div
+                            class="b3-list-item b3-list-item--narrow toggle"
+                            class:b3-list-item--focus={!group.collapsed}
+                            style:opacity={group.inaccessible ? "0.45" : "1"}
+                            onclick={() => toggleGroup(i)}
+                            onkeydown={undefined}
+                            role="button"
+                            tabindex="0"
+                        >
+                            <span class="b3-list-item__toggle b3-list-item__toggle--hl">
+                                <svg class="b3-list-item__arrow" class:b3-list-item__arrow--open={!group.collapsed}>
+                                    <use xlink:href="#iconRight"></use>
+                                </svg>
+                            </span>
+                            <svg class="b3-list-item__graphic"><use xlink:href={groupIcon}></use></svg>
+                            <span class="b3-list-item__text fn__flex-1">
+                                {displayLabel}
+                                <span style="color: var(--b3-theme-on-surface); font-size: 0.85em;">
+                                    ( {i18n.fileCountSummary.replace('{img}', `${imgCount}`).replace('{vid}', `${vidCount}`)} )
+                                </span>
+                            </span>
+                            {#if group.type === 'upload'}
+                                <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                                    aria-label={i18n.uploadMultipleFiles}
+                                    onclick={(e: MouseEvent) => { e.stopPropagation(); pickMultipleFiles() }}
+                                    onkeydown={undefined} role="button" tabindex="0">
+                                    <svg><use xlink:href="#iconFiles"></use></svg>
+                                </span>
+                                <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                                    aria-label={i18n.uploadEntireDir}
+                                    onclick={(e: MouseEvent) => { e.stopPropagation(); pickFolderFiles() }}
+                                    onkeydown={undefined} role="button" tabindex="0">
+                                    <svg><use xlink:href="#iconFolder"></use></svg>
+                                </span>
+                                <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                                    aria-label={i18n.uploadNetworkResource}
+                                    onclick={(e: MouseEvent) => { e.stopPropagation(); showAddUrlDialog() }}
+                                    onkeydown={undefined} role="button" tabindex="0">
+                                    <svg><use xlink:href="#iconLink"></use></svg>
+                                </span>
+                            {/if}
+                            {#if isDesktop() && !group.inaccessible}
+                                <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                                    aria-label={i18n.openFolderLabel}
+                                    onclick={(e: MouseEvent) => { e.stopPropagation(); openInFileManager(group) }}
+                                    onkeydown={undefined}
+                                    role="button"
+                                    tabindex="0">
+                                    <svg><use xlink:href="#iconOpenWindow"></use></svg>
+                                </span>
+                            {/if}
+                            {#if group.removable}
+                                <span class="b3-list-item__action"
+                                    onclick={(e: MouseEvent) => { e.stopPropagation(); removeGroup(i) }}
+                                    onkeydown={undefined}
+                                    role="button"
+                                    tabindex="0">
+                                    <svg><use xlink:href="#iconTrashcan"></use></svg>
+                                </span>
+                            {/if}
+                            {#if group.type === 'upload' && group.files.length > 0}
+                                <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                                    aria-label={i18n.clearCacheTitle}
+                                    onclick={(e: MouseEvent) => { e.stopPropagation(); clearCache() }}
+                                    onkeydown={undefined}
+                                    role="button"
+                                    tabindex="0">
+                                    <svg><use xlink:href="#iconTrashcan"></use></svg>
+                                </span>
+                            {/if}
+                            {#if group.inaccessible}
+                                <span style="color: var(--b3-theme-error); font-size: 0.85em; margin-left: 8px;">{i18n.pathInaccessible}</span>
+                            {/if}
+                        </div>
+
+                        {#if !group.collapsed}
+                            <div class="b3-list__panel">
+                                {#each group.files as file}
+                                    {@const override = configStore.get("imageOverrides")[file.url]}
+                                    <label
+                                        class="b3-list-item b3-list-item--narrow b3-list-item--hide-action"
+                                        class:b3-list-item--focus={selectedItem?.url === file.url}
+                                        onclick={() => setAsBackground(file)}
+                                    >
+                                        <span class="b3-list-item__text fn__flex-1"
+                                            onmouseover={() => selectPreview(file)}
                                             onkeydown={undefined}
                                             role="button"
                                             tabindex="0">
-                                            <svg><use xlink:href="#iconTrashcan"></use></svg>
+                                            <svg style="width:14px;height:14px;margin-right:4px;vertical-align:middle">
+                                                <use xlink:href={file.type === 'video' ? '#iconVideo' : '#iconImage'}></use>
+                                            </svg>
+                                            {file.name}
+                                            {#if override}
+                                                <span style="color: var(--b3-theme-on-surface); font-size: 0.8em; margin-left: 6px;">
+                                                    (x:{override.positionX ?? 50}%, y:{override.positionY ?? 50}%)
+                                                </span>
+                                            {/if}
                                         </span>
-                                    {/if}
-                                </label>
-                            {/each}
-                            {#if group.files.length === 0}
-                                <div class="b3-list-item b3-list-item--narrow" style="color: var(--b3-theme-on-surface);">
-                                    <span class="b3-list-item__text">{i18n.noFiles}</span>
-                                </div>
-                            {/if}
+                                        {#if group.type === 'upload'}
+                                            <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                                                aria-label={i18n.delete}
+                                                onclick={(e: MouseEvent) => { e.preventDefault(); e.stopPropagation(); deleteFile(file) }}
+                                                onkeydown={undefined}
+                                                role="button"
+                                                tabindex="0">
+                                                <svg><use xlink:href="#iconTrashcan"></use></svg>
+                                            </span>
+                                        {/if}
+                                        {#if override}
+                                            <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                                                aria-label={i18n.resetPosition}
+                                                onclick={(e: MouseEvent) => { e.preventDefault(); e.stopPropagation(); clearOverride(file.url) }}
+                                                onkeydown={undefined}
+                                                role="button"
+                                                tabindex="0">
+                                                <svg><use xlink:href="#iconFullscreenExit"></use></svg>
+                                            </span>
+                                        {/if}
+                                    </label>
+                                {/each}
+                                {#if group.files.length === 0}
+                                    <div class="b3-list-item b3-list-item--narrow" style="color: var(--b3-theme-on-surface);">
+                                        <span class="b3-list-item__text">{i18n.noFiles}</span>
+                                    </div>
+                                {/if}
+                            </div>
+                        {/if}
+                    {/each}
+
+                    {#if groups.length === 0}
+                        <div class="b3-list-item" style="color: var(--b3-theme-on-surface); padding: 16px; text-align: center;">
+                            {i18n.noSources}
                         </div>
                     {/if}
-                {/each}
+                </div>
 
-                {#if groups.length === 0}
-                    <div class="b3-list-item" style="color: var(--b3-theme-on-surface); padding: 16px; text-align: center;">
-                        {i18n.noSources}
-                    </div>
-                {/if}
+                <div class="config-assets__preview">
+                    {#if previewVideoSrc}
+                        <video src={previewVideoSrc} controls autoplay loop muted
+                            style="max-width: 100%; max-height: 100%; border-radius: 4px;"></video>
+                    {:else if previewSrc}
+                        <img src={previewSrc} alt="preview" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px;" />
+                    {:else}
+                        <div style="color: var(--b3-theme-on-surface); text-align: center;">
+                            <svg style="width:48px;height:48px;opacity:0.6"><use xlink:href="#iconImage"></use></svg>
+                            <div>{i18n.noPreviewHint}</div>
+                        </div>
+                    {/if}
+                </div>
+
             </div>
 
-
         </div>
 
-        <div class="fn__hr--b"></div>
-
-        <div class="config-assets__preview" style="flex: 0 0 45%; display: flex; align-items: center; justify-content: center; padding: 8px; overflow: hidden; background: var(--b3-theme-surface);">
-            {#if previewVideoSrc}
-                <video src={previewVideoSrc} controls autoplay loop muted
-                    style="max-width: 100%; max-height: 100%; border-radius: 4px;"></video>
-            {:else if previewSrc}
-                <img src={previewSrc} alt="preview" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px;" />
-            {:else}
-                <div style="color: var(--b3-theme-on-surface); text-align: center;">
-                    <svg style="width:48px;height:48px;opacity:0.6"><use xlink:href="#iconImage"></use></svg>
-                    <div>{i18n.noPreviewHint}</div>
-                </div>
-            {/if}
-        </div>
     </div>
 
 </div>

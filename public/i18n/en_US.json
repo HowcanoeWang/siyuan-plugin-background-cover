@@ -106,12 +106,14 @@
     "addToDynamic": "Add to Feeds",
     "uploadToCache": "Upload to Cache",
     "dynamicUrlHint": "Enter image API or image/video URL",
-    "videoBgRecommend": "Video Background Resources",
-    "videoBgRecommendDesc": "Dynamic feeds support images only. For video backgrounds, download from these sites and add via local upload.",
+    "videoNoticeTitle": "Recommended Video Sites",
+    "videoBgRecommendDesc": "Dynamic feeds support images only. For video backgrounds, download from sites first and add via local upload.",
     "removeDynamic": "Remove Feed",
     "presetBing1920": "Bing Daily Wallpaper (1920x1080)",
     "presetUnsplashRandom": "Unsplash Random (1600x900)",
     "presetImgapiScenic": "imgapi Random Scenery",
     "presetImgXjh": "Random Anime Wallpaper (1920x1080)",
-    "videoNoticeTitle": "Recommended Video Sites"
+    "axisDisabledX": "Image fills viewport height, horizontal shift has no effect",
+    "axisDisabledY": "Image fills viewport width, vertical shift has no effect",
+    "resetPosition": "Reset Position"
 }

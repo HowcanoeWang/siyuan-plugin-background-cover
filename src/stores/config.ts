@@ -9,8 +9,6 @@ const APP_CONFIG_DEFAULTS: AppConfig = {
     activate: true,
     opacity: 0.5,
     blur: 5,
-    positionX: 50,
-    positionY: 50,
     localFolders: [],
     assetDirs: [],
     dynamicBgUrls: [],
@@ -39,6 +37,21 @@ class ConfigStore {
         }
 
         this.cfg = { ...APP_CONFIG_DEFAULTS, ...stored }
+
+        const raw = this.cfg as any
+        if (raw.positionX !== undefined || raw.positionY !== undefined) {
+            const currentFile = raw.currentFile
+            if (currentFile && !raw.imageOverrides[currentFile]) {
+                raw.imageOverrides[currentFile] = {
+                    positionX: raw.positionX ?? 50,
+                    positionY: raw.positionY ?? 50,
+                }
+            }
+            delete raw.positionX
+            delete raw.positionY
+            this.dirty = true
+        }
+
         devLog("[bgCover] config loaded, keys:", Object.keys(this.cfg))
         this.ready = true
     }
