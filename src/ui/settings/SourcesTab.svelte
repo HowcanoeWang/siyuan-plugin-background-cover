@@ -38,6 +38,7 @@
     let previewObjectUrl = $state<string | null>(null)
     let previewVideoSrc = $state<string | null>(null)
     let dynamicCollapsed = $state(false)
+    let videoNoticeCollapsed = $state(true)
     let dynamicUrls = $state<string[]>([])
     let customDynamicUrls = $state<string[]>([])
 
@@ -386,6 +387,37 @@
 
             <div class="b3-list b3-list--border b3-list--background">
                 <div class="b3-list-item b3-list-item--narrow toggle"
+                    class:b3-list-item--focus={!videoNoticeCollapsed}
+                    onclick={() => videoNoticeCollapsed = !videoNoticeCollapsed}
+                    onkeydown={undefined}
+                    role="button"
+                    tabindex="0"
+                >
+                    <span class="b3-list-item__toggle b3-list-item__toggle--hl">
+                        <svg class="b3-list-item__arrow" class:b3-list-item__arrow--open={!videoNoticeCollapsed}>
+                            <use xlink:href="#iconRight"></use>
+                        </svg>
+                    </span>
+                    <svg class="b3-list-item__graphic"><use xlink:href="#iconVideo"></use></svg>
+                    <span class="b3-list-item__text fn__flex-1">{i18n.videoNoticeTitle || '推荐视频素材站'}</span>
+                </div>
+                {#if !videoNoticeCollapsed}
+                    <div class="b3-list__panel">
+                        <div class="b3-list-item b3-list-item--narrow" style="font-size: 0.85em; color: var(--b3-theme-on-surface);">
+                            <span class="b3-list-item__text">{i18n.videoBgRecommendDesc || '动态订阅源仅支持图片。如需视频背景请下载后通过本地上传添加。'}</span>
+                        </div>
+                        <div class="b3-list-item b3-list-item--narrow">
+                            <span class="b3-list-item__text" style="gap: 8px;">
+                                <a href="https://www.pexels.com/videos/" target="_blank" rel="noopener noreferrer">Pexels</a>
+                                <a href="https://pixabay.com/videos/" target="_blank" rel="noopener noreferrer">Pixabay</a>
+                                <a href="https://coverr.co/" target="_blank" rel="noopener noreferrer">Coverr</a>
+                                <a href="https://videezy.com/" target="_blank" rel="noopener noreferrer">Videezy</a>
+                            </span>
+                        </div>
+                    </div>
+                {/if}
+
+                <div class="b3-list-item b3-list-item--narrow toggle"
                     class:b3-list-item--focus={!dynamicCollapsed}
                     onclick={() => dynamicCollapsed = !dynamicCollapsed}
                     onkeydown={undefined}
@@ -398,7 +430,7 @@
                         </svg>
                     </span>
                     <svg class="b3-list-item__graphic"><use xlink:href="#iconCloud"></use></svg>
-                    <span class="b3-list-item__text fn__flex-1">{i18n.dynamicBgGroup || '动态网络壁纸'}</span>
+                    <span class="b3-list-item__text fn__flex-1">{i18n.dynamicBgGroup} ({i18n.dynamicBGGroupHint})</span>
                     <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
                         aria-label={i18n.addDynamicUrl || '添加订阅源'}
                         onclick={(e: MouseEvent) => { e.stopPropagation(); addDynamicUrl() }}

@@ -98,6 +98,7 @@
     "fileCountSummary": "Images: {img}  Videos: {vid}",
     "openFolderLabel": "Open Folder",
     "dynamicBgGroup": "Dynamic Web Wallpaper",
+    "dynamicBGGroupHint": "Only supports URLs that return images, not HTML pages",
     "addDynamicUrl": "Add Feed",
     "addDynamicUrlTitle": "Add Dynamic Background Source",
     "detectedDynamic": "Dynamic image source (different each time)",
@@ -111,5 +112,6 @@
     "presetBing1920": "Bing Daily Wallpaper (1920x1080)",
     "presetUnsplashRandom": "Unsplash Random (1600x900)",
     "presetImgapiScenic": "imgapi Random Scenery",
-    "presetImgXjh": "Random Anime Wallpaper (1920x1080)"
+    "presetImgXjh": "Random Anime Wallpaper (1920x1080)",
+    "videoNoticeTitle": "Recommended Video Sites"
 }

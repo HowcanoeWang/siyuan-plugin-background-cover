@@ -98,6 +98,7 @@
     "fileCountSummary": "图片: {img}  视频: {vid}",
     "openFolderLabel": "打开文件夹",
     "dynamicBgGroup": "动态网络壁纸",
+    "dynamicBGGroupHint": "仅支持返回图片的 URL, 而非HTML页面",
     "addDynamicUrl": "添加订阅源",
     "addDynamicUrlTitle": "添加动态背景源",
     "detectedDynamic": "动态图像源（每次返回不同图片）",
@@ -111,5 +112,6 @@
     "presetBing1920": "必应每日壁纸 (1920x1080)",
     "presetUnsplashRandom": "Unsplash 随机图片 (1600x900)",
     "presetImgapiScenic": "imgapi 随机风景",
-    "presetImgXjh": "岁月小筑随机动漫图片 (1920x1080)"
+    "presetImgXjh": "岁月小筑随机动漫图片 (1920x1080)",
+    "videoNoticeTitle": "推荐视频素材站"
 }
