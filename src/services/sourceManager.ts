@@ -1,7 +1,7 @@
 import { isDesktop, readLocalDir, getFileUrl, fileExistsLocal } from '../utils/fs'
 import { readSiyuanDir } from '../utils/api'
 import type { ImageItem } from '../types'
-import { pluginAssetsDir, classifyFileType } from '../constants'
+import { pluginAssetsDir, classifyFileType, DYNAMIC_BG_PRESETS } from '../constants'
 import { devDebug } from '../utils/logger'
 import { toAssetRelPath } from '../utils/path'
 
@@ -10,9 +10,11 @@ const ENGINE = '[bgCover] sourceManager'
 export async function scanAll(
     assetDirs: string[] = [],
     localFolders: string[] = [],
+    dynamicBgUrls: string[] = [],
 ): Promise<ImageItem[]> {
     const tasks: Promise<ImageItem[]>[] = [
         scanSource('upload', pluginAssetsDir),
+        Promise.resolve(scanDynamicUrls(dynamicBgUrls)),
     ]
 
     const validAssetDirs = assetDirs.filter(d => d.length > 0)
@@ -40,6 +42,20 @@ export async function scanAll(
     const results = batch.flat()
     devDebug(`${ENGINE} scanAll total: ${results.length} 个文件`)
     return results
+}
+
+export function scanDynamicUrls(urls: string[]): ImageItem[] {
+    return urls.map(url => {
+        const preset = DYNAMIC_BG_PRESETS.find(p => p.url === url)
+        return {
+            name: preset?.name ?? new URL(url).hostname,
+            url,
+            apiPath: url,
+            type: 'image' as const,
+            sourceType: 'dynamic' as const,
+            sourceLabel: 'dynamic',
+        }
+    })
 }
 
 export async function scanSource(
@@ -111,7 +127,7 @@ export async function validatePath(path: string): Promise<boolean> {
     }
 }
 
-function getSourceLabel(type: 'local' | 'upload' | 'assets', path: string): string {
+function getSourceLabel(type: 'local' | 'upload' | 'assets' | 'dynamic', path: string): string {
     switch (type) {
         case 'upload':
             return 'upload'
@@ -119,5 +135,7 @@ function getSourceLabel(type: 'local' | 'upload' | 'assets', path: string): stri
             return toAssetRelPath(path)
         case 'local':
             return path
+        case 'dynamic':
+            return 'dynamic'
     }
 }

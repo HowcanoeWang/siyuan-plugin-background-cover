@@ -63,8 +63,8 @@ export function destroyBgLayer(): void {
     currentMode = null
 }
 
-export function render(url: string): void {
-    const type = detectType(url)
+export function render(url: string, forceType?: 'image' | 'video'): void {
+    const type = forceType ?? detectType(url)
     if (type === 'image') renderImage(url)
     else if (type === 'video') renderVideo(url)
 }
@@ -81,6 +81,20 @@ export function renderImage(url: string): void {
     }
     canvasEl.style.display = ''
     canvasEl.style.backgroundImage = `url('${url}')`
+    canvasEl.style.backgroundSize = 'cover'
+}
+
+export function renderDynamic(url: string, fallbackUrl: string): void {
+    if (!canvasEl) return
+    if (videoEl) {
+        videoEl.style.display = 'none'
+        try { videoEl.pause() } catch { /* ignored */ }
+        videoEl.removeAttribute('src')
+    }
+    currentMode = 'image'
+    canvasEl.style.display = ''
+    canvasEl.style.backgroundImage = `url('${url}'), url('${fallbackUrl}')`
+    canvasEl.style.backgroundSize = 'cover, cover'
 }
 
 export function renderVideo(url: string): void {
