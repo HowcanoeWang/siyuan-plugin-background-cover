@@ -5,7 +5,7 @@ import {
 
 import { svelteDialog } from "./libs/dialog"
 import { configStore } from "./stores/config"
-import { destroyBgLayer, createBgLayer, renderImage, renderVideo, renderDynamic, changeOpacity, changeBlur, changePosition, setVisible, startAutoRefresh, stopAutoRefresh } from "./services/bgRender"
+import { destroyBgLayer, createBgLayer, renderImage, renderVideo, renderDynamic, changeOpacity, changeBlur, changePosition, applyOverrides, setVisible, startAutoRefresh, stopAutoRefresh } from "./services/bgRender"
 import { scanAll, pickRandom } from "./services/sourceManager"
 import { pluginTopIcon, pickDefaultBackground, DEFAULT_BACKGROUNDS, IMAGE_EXTS, VIDEO_EXTS, DYNAMIC_BG_FALLBACK_URL, isDynamicUrl } from "./constants"
 import { devDebug, devLog } from "./utils/logger"
@@ -111,7 +111,7 @@ export default class BgCoverPlugin extends Plugin {
         svelteDialog({
             title: "Background Cover",
             width: this.isMobileLayout ? "92vw" : "max(520px, 60vw)",
-            height: "max(520px, 60vh)",
+            height: "max(520px, 80vh)",
             component: SettingsPanel,
             props: { activeTab },
         })
@@ -160,13 +160,14 @@ export default class BgCoverPlugin extends Plugin {
         }
         changeOpacity(configStore.get("opacity"))
         changeBlur(configStore.get("blur"))
-        changePosition(configStore.get("positionX"), configStore.get("positionY"))
+        const ov = configStore.get("imageOverrides")[item.url]
+        applyOverrides(ov?.positionX, ov?.positionY, 50, 50)
     }
 
     private applyBackground() {
         devLog("[bgCover] applyBackground: start")
+        const currentFile = configStore.get("currentFile")
         try {
-            const currentFile = configStore.get("currentFile")
             devDebug("[bgCover] applyBackground: currentFile =", currentFile)
             if (!currentFile) {
                 devDebug("[bgCover] applyBackground: currentFile is null, skip render")
@@ -193,12 +194,10 @@ export default class BgCoverPlugin extends Plugin {
         } finally {
             const opacity = configStore.get("opacity")
             const blur = configStore.get("blur")
-            const px = configStore.get("positionX")
-            const py = configStore.get("positionY")
-            devDebug("[bgCover] applyBackground: changeOpacity =", opacity, "blur =", blur, "pos =", px, py)
             changeOpacity(opacity)
             changeBlur(blur)
-            changePosition(px, py)
+            const ov = configStore.get("imageOverrides")[currentFile]
+            applyOverrides(ov?.positionX, ov?.positionY, 50, 50)
         }
 
         const interval = configStore.get("autoRefreshTime")

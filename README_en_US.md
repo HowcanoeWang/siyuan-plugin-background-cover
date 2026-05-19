@@ -28,12 +28,12 @@ Default background cover artist ——
 ## Features
 
 - [X] Full platform support (desktop / mobile / browser)
-- [X] Images and videos as SiYuan Note background (auto-detect extension, canvas / video dual-mode rendering)
-- [X] Three background source types, unified management
+- [X] Images and videos as SiYuan Note background
+- [X] Support four background source types
   - [X] Local folder direct reading (desktop only, zero upload)
   - [X] SiYuan assets sub-folder referencing (all platforms)
   - [X] Upload files to plugin cache (all platforms, supports network URL download)
-  - [X] Dynamic web wallpaper feeds (preset + custom URLs, different image each time)
+  - [X] Dynamic web wallpaper feeds
 - [X] Background resource management
   - [X] Multi-file / entire directory upload
   - [X] File deletion, folder location, cache clearing
@@ -43,9 +43,8 @@ Default background cover artist ——
   - [X] Manual random selection
   - [X] Scheduled auto-random switching
   - [X] Random selection on startup
-- [X] Manually adjust transparency (weighted algorithm for readability)
-- [X] Manually adjust background blur
-- [X] Background image X/Y offset control
+- [X] Manually adjust transparency and blur
+- [X] Per-image/video X/Y position override
 - [X] Theme blocking (disable plugin on specific themes)
 - [X] Shortcut key support
 
@@ -61,7 +60,7 @@ The range of transparency that can be set by the user is `[0.1, 1]`. However, to
 ## ChangeLogs
 
 <details open>
-<summary><b>May 2026 — v1.0.0 Refactoring Edition</b></summary>
+<summary><b>May 2026</b></summary>
 
 **26.05.19**
 
@@ -73,6 +72,10 @@ The range of transparency that can be set by the user is `[0.1, 1]`. However, to
 * <b>Video Preview</b>: Hovering video files in source list now auto-plays in preview area.
 * <b>About Tab Improvements</b>: Plugin icon + version centered, GitHub/author pinned to bottom, debug info moved to About tab.
 * <b>Code Quality</b>: Eliminated all hardcoded Chinese fallback strings, unified file upload to `utils/api.ts`, parallelized directory scanning, standardized naming conventions.
+* <b>Per-File Position Override (v1.2.1)</b>: Removed global positionX/Y, each image/video now has independent offset settings stored in `imageOverrides`.
+* <b>Resolution-Based Axis Disabling</b>: Auto-detects image/video resolution vs viewport aspect ratio, disables the irrelevant X or Y slider (only one axis matters under `background-size: cover`).
+* <b>Video Recommendations Flattened</b>: Removed collapsible tree node, recommendation links now always visible.
+* Resolved some known issues.
 
 **26.05.18**
 
@@ -286,4 +289,4 @@ This project is inspired and modified from
 * [siyuan-dailynote-today](https://github.com/frostime/siyuan-dailynote-today)
 * [sy-theme-change](https://github.com/frostime/sy-theme-change/tree/main)
 
-Thanks to the members in the 'Siyuan developer' group for patiently answering my questions regarding this plugin development.
+Thanks to the members in the 'Siyuan developer' group for patiently answering my questions regarding this plugin development. And also thanks to DeepSeek V4 Pro for its powerful help in code understanding and refactoring.

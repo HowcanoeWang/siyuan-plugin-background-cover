@@ -12,8 +12,6 @@ export interface AppConfig {
     activate: boolean
     opacity: number
     blur: number
-    positionX: number
-    positionY: number
     localFolders: string[]
     assetDirs: string[]
     dynamicBgUrls: string[]

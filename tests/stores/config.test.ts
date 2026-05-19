@@ -1,11 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 
-const mockFetchPost = vi.fn((_url: string, _data: any, callback: (response: any) => void) => {
-    callback({ code: 0, data: null })
-})
+const mockFetchSyncPost = vi.fn(async (_url: string, _data: any) => ({ code: 0, msg: "", data: null, cmd: "", sid: "" }))
 
 vi.doMock("siyuan", () => ({
-    fetchPost: mockFetchPost,
+    fetchPost: vi.fn(),
+    fetchSyncPost: mockFetchSyncPost,
     Plugin: class {
         data: Record<string, any> = {}
         i18n: Record<string, string> = {}
@@ -25,10 +24,8 @@ const { configStore } = await import("../../src/stores/config")
 describe("ConfigStore", () => {
     beforeEach(() => {
         ;(window as any).siyuan.storage = {}
-        mockFetchPost.mockClear()
-        mockFetchPost.mockImplementation((_url: string, _data: any, callback: (response: any) => void) => {
-            callback({ code: 0, data: null })
-        })
+        mockFetchSyncPost.mockClear()
+        mockFetchSyncPost.mockResolvedValue({ code: 0, msg: "", data: null, cmd: "", sid: "" })
         configStore._resetForTest()
     })
 
@@ -59,10 +56,10 @@ describe("ConfigStore", () => {
                 localFolders: [],
                 assetDirs: [],
             }
-            mockFetchPost.mockClear()
+            mockFetchSyncPost.mockClear()
             await configStore.load()
             // No migration save should fire
-            expect(mockFetchPost).not.toHaveBeenCalled()
+            expect(mockFetchSyncPost).not.toHaveBeenCalled()
         })
 
         it("第二次 load 应直接返回不重复读取", async () => {
@@ -70,9 +67,9 @@ describe("ConfigStore", () => {
                 activate: true,
             }
             await configStore.load()
-            mockFetchPost.mockClear()
+            mockFetchSyncPost.mockClear()
             await configStore.load()
-            expect(mockFetchPost).not.toHaveBeenCalled()
+            expect(mockFetchSyncPost).not.toHaveBeenCalled()
         })
     })
 
@@ -93,17 +90,16 @@ describe("ConfigStore", () => {
     describe("setAndSave()", () => {
         it("应该立即持久化", async () => {
             await configStore.load()
-            mockFetchPost.mockClear()
+            mockFetchSyncPost.mockClear()
 
             await configStore.setAndSave("opacity", 0.3)
 
-            expect(mockFetchPost).toHaveBeenCalledWith(
+            expect(mockFetchSyncPost).toHaveBeenCalledWith(
                 "/api/storage/setLocalStorageVal",
                 expect.objectContaining({
                     key: "siyuan-plugin-background-cover",
                     val: expect.objectContaining({ opacity: 0.3 }),
                 }),
-                expect.any(Function),
             )
         })
     })
@@ -112,15 +108,14 @@ describe("ConfigStore", () => {
         it("应该恢复默认值并调用清理 API", async () => {
             await configStore.load()
             await configStore.setAndSave("activate", false)
-            mockFetchPost.mockClear()
+            mockFetchSyncPost.mockClear()
 
             await configStore.reset()
 
             expect(configStore.get("activate")).toBe(true)
-            expect(mockFetchPost).toHaveBeenCalledWith(
+            expect(mockFetchSyncPost).toHaveBeenCalledWith(
                 "/api/storage/removeLocalStorageVals",
                 { keys: ["siyuan-plugin-background-cover"] },
-                expect.any(Function),
             )
         })
     })

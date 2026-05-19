@@ -1,19 +1,13 @@
-import { fetchSyncPost } from "siyuan"
+import { fetchSyncPost, IWebSocketData } from "siyuan"
 import { devDebug } from "./logger"
-
-interface IResponse {
-    code: number
-    msg: string
-    data: any
-}
 
 interface IDirItem {
     isDir: boolean
     name: string
 }
 
-async function request(url: string, data: any): Promise<any> {
-    const res: IResponse = await fetchSyncPost(url, data)
+export async function request(url: string, data?: any): Promise<any> {
+    const res: IWebSocketData = await fetchSyncPost(url, data ?? {})
     return res.code === 0 ? res.data : null
 }
 
@@ -45,14 +39,27 @@ export async function putFile(path: string, file: File | Blob): Promise<boolean>
     formData.append("isDir", "false")
     formData.append("modTime", Math.floor(Date.now() / 1000).toString())
     formData.append("file", file)
-
-    const res: IResponse = await fetchSyncPost("/api/file/putFile", formData)
-    return res.code === 0
+    const data = await request("/api/file/putFile", formData)
+    return data !== null
 }
 
 export async function removeFile(path: string): Promise<boolean> {
-    const res: IResponse = await fetchSyncPost("/api/file/removeFile", { path })
-    return res.code === 0
+    const data = await request("/api/file/removeFile", { path })
+    return data !== null
+}
+
+export async function getLocalStorage(): Promise<Record<string, any> | null> {
+    return request("/api/storage/getLocalStorage")
+}
+
+export async function setLocalStorageVal(key: string, val: any): Promise<boolean> {
+    const data = await request("/api/storage/setLocalStorageVal", { key, val })
+    return data !== null
+}
+
+export async function removeLocalStorageVals(keys: string[]): Promise<boolean> {
+    const data = await request("/api/storage/removeLocalStorageVals", { keys })
+    return data !== null
 }
 
 export async function downloadUrl(url: string, destPath: string): Promise<boolean> {

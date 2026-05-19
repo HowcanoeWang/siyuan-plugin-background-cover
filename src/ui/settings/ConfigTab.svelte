@@ -1,40 +1,27 @@
 <script lang="ts">
     import { configStore } from "../../stores/config"
-    import { createBgLayer, render, changeOpacity, changeBlur, changePosition, startAutoRefresh, stopAutoRefresh } from "../../services/bgRender"
-    import { isDynamicUrl, DYNAMIC_BG_PRESETS } from "../../constants"
+    import { createBgLayer, render, changeOpacity, changeBlur, applyOverrides, startAutoRefresh, stopAutoRefresh } from "../../services/bgRender"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
-
-    function formatCurrentFile(url: string | null): string {
-        if (!url) return i18n.none || '(无)'
-        if (isDynamicUrl(url)) {
-            const preset = DYNAMIC_BG_PRESETS.find(p => p.url === url)
-            if (preset) return `🌐 ${i18n[preset.nameKey] ?? preset.name}`
-            const hostname = new URL(url).hostname
-            return `🌐 ${hostname}...`
-        }
-        return url
-    }
 
     let activate = $state(configStore.get("activate"))
     let opacity = $state(configStore.get("opacity"))
     let blur = $state(configStore.get("blur"))
-    let positionX = $state(configStore.get("positionX"))
-    let positionY = $state(configStore.get("positionY"))
     let changeBgOnStart = $state(configStore.get("changeBgOnStart"))
     let autoRefreshTime = $state(configStore.get("autoRefreshTime"))
-    let currentFile = $state(configStore.get("currentFile"))
 
     function handleActivateChange() {
         activate = !activate
         configStore.setAndSave("activate", activate)
         if (activate) {
             createBgLayer()
+            const currentFile = configStore.get("currentFile")
             if (currentFile) {
                 render(currentFile)
                 changeOpacity(opacity)
                 changeBlur(blur)
-                changePosition(positionX, positionY)
+                const ov = configStore.get("imageOverrides")[currentFile]
+                applyOverrides(ov?.positionX, ov?.positionY, 50, 50)
             }
         }
     }
@@ -50,35 +37,6 @@
 </script>
 
 <div class="config__tab-container" data-name="config">
-    <label class="fn__flex b3-label">
-        <div class="fn__flex-1">
-            {i18n.currentFile}
-            <div class="b3-label__text">
-                <code class="fn__code">{formatCurrentFile(currentFile)}</code>
-            </div>
-        </div>
-        <div class="fn__flex-center">
-            <div>
-                <label>X</label>
-                <input class="b3-slider fn__size50"
-                    type="range" min="0" max="100" step="5"
-                    bind:value={positionX}
-                    oninput={() => changePosition(positionX, positionY)}
-                    onchange={() => configStore.setAndSave("positionX", positionX)}
-                />
-            </div>
-            <div>
-                <label>Y</label>
-                <input class="b3-slider fn__size50"
-                    type="range" min="0" max="100" step="5"
-                    bind:value={positionY}
-                    oninput={() => changePosition(positionX, positionY)}
-                    onchange={() => configStore.setAndSave("positionY", positionY)}
-                />
-            </div>
-        </div>
-    </label>
-
     <label class="fn__flex b3-label config__item">
         <div class="fn__flex-1">
             {i18n.activateBg}
