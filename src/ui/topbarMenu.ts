@@ -96,7 +96,7 @@ export function buildTopBarMenu(
             },
             {
                 icon: "iconLink",
-                label: i18n.addNetworkResource,
+                label: i18n.uploadNetworkResource,
                 click: () => showUrlDialog((uploadUrl) => {
                     if (uploadUrl) {
                         applyLastUploaded(uploadUrl)

@@ -20,7 +20,7 @@
     "addNoteAssetsDirectoryLabel": "Link Assets Directory",
     "uploadMultipleFiles": "Upload Multiple Files",
     "uploadEntireDir": "Upload Entire Directory",
-    "addNetworkResource": "Add Network Resource",
+    "uploadNetworkResource": "Add Network Resource",
     "refresh": "Refresh",
     "clear": "Clear",
     "remove": "Remove",

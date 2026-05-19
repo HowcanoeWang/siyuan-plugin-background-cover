@@ -352,7 +352,7 @@
                                 <svg><use xlink:href="#iconFolder"></use></svg>
                             </span>
                             <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
-                                aria-label={i18n.addNetworkResource}
+                                aria-label={i18n.uploadNetworkResource}
                                 onclick={(e: MouseEvent) => { e.stopPropagation(); showAddUrlDialog() }}
                                 onkeydown={undefined} role="button" tabindex="0">
                                 <svg><use xlink:href="#iconLink"></use></svg>

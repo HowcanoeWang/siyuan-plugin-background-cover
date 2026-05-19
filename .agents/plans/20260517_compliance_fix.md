@@ -227,7 +227,7 @@ pnpm test -- tests/services/bgRender.test.ts
 | `linkAssetsDir` | 链接资源目录 | Link Assets Directory |
 | `uploadMultipleFiles` | 上传多个文件 | Upload Multiple Files |
 | `uploadEntireDir` | 上传整个目录 | Upload Entire Directory |
-| `addNetworkResource` | 添加网络资源 | Add Network Resource |
+| `uploadNetworkResource` | 添加网络资源 | Add Network Resource |
 | `confirmUpload` | 确定上传 | Confirm Upload |
 | `refresh` | 刷新 | Refresh |
 | `clear` | 清空 | Clear |
