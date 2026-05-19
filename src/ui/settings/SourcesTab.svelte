@@ -52,23 +52,40 @@
     function detectRelevantAxis() {
         xDisabled = false; yDisabled = false
         if (!currentBg) return
-        const ext = '.' + (currentBg.split('.').pop()?.toLowerCase() ?? '')
-        if (VIDEO_EXTS.has(ext)) return
         if (isDynamicUrl(currentBg)) return
 
-        const img = new Image()
-        img.onload = () => {
-            const imgAR = img.naturalWidth / img.naturalHeight
-            const vpW = document.documentElement.clientWidth
-            const vpH = document.documentElement.clientHeight
-            if (vpW === 0 || vpH === 0) return
-            const vpAR = vpW / vpH
-            xDisabled = imgAR < vpAR - 0.01
-            yDisabled = imgAR > vpAR + 0.01
-            if (xDisabled) posX = 50
-            if (yDisabled) posY = 50
+        const ext = '.' + (currentBg.split('.').pop()?.toLowerCase() ?? '')
+        if (VIDEO_EXTS.has(ext)) {
+            detectVideoDims(currentBg)
+            return
         }
+
+        const img = new Image()
+        img.onload = () => updateDisabledAxes(img.naturalWidth, img.naturalHeight)
         img.src = currentBg
+    }
+
+    function detectVideoDims(url: string) {
+        const video = document.createElement('video')
+        video.preload = 'metadata'
+        video.onloadedmetadata = () => {
+            updateDisabledAxes(video.videoWidth, video.videoHeight)
+            video.removeAttribute('src')
+            video.load()
+        }
+        video.src = url
+    }
+
+    function updateDisabledAxes(w: number, h: number) {
+        const imgAR = w / h
+        const vpW = document.documentElement.clientWidth
+        const vpH = document.documentElement.clientHeight
+        if (vpW === 0 || vpH === 0) return
+        const vpAR = vpW / vpH
+        xDisabled = imgAR < vpAR - 0.01
+        yDisabled = imgAR > vpAR + 0.01
+        if (xDisabled) posX = 50
+        if (yDisabled) posY = 50
     }
 
     function syncCurrentBg() {
