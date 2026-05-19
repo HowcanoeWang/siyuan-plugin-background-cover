@@ -16,6 +16,7 @@ export interface AppConfig {
     positionY: number
     localFolders: string[]
     assetDirs: string[]
+    dynamicBgUrls: string[]
     changeBgOnStart: boolean
     autoRefreshTime: number
     disabledThemes: DisabledThemes
@@ -29,12 +30,12 @@ export interface ImageItem {
     url: string
     apiPath: string
     type: 'image' | 'video'
-    sourceType: 'local' | 'upload' | 'assets'
+    sourceType: 'local' | 'upload' | 'assets' | 'dynamic'
     sourceLabel: string
 }
 
 export interface SourceConfig {
-    type: 'local' | 'upload' | 'assets'
+    type: 'local' | 'upload' | 'assets' | 'dynamic'
     path: string
     label: string
 }
