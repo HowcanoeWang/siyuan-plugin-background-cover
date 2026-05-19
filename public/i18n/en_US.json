@@ -81,7 +81,7 @@
     "aboutDesc": "Fill your SiYuan Note with a favorite background image",
     "aboutAuthor": "Author: HowcanoeWang | MIT License",
     "inDevModeLabel": "Developer Mode",
-    "inDevModeDesc": "Show debug info (frontend/backend/isMobile etc.)",
+    "inDevModeDesc": "Show debug info in console",
     "currentFile": "Current Background",
     "positionX": "X Offset",
     "positionY": "Y Offset",

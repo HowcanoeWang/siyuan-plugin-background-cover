@@ -408,10 +408,10 @@
                         </div>
                         <div class="b3-list-item b3-list-item--narrow">
                             <span class="b3-list-item__text" style="gap: 8px;">
-                                <a href="https://www.pexels.com/videos/" target="_blank" rel="noopener noreferrer">Pexels</a>
-                                <a href="https://pixabay.com/videos/" target="_blank" rel="noopener noreferrer">Pixabay</a>
-                                <a href="https://coverr.co/" target="_blank" rel="noopener noreferrer">Coverr</a>
-                                <a href="https://videezy.com/" target="_blank" rel="noopener noreferrer">Videezy</a>
+                                <a href="https://www.pexels.com/videos/" target="_blank" rel="noopener noreferrer" style="padding-right: 8px;font-size: 0.85em;">Pexels</a>
+                                <a href="https://pixabay.com/videos/" target="_blank" rel="noopener noreferrer" style="padding-right: 8px;font-size: 0.85em;">Pixabay</a>
+                                <a href="https://coverr.co/" target="_blank" rel="noopener noreferrer" style="padding-right: 8px;font-size: 0.85em;">Coverr</a>
+                                <a href="https://videezy.com/" target="_blank" rel="noopener noreferrer" style="padding-right: 8px;font-size: 0.85em;">Videezy</a>
                             </span>
                         </div>
                     </div>
