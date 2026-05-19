@@ -1,15 +1,25 @@
 # 文件与目录结构设计规范
 
-### 设计约定
+## 命名规范
+
+| 文件类型 | 命名风格 | 示例 |
+|---------|---------|------|
+| Svelte 组件（`.svelte`） | **PascalCase** | `SettingsPanel.svelte`, `ConfigTab.svelte`, `AssetPicker.svelte` |
+| TypeScript 模块（`.ts`） | **camelCase** | `sourceManager.ts`, `bgRender.ts`, `topbarMenu.ts` |
+| 类型声明（`.d.ts`） | 保持原格式 | `index.d.ts` |
+| 常量文件 | lowercase | `constants.ts`, `types.ts` |
+
+## 设计约定
 
 | 目录 | 职责 | 原则 |
 |------|------|------|
 | `src/` 根 | 入口、类型、常量 | 仅保留全局共用的顶层文件 |
 | `src/libs/` | 框架级基础件 | 通用封装，不依赖本插件业务逻辑（SettingUtils、dialog） |
-| `src/utils/` | 业务领域工具 | 依赖本插件业务上下文（api、theme） |
+| `src/utils/` | 业务领域工具 | 依赖本插件业务上下文（api、fs、theme） |
 | `src/stores/` | 状态管理 | 单例 store，管理配置和运行时状态 |
 | `src/services/` | 核心服务 | 背景渲染引擎、图片源管理 |
-| `src/ui/` | Svelte 组件 | 所有视图层，含组件内联的对话框调用 |
+| `src/ui/dialogs/` | 共享对话框 UI 动作 | `svelteDialog` 调用的工厂函数 + 对话框 Svelte 组件，供 topbarMenu 和 settings 共用 |
+| `src/ui/settings/` | 设置面板 | 主容器 `SettingsPanel.svelte` + 各选项卡子组件 |
 
 #### 静态资源
 
@@ -67,31 +77,35 @@ siyuan-plugin-background-cover/        # 项目根
     ├── constants.ts                   #   全局常量（包名、路径、图标 SVG、扩展名过滤等）
     │
     ├── libs/                          #   框架级基础件（无业务依赖）
-    │   ├── setting-utils.ts           #     官方 Setting 面板工具类封装
+    │   ├── siyuanSetting.ts          #     官方 Setting 面板工具类封装
     │   └── dialog.ts                  #     svelteDialog / confirmDialog 通用封装
     │
     ├── utils/                         #   业务领域工具（依赖本插件上下文）
-    │   ├── api.ts                     #     思源内核 API 封装
+    │   ├── api.ts                     #     思源内核 API 封装（siyuanApiPost, readSiyuanDir, putFile, removeFile, downloadUrl）
     │   ├── fs.ts                      #     window.require('fs/promises') 安全封装（desktop only，平台检测 + 降级）
+    │   ├── logger.ts                  #     条件日志输出（devLog / devDebug，仅在 inDev 模式下生效）
+    │   ├── path.ts                    #     路径归一化工具（assets 路径格式化）
     │   └── theme.ts                   #     主题检测
     │
     ├── stores/                        #   状态管理
-    │   └── config.ts                  #     配置 store（单层 local.json，read/write/reset）
+    │   └── config.ts                  #     配置 store（单层 local.json，read/write/reset，含 isLocalPath 方法）
     │
     ├── services/                      #   核心服务
-    │   ├── bgRender.ts                #     背景渲染引擎
+    │   ├── bgRender.ts                #     背景渲染引擎（canvas/video DOM 操作）
     │   └── sourceManager.ts           #     图片源管理器（三种源类型：local / upload / assets）
     │
     └── ui/                            #   Svelte 5 视图组件
-        ├── topbar.svelte              #     顶栏菜单
+        ├── topbarMenu.ts              #     顶栏菜单构建器
         ├── settings/
-        │   ├── settings.svelte        #       设置面板（主容器）
-        │   ├── config-tab.svelte      #       全局配置选项卡 
-        │   ├── sources-tab.svelte     #       数据管理选项卡
-        │   ├── theme-tab.svelte       #       屏蔽主题选项卡
-        │   ├── advanced-tab.svelte    #       高级设置选项卡
-        │   └── about-tab.svelte       #       关于选项卡
-        └── sources/
-            ├── source-list.svelte     #       图片源列表
-            └── asset-picker.svelte    #       assets 文件夹树选取器
+        │   ├── SettingsPanel.svelte   #       设置面板（主容器，选项卡路由）
+        │   ├── ConfigTab.svelte       #       全局配置选项卡（激活/透明度/模糊/位置/自动刷新）
+        │   ├── SourcesTab.svelte      #       数据管理选项卡（文件列表 + 预览 + 上传/删除操作）
+        │   ├── ThemeTab.svelte        #       屏蔽主题选项卡
+        │   ├── AdvancedTab.svelte     #       高级设置选项卡（重置、开发模式开关）
+        │   └── AboutTab.svelte        #       关于选项卡
+        └── dialogs/
+            ├── index.ts              #       对话框工厂函数（showLocalDirDialog, showAssetsDirDialog, showUrlDialog, pickMultipleFiles, pickFolderFiles）
+            ├── AssetPicker.svelte     #       assets 文件夹树形选取器
+            ├── LocalDirDialog.svelte  #       本地目录路径输入对话框
+            └── UrlDialog.svelte       #       网络资源 URL 输入对话框
 ```
