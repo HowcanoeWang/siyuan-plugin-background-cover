@@ -10,6 +10,40 @@
 import { Plugin, Setting } from 'siyuan';
 import { devDebug } from '../utils/logger';
 
+export type TSettingItemType = "checkbox" | "select" | "textinput" | "textarea" | "number" | "slider" | "button" | "hint" | "custom";
+
+export interface ISettingItemCore {
+    type: TSettingItemType;
+    key: string;
+    value: any;
+    placeholder?: string;
+    slider?: {
+        min: number;
+        max: number;
+        step: number;
+    };
+    options?: { [key: string | number]: string };
+    button?: {
+        label: string;
+        callback: () => void;
+    }
+}
+
+export interface ISettingItem extends ISettingItemCore {
+    title: string;
+    description: string;
+    direction?: "row" | "column";
+}
+
+export interface ISettingUtilsItem extends ISettingItem {
+    action?: {
+        callback: () => void;
+    }
+    createElement?: (currentVal: any) => HTMLElement;
+    getEleVal?: (ele: HTMLElement) => any;
+    setEleVal?: (ele: HTMLElement, val: any) => void;
+}
+
 
 /**
  * The default function to get the value of the element
