@@ -47,6 +47,7 @@
     let hasOverride = $state(false)
     let xDisabled = $state(false)
     let yDisabled = $state(false)
+    let overridesVersion = $state(0)
 
     function detectRelevantAxis() {
         xDisabled = false; yDisabled = false
@@ -79,7 +80,7 @@
         detectRelevantAxis()
     }
 
-    function savePositionOverride() {
+    async function savePositionOverride() {
         if (!currentBg) return
         const overrides = { ...configStore.get("imageOverrides") }
         if (posX === 50 && posY === 50) {
@@ -88,20 +89,22 @@
             overrides[currentBg] = { positionX: posX, positionY: posY }
         }
         configStore.set("imageOverrides", overrides)
-        configStore.save()
+        await configStore.save()
         hasOverride = !!overrides[currentBg]
+        overridesVersion++
     }
 
-    function clearOverride(url: string) {
+    async function clearOverride(url: string) {
         const overrides = { ...configStore.get("imageOverrides") }
         delete overrides[url]
         configStore.set("imageOverrides", overrides)
-        configStore.save()
+        await configStore.save()
         if (url === currentBg) {
             posX = 50; posY = 50
             hasOverride = false
             changePosition(50, 50)
         }
+        overridesVersion++
     }
 
     function presetDisplayName(preset: typeof DYNAMIC_BG_PRESETS[number]): string {
@@ -313,6 +316,7 @@
             return
         }
         selectedItem = item
+        previewVideoSrc = null
         if (item.type === 'image') {
             loadPreview(item.url)
         } else {
@@ -447,25 +451,27 @@
             <div class="fn__flex-center" style="gap: 8px; flex-shrink: 0;">
                 <div>
                     <label>X</label>
-                    <input class="b3-slider fn__size50" type="range"
-                        min="0" max="100" step="5"
-                        bind:value={posX}
-                        disabled={xDisabled}
-                        title={xDisabled ? i18n.axisDisabledX : ''}
-                        oninput={() => changePosition(posX, posY)}
-                        onchange={savePositionOverride}
-                    />
+                        <input class="b3-slider fn__size50" type="range"
+                            min="0" max="100" step="5"
+                            bind:value={posX}
+                            disabled={xDisabled}
+                            style:opacity={xDisabled ? "0.4" : ""}
+                            title={xDisabled ? i18n.axisDisabledX : ''}
+                            oninput={() => changePosition(posX, posY)}
+                            onchange={savePositionOverride}
+                        />
                 </div>
                 <div>
                     <label>Y</label>
-                    <input class="b3-slider fn__size50" type="range"
-                        min="0" max="100" step="5"
-                        bind:value={posY}
-                        disabled={yDisabled}
-                        title={yDisabled ? i18n.axisDisabledY : ''}
-                        oninput={() => changePosition(posX, posY)}
-                        onchange={savePositionOverride}
-                    />
+                        <input class="b3-slider fn__size50" type="range"
+                            min="0" max="100" step="5"
+                            bind:value={posY}
+                            disabled={yDisabled}
+                            style:opacity={yDisabled ? "0.4" : ""}
+                            title={yDisabled ? i18n.axisDisabledY : ''}
+                            oninput={() => changePosition(posX, posY)}
+                            onchange={savePositionOverride}
+                        />
                 </div>
             </div>
         </label>
@@ -661,7 +667,7 @@
 
                         {#if !group.collapsed}
                             <div class="b3-list__panel">
-                                {#each group.files as file}
+                                {#each group.files as file (file.url + ':' + overridesVersion)}
                                     {@const override = configStore.get("imageOverrides")[file.url]}
                                     <label
                                         class="b3-list-item b3-list-item--narrow b3-list-item--hide-action"
@@ -683,16 +689,6 @@
                                                 </span>
                                             {/if}
                                         </span>
-                                        {#if group.type === 'upload'}
-                                            <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
-                                                aria-label={i18n.delete}
-                                                onclick={(e: MouseEvent) => { e.preventDefault(); e.stopPropagation(); deleteFile(file) }}
-                                                onkeydown={undefined}
-                                                role="button"
-                                                tabindex="0">
-                                                <svg><use xlink:href="#iconTrashcan"></use></svg>
-                                            </span>
-                                        {/if}
                                         {#if override}
                                             <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
                                                 aria-label={i18n.resetPosition}
@@ -701,6 +697,16 @@
                                                 role="button"
                                                 tabindex="0">
                                                 <svg><use xlink:href="#iconFullscreenExit"></use></svg>
+                                            </span>
+                                        {/if}
+                                        {#if group.type === 'upload'}
+                                            <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                                                aria-label={i18n.delete}
+                                                onclick={(e: MouseEvent) => { e.preventDefault(); e.stopPropagation(); deleteFile(file) }}
+                                                onkeydown={undefined}
+                                                role="button"
+                                                tabindex="0">
+                                                <svg><use xlink:href="#iconTrashcan"></use></svg>
                                             </span>
                                         {/if}
                                     </label>

@@ -166,8 +166,8 @@ export default class BgCoverPlugin extends Plugin {
 
     private applyBackground() {
         devLog("[bgCover] applyBackground: start")
+        const currentFile = configStore.get("currentFile")
         try {
-            const currentFile = configStore.get("currentFile")
             devDebug("[bgCover] applyBackground: currentFile =", currentFile)
             if (!currentFile) {
                 devDebug("[bgCover] applyBackground: currentFile is null, skip render")
