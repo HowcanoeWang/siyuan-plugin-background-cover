@@ -5,6 +5,7 @@ let canvasEl: HTMLCanvasElement | null = null
 let videoEl: HTMLVideoElement | null = null
 let currentMode: 'image' | 'video' | null = null
 let autoRefreshTimer: ReturnType<typeof setInterval> | null = null
+let preloadSeq = 0
 
 export function getCurrentMode(): 'image' | 'video' | null {
     return currentMode
@@ -93,8 +94,20 @@ export function renderDynamic(url: string, fallbackUrl: string): void {
     }
     currentMode = 'image'
     canvasEl.style.display = ''
-    canvasEl.style.backgroundImage = `url('${url}'), url('${fallbackUrl}')`
-    canvasEl.style.backgroundSize = 'cover, cover'
+
+    const seq = ++preloadSeq
+    const preload = new Image()
+    preload.onload = () => {
+        if (seq !== preloadSeq || currentMode !== 'image') return
+        canvasEl.style.backgroundImage = `url('${url}')`
+        canvasEl.style.backgroundSize = 'cover'
+    }
+    preload.onerror = () => {
+        if (seq !== preloadSeq) return
+        canvasEl.style.backgroundImage = `url('${fallbackUrl}')`
+        canvasEl.style.backgroundSize = 'cover'
+    }
+    preload.src = url
 }
 
 export function renderVideo(url: string): void {

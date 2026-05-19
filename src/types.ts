@@ -17,6 +17,7 @@ export interface AppConfig {
     localFolders: string[]
     assetDirs: string[]
     dynamicBgUrls: string[]
+    customDynamicUrls: string[]
     changeBgOnStart: boolean
     autoRefreshTime: number
     disabledThemes: DisabledThemes

@@ -14,6 +14,7 @@ const APP_CONFIG_DEFAULTS: AppConfig = {
     localFolders: [],
     assetDirs: [],
     dynamicBgUrls: [],
+    customDynamicUrls: [],
     changeBgOnStart: true,
     autoRefreshTime: 30,
     disabledThemes: { dark: [], light: [] },
