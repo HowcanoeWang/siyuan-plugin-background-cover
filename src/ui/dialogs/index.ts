@@ -56,6 +56,29 @@ export function showUrlDialog(onSuccess: (uploadUrl?: string) => void) {
     })
 }
 
+export function showAddDynamicUrlDialog(onAdd: (url: string) => void) {
+    devLog("[bgCover] dialogs: showAddDynamicUrlDialog")
+    const dlg = svelteDialog({
+        title: i18n().addDynamicUrlTitle,
+        component: UrlDialog,
+        width: "520px",
+        height: "auto",
+        props: {
+            onSuccess: (uploadUrl?: string) => {
+                dlg.close()
+                if (uploadUrl) {
+                    ;(window as any).bgCoverPlugin?.plugin?.configStore?.set("currentFile", uploadUrl)
+                    ;(window as any).bgCoverPlugin?.plugin?.configStore?.save()
+                }
+            },
+            onDynamicAdd: (url: string) => {
+                dlg.close()
+                onAdd(url)
+            },
+        },
+    })
+}
+
 async function uploadSingleFileForm(file: File): Promise<string | null> {
     const apiPath = `data/public/siyuan-plugin-background-cover/${file.name}`
     const ok = await putFile(apiPath, file)

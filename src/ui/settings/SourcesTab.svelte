@@ -3,9 +3,9 @@
     import { configStore } from "../../stores/config"
     import { isDesktop } from "../../utils/fs"
     import { scanSource } from "../../services/sourceManager"
-    import { renderImage, renderVideo, changeOpacity, changeBlur } from "../../services/bgRender"
+    import { renderImage, renderVideo, renderDynamic, changeOpacity, changeBlur } from "../../services/bgRender"
     import { confirmDialog } from "../../libs/dialog"
-    import { pluginAssetsDir, pickDefaultBackground } from "../../constants"
+    import { pluginAssetsDir, pickDefaultBackground, DYNAMIC_BG_PRESETS, DYNAMIC_BG_FALLBACK_URL, isDynamicUrl } from "../../constants"
     import { removeFile } from "../../utils/api"
     import { toAssetRelPath } from "../../utils/path"
     import { devLog } from "../../utils/logger"
@@ -13,6 +13,7 @@
         showLocalDirDialog,
         showAssetsDirDialog,
         showUrlDialog,
+        showAddDynamicUrlDialog,
         setupMultipleFilePicker,
         setupFolderFilePicker,
     } from "../dialogs"
@@ -35,8 +36,11 @@
     let selectedItem = $state<ImageItem | null>(null)
     let previewSrc = $state<string | null>(null)
     let previewObjectUrl = $state<string | null>(null)
+    let dynamicCollapsed = $state(false)
+    let dynamicUrls = $state<string[]>([])
 
     onMount(() => {
+        dynamicUrls = [...configStore.get("dynamicBgUrls")]
         refreshAll()
     })
 
@@ -92,6 +96,50 @@
         }
 
         groups = newGroups
+    }
+
+    function togglePreset(url: string) {
+        if (dynamicUrls.includes(url)) {
+            dynamicUrls = dynamicUrls.filter(u => u !== url)
+        } else {
+            dynamicUrls = [...dynamicUrls, url]
+        }
+        configStore.set("dynamicBgUrls", dynamicUrls)
+        configStore.save()
+        if (url === configStore.get("currentFile")) reselectBackground()
+        refreshAll()
+    }
+
+    function isPreset(url: string): boolean {
+        return DYNAMIC_BG_PRESETS.some(p => p.url === url)
+    }
+
+    function removeDynamicUrl(url: string) {
+        dynamicUrls = dynamicUrls.filter(u => u !== url)
+        configStore.set("dynamicBgUrls", dynamicUrls)
+        configStore.save()
+        if (url === configStore.get("currentFile")) reselectBackground()
+        refreshAll()
+    }
+
+    function addDynamicUrl() {
+        showAddDynamicUrlDialog((url: string) => {
+            if (!dynamicUrls.includes(url)) {
+                dynamicUrls = [...dynamicUrls, url]
+                configStore.set("dynamicBgUrls", dynamicUrls)
+                configStore.save()
+                refreshAll()
+            }
+        })
+    }
+
+    function setDynamicAsBackground(url: string) {
+        const cb = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now()
+        configStore.set("currentFile", url)
+        configStore.save()
+        renderDynamic(cb, DYNAMIC_BG_FALLBACK_URL)
+        changeOpacity(configStore.get("opacity"))
+        changeBlur(configStore.get("blur"))
     }
 
     function toggleGroup(i: number) {
@@ -310,6 +358,71 @@
             </div>
 
             <div class="b3-list b3-list--border b3-list--background">
+                <div class="b3-list-item b3-list-item--narrow toggle"
+                    class:b3-list-item--focus={!dynamicCollapsed}
+                    onclick={() => dynamicCollapsed = !dynamicCollapsed}
+                    onkeydown={undefined}
+                    role="button"
+                    tabindex="0"
+                >
+                    <span class="b3-list-item__toggle b3-list-item__toggle--hl">
+                        <svg class="b3-list-item__arrow" class:b3-list-item__arrow--open={!dynamicCollapsed}>
+                            <use xlink:href="#iconRight"></use>
+                        </svg>
+                    </span>
+                    <svg class="b3-list-item__graphic"><use xlink:href="#iconCloud"></use></svg>
+                    <span class="b3-list-item__text fn__flex-1">{i18n.dynamicBgGroup || '动态网络壁纸'}</span>
+                    <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                        aria-label={i18n.addDynamicUrl || '添加订阅源'}
+                        onclick={(e: MouseEvent) => { e.stopPropagation(); addDynamicUrl() }}
+                        onkeydown={undefined} role="button" tabindex="0">
+                        <svg><use xlink:href="#iconAdd"></use></svg>
+                    </span>
+                </div>
+                {#if !dynamicCollapsed}
+                    <div class="b3-list__panel">
+                        {#each DYNAMIC_BG_PRESETS as preset}
+                            <label class="b3-list-item b3-list-item--narrow b3-list-item--hide-action"
+                                class:b3-list-item--focus={configStore.get("currentFile") === preset.url}
+                                onclick={() => setDynamicAsBackground(preset.url)}
+                            >
+                                <span class="fn__flex-1">
+                                    <input type="checkbox"
+                                        checked={dynamicUrls.includes(preset.url)}
+                                        onchange={() => togglePreset(preset.url)}
+                                        onclick={(e: MouseEvent) => e.stopPropagation()}
+                                    />
+                                    <span style="margin-left: 8px;">
+                                        {preset.name}
+                                        <span style="color: var(--b3-theme-on-surface);">
+                                            {preset.url}
+                                        </span>
+                                    </span>
+                                </span>
+                            </label>
+                        {/each}
+                        {#each dynamicUrls.filter(u => !isPreset(u)) as url}
+                            <label class="b3-list-item b3-list-item--narrow b3-list-item--hide-action"
+                                class:b3-list-item--focus={configStore.get("currentFile") === url}
+                                onclick={() => setDynamicAsBackground(url)}
+                            >
+                                <span class="b3-list-item__text fn__flex-1">
+                                    <svg style="width:14px;height:14px;margin-right:4px;vertical-align:middle">
+                                        <use xlink:href="#iconLink"></use>
+                                    </svg>
+                                    {url}
+                                </span>
+                                <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
+                                    aria-label={i18n.removeDynamic || '移除订阅源'}
+                                    onclick={(e: MouseEvent) => { e.preventDefault(); e.stopPropagation(); removeDynamicUrl(url) }}
+                                    onkeydown={undefined} role="button" tabindex="0">
+                                    <svg><use xlink:href="#iconTrashcan"></use></svg>
+                                </span>
+                            </label>
+                        {/each}
+                    </div>
+                {/if}
+
                 {#each groups as group, i}
                     {@const imgCount = group.files.filter(f => f.type === 'image').length}
                     {@const vidCount = group.files.filter(f => f.type === 'video').length}

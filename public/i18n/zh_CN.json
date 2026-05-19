@@ -96,5 +96,16 @@
     "currentThemeLabel": "[当前主题]",
     "dirScanResult": "发现 {imgCount} 张图片, {vidCount} 个视频 — ✅",
     "fileCountSummary": "图片: {img}  视频: {vid}",
-    "openFolderLabel": "打开文件夹"
+    "openFolderLabel": "打开文件夹",
+    "dynamicBgGroup": "动态网络壁纸",
+    "addDynamicUrl": "添加订阅源",
+    "addDynamicUrlTitle": "添加动态背景源",
+    "detectedDynamic": "动态图像源（每次返回不同图片）",
+    "detectedUpload": "文件资源（下载并缓存到本地）",
+    "addToDynamic": "添加到订阅源",
+    "uploadToCache": "上传到缓存",
+    "dynamicUrlHint": "输入图片 API 或图片/视频 URL",
+    "videoBgRecommend": "视频背景素材推荐",
+    "videoBgRecommendDesc": "动态订阅源仅支持图片背景。如需视频背景，请从以下网站下载后通过本地上传添加。",
+    "removeDynamic": "移除订阅源"
 }

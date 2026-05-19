@@ -1,8 +1,20 @@
 <script lang="ts">
     import { configStore } from "../../stores/config"
     import { createBgLayer, render, changeOpacity, changeBlur, changePosition, startAutoRefresh, stopAutoRefresh } from "../../services/bgRender"
+    import { isDynamicUrl, DYNAMIC_BG_PRESETS } from "../../constants"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
+
+    function formatCurrentFile(url: string | null): string {
+        if (!url) return i18n.none || '(无)'
+        if (isDynamicUrl(url)) {
+            const preset = DYNAMIC_BG_PRESETS.find(p => p.url === url)
+            if (preset) return `🌐 ${preset.name}`
+            const hostname = new URL(url).hostname
+            return `🌐 ${hostname}...`
+        }
+        return url
+    }
 
     let activate = $state(configStore.get("activate"))
     let opacity = $state(configStore.get("opacity"))
@@ -42,7 +54,7 @@
         <div class="fn__flex-1">
             {i18n.currentFile}
             <div class="b3-label__text">
-                <code class="fn__code">{currentFile ?? i18n.none}</code>
+                <code class="fn__code">{formatCurrentFile(currentFile)}</code>
             </div>
         </div>
         <div class="fn__flex-center">

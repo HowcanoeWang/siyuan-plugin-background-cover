@@ -8,9 +8,10 @@
 
     interface Props {
         onSuccess?: (uploadUrl?: string) => void
+        onDynamicAdd?: (url: string) => void
     }
 
-    let { onSuccess }: Props = $props()
+    let { onSuccess, onDynamicAdd }: Props = $props()
 
     const VALID_EXTS = IMAGE_EXTS.union(VIDEO_EXTS)
 
@@ -18,27 +19,25 @@
     let previewSrc = $state<string | null>(null)
     let blobUrl = $state<string | null>(null)
     let validExt = $state(false)
+    let isDynamic = $state(false)
     let checking = $state(false)
     let errorMsg = $state("")
     let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
-    function checkExt(u: string): boolean {
+    function classifyUrl(u: string): 'upload' | 'dynamic' {
         const clean = u.split('?')[0]
         const ext = '.' + (clean.split('.').pop()?.toLowerCase() ?? '')
-        return VALID_EXTS.has(ext)
+        return IMAGE_EXTS.has(ext) || VIDEO_EXTS.has(ext) ? 'upload' : 'dynamic'
     }
 
     async function doCheck(trimmed: string) {
         checking = true
         errorMsg = ""
         validExt = false
+        isDynamic = false
         previewSrc = null
 
-        if (!checkExt(trimmed)) {
-            errorMsg = i18n.urlSuffixInvalid
-            checking = false
-            return
-        }
+        const urlType = classifyUrl(trimmed)
 
         try {
             const resp = await fetch(trimmed)
@@ -49,13 +48,25 @@
             }
             const contentType = resp.headers.get('content-type') ?? ''
             if (contentType.startsWith('image/')) {
-                const blob = await resp.blob()
-                if (blobUrl) URL.revokeObjectURL(blobUrl)
-                blobUrl = URL.createObjectURL(blob)
-                previewSrc = blobUrl
-                validExt = true
+                if (urlType === 'upload') {
+                    const blob = await resp.blob()
+                    if (blobUrl) URL.revokeObjectURL(blobUrl)
+                    blobUrl = URL.createObjectURL(blob)
+                    previewSrc = blobUrl
+                    validExt = true
+                } else {
+                    isDynamic = true
+                    const blob = await resp.blob()
+                    if (blobUrl) URL.revokeObjectURL(blobUrl)
+                    blobUrl = URL.createObjectURL(blob)
+                    previewSrc = blobUrl
+                }
             } else if (contentType.startsWith('video/')) {
-                validExt = true
+                if (urlType === 'upload') {
+                    validExt = true
+                } else {
+                    errorMsg = i18n.notImageOrVideo
+                }
             } else {
                 errorMsg = i18n.notImageOrVideo
             }
@@ -69,6 +80,7 @@
         const trimmed = url.trim()
         if (!trimmed) {
             validExt = false
+            isDynamic = false
             errorMsg = ""
             previewSrc = null
             return
@@ -91,8 +103,18 @@
         }
     }
 
+    function handleDynamicAdd() {
+        const trimmed = url.trim()
+        if (!trimmed || !isDynamic) return
+        onDynamicAdd?.(trimmed)
+    }
+
     function getFileName(): string {
         return url.trim().split('/').pop()?.split('?')[0] ?? ''
+    }
+
+    function canConfirm(): boolean {
+        return validExt || isDynamic
     }
 
     onDestroy(() => {
@@ -103,10 +125,10 @@
 <div style="display: flex; flex-direction: column; gap: 12px; padding: 8px; width: 100%;">
     <div>
         <input class="b3-text-field fn__block" type="text" style="width: 100%;"
-            placeholder="https://example.com/background.jpg"
+            placeholder={i18n.dynamicUrlHint || "https://example.com/random-image-api"}
             bind:value={url}
             oninput={handleInput}
-            onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && validExt && handleUpload()}
+            onkeydown={(e: KeyboardEvent) => e.key === 'Enter' && canConfirm() && (validExt ? handleUpload() : handleDynamicAdd())}
         />
     </div>
 
@@ -115,6 +137,9 @@
         background: var(--b3-theme-surface);">
         {#if checking}
             <span style="color: var(--b3-theme-on-surface);">{i18n.detecting}</span>
+        {:else if isDynamic && previewSrc}
+            <img src={previewSrc} alt="preview"
+                style="max-width: 100%; max-height: 300px; object-fit: contain; border-radius: 4px;" />
         {:else if previewSrc}
             <img src={previewSrc} alt="preview"
                 style="max-width: 100%; max-height: 300px; object-fit: contain; border-radius: 4px;" />
@@ -124,18 +149,41 @@
                 <div>{getFileName()}</div>
                 <div style="font-size: 0.85em; margin-top: 4px;">{i18n.videoNoPreview}</div>
             </div>
+        {:else if isDynamic}
+            <div style="text-align: center; color: var(--b3-theme-on-surface);">
+                <div style="font-size: 2em;">🌐</div>
+                <div>{i18n.detectedDynamic || '动态图像源（每次返回不同图片）'}</div>
+            </div>
         {:else if errorMsg}
             <span style="color: var(--b3-theme-error); text-align: center; padding: 12px;">{errorMsg}</span>
         {:else}
-            <span style="color: var(--b3-theme-on-surface);">{i18n.enterUrlHint}</span>
+            <span style="color: var(--b3-theme-on-surface);">{i18n.dynamicUrlHint || i18n.enterUrlHint}</span>
         {/if}
     </div>
 
-    <div class="fn__flex" style="justify-content: flex-end;">
-        <button class="b3-button b3-button--text"
-            disabled={!validExt}
-            onclick={handleUpload}>
-            {i18n.upload}
-        </button>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        {#if isDynamic || validExt}
+            <span style="color: var(--b3-theme-on-surface); font-size: 0.85em;">
+                {isDynamic
+                    ? (i18n.detectedDynamic || '🌐 动态图像源（每次返回不同图片）')
+                    : (i18n.detectedUpload || '📁 文件资源（下载并缓存到本地）')}
+            </span>
+        {:else}
+            <span></span>
+        {/if}
+        <div class="fn__flex" style="gap: 8px;">
+            {#if validExt}
+                <button class="b3-button b3-button--text"
+                    onclick={handleUpload}>
+                    {i18n.uploadToCache || '上传到缓存'}
+                </button>
+            {/if}
+            {#if isDynamic}
+                <button class="b3-button b3-button--text"
+                    onclick={handleDynamicAdd}>
+                    {i18n.addToDynamic || '添加到订阅源'}
+                </button>
+            {/if}
+        </div>
     </div>
 </div>

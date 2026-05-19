@@ -22,9 +22,7 @@ export const DEFAULT_BACKGROUNDS = [
 export const DYNAMIC_BG_PRESETS: { id: string; name: string; url: string }[] = [
     { id: 'bing_1920',       name: '必应每日壁纸 (1920x1080)',      url: 'https://api.dujin.org/bing/1920.php' },
     { id: 'unsplash_random', name: 'Unsplash 随机图片 (1600x900)',  url: 'https://unsplash.it/1600/900?random' },
-    { id: 'imgapi_scenic',   name: 'imgapi 随机风景',              url: 'https://imgapi.cn/api.php?fl=fengjing&gs=images' },
-    { id: 'acg_sx',          name: '后宫漫图',                     url: 'https://acg.sx/images?utm_source=ld246.com' },
-    { id: 'img_xjh',         name: '岁月小筑随机动漫图片',          url: 'https://img.xjh.me/random_img.php' },
+    { id: 'imgapi_scenic',   name: 'imgapi 随机风景',              url: 'https://imgapi.cn/api.php?fl=fengjing&gs=images' }
 ]
 
 export const DYNAMIC_BG_FALLBACK_URL = `plugins/${packageName}/default/404.jpg`
