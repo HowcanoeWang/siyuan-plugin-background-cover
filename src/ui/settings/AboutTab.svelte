@@ -1,11 +1,12 @@
 <script lang="ts">
-    import { packageVersion } from "../../constants"
+    import { packageVersion, packageName } from "../../constants"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
 </script>
 
 <div class="config__tab-container" data-name="about" style="display: flex; flex-direction: column; height: 100%;">
-    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px;">
+    <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px;">
+        <img src="plugins/{packageName}/icon.png" alt="icon" style="width: 64px; height: 64px; border-radius: 12px;" />
         <div class="b3-label fn__flex-center">
             Background Cover Plugin v{packageVersion}
         </div>
