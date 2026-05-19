@@ -36,11 +36,18 @@
     let selectedItem = $state<ImageItem | null>(null)
     let previewSrc = $state<string | null>(null)
     let previewObjectUrl = $state<string | null>(null)
+    let previewVideoSrc = $state<string | null>(null)
     let dynamicCollapsed = $state(false)
     let dynamicUrls = $state<string[]>([])
+    let customDynamicUrls = $state<string[]>([])
+
+    function presetDisplayName(preset: typeof DYNAMIC_BG_PRESETS[number]): string {
+        return i18n[preset.nameKey] ?? preset.name
+    }
 
     onMount(() => {
         dynamicUrls = [...configStore.get("dynamicBgUrls")]
+        customDynamicUrls = [...configStore.get("customDynamicUrls")]
         refreshAll()
     })
 
@@ -114,9 +121,23 @@
         return DYNAMIC_BG_PRESETS.some(p => p.url === url)
     }
 
-    function removeDynamicUrl(url: string) {
-        dynamicUrls = dynamicUrls.filter(u => u !== url)
+    function toggleCustomDynamic(url: string) {
+        if (dynamicUrls.includes(url)) {
+            dynamicUrls = dynamicUrls.filter(u => u !== url)
+        } else {
+            dynamicUrls = [...dynamicUrls, url]
+        }
         configStore.set("dynamicBgUrls", dynamicUrls)
+        configStore.save()
+        if (url === configStore.get("currentFile")) reselectBackground()
+        refreshAll()
+    }
+
+    function removeCustomDynamic(url: string) {
+        dynamicUrls = dynamicUrls.filter(u => u !== url)
+        customDynamicUrls = customDynamicUrls.filter(u => u !== url)
+        configStore.set("dynamicBgUrls", dynamicUrls)
+        configStore.set("customDynamicUrls", customDynamicUrls)
         configStore.save()
         if (url === configStore.get("currentFile")) reselectBackground()
         refreshAll()
@@ -124,8 +145,10 @@
 
     function addDynamicUrl() {
         showAddDynamicUrlDialog((url: string) => {
-            if (!dynamicUrls.includes(url)) {
+            if (!customDynamicUrls.includes(url)) {
+                customDynamicUrls = [...customDynamicUrls, url]
                 dynamicUrls = [...dynamicUrls, url]
+                configStore.set("customDynamicUrls", customDynamicUrls)
                 configStore.set("dynamicBgUrls", dynamicUrls)
                 configStore.save()
                 refreshAll()
@@ -218,13 +241,16 @@
     }
 
     function selectPreview(item: ImageItem) {
-        if (item.type !== 'image') return
         if (selectedItem?.url === item.url) {
             clearPreview()
             return
         }
         selectedItem = item
-        loadPreview(item.url)
+        if (item.type === 'image') {
+            loadPreview(item.url)
+        } else {
+            previewVideoSrc = item.url
+        }
     }
 
     function clearPreview() {
@@ -232,6 +258,7 @@
         selectedItem = null
         previewSrc = null
         previewObjectUrl = null
+        previewVideoSrc = null
     }
 
     function loadPreview(url: string) {
@@ -393,7 +420,7 @@
                                         onclick={(e: MouseEvent) => e.stopPropagation()}
                                     />
                                     <span style="margin-left: 8px;">
-                                        {preset.name}
+                                        {presetDisplayName(preset)}
                                         <span style="color: var(--b3-theme-on-surface);">
                                             {preset.url}
                                         </span>
@@ -401,20 +428,24 @@
                                 </span>
                             </label>
                         {/each}
-                        {#each dynamicUrls.filter(u => !isPreset(u)) as url}
+                        {#each customDynamicUrls as url}
                             <label class="b3-list-item b3-list-item--narrow b3-list-item--hide-action"
                                 class:b3-list-item--focus={configStore.get("currentFile") === url}
                                 onclick={() => setDynamicAsBackground(url)}
                             >
-                                <span class="b3-list-item__text fn__flex-1">
-                                    <svg style="width:14px;height:14px;margin-right:4px;vertical-align:middle">
-                                        <use xlink:href="#iconLink"></use>
-                                    </svg>
-                                    {url}
+                                <span class="fn__flex-1">
+                                    <input type="checkbox"
+                                        checked={dynamicUrls.includes(url)}
+                                        onchange={() => toggleCustomDynamic(url)}
+                                        onclick={(e: MouseEvent) => e.stopPropagation()}
+                                    />
+                                    <span style="margin-left: 8px; word-break: break-all;">
+                                        {url}
+                                    </span>
                                 </span>
                                 <span class="b3-list-item__action b3-tooltips b3-tooltips__w"
                                     aria-label={i18n.removeDynamic || '移除订阅源'}
-                                    onclick={(e: MouseEvent) => { e.preventDefault(); e.stopPropagation(); removeDynamicUrl(url) }}
+                                    onclick={(e: MouseEvent) => { e.preventDefault(); e.stopPropagation(); removeCustomDynamic(url) }}
                                     onkeydown={undefined} role="button" tabindex="0">
                                     <svg><use xlink:href="#iconTrashcan"></use></svg>
                                 </span>
@@ -557,14 +588,11 @@
         <div class="fn__hr--b"></div>
 
         <div class="config-assets__preview" style="flex: 0 0 45%; display: flex; align-items: center; justify-content: center; padding: 8px; overflow: hidden; background: var(--b3-theme-surface);">
-            {#if previewSrc}
+            {#if previewVideoSrc}
+                <video src={previewVideoSrc} controls autoplay loop muted
+                    style="max-width: 100%; max-height: 100%; border-radius: 4px;"></video>
+            {:else if previewSrc}
                 <img src={previewSrc} alt="preview" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px;" />
-            {:else if selectedItem && selectedItem.type === 'video'}
-                <div style="color: var(--b3-theme-on-surface); text-align: center;">
-                    <svg style="width:48px;height:48px;opacity:0.6"><use xlink:href="#iconVideo"></use></svg>
-                    <div>{selectedItem.name}</div>
-                    <div style="font-size: 0.85em; margin-top: 4px;">{i18n.videoNoPreview}</div>
-                </div>
             {:else}
                 <div style="color: var(--b3-theme-on-surface); text-align: center;">
                     <svg style="width:48px;height:48px;opacity:0.6"><use xlink:href="#iconImage"></use></svg>

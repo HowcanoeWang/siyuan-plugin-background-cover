@@ -9,7 +9,7 @@
         if (!url) return i18n.none || '(无)'
         if (isDynamicUrl(url)) {
             const preset = DYNAMIC_BG_PRESETS.find(p => p.url === url)
-            if (preset) return `🌐 ${preset.name}`
+            if (preset) return `🌐 ${i18n[preset.nameKey] ?? preset.name}`
             const hostname = new URL(url).hostname
             return `🌐 ${hostname}...`
         }
