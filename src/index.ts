@@ -5,9 +5,9 @@ import {
 
 import { svelteDialog } from "./libs/dialog"
 import { configStore } from "./stores/config"
-import { destroyBgLayer, createBgLayer, renderImage, renderVideo, changeOpacity, changeBlur, changePosition, setVisible, startAutoRefresh, stopAutoRefresh } from "./services/bgRender"
+import { destroyBgLayer, createBgLayer, renderImage, renderVideo, renderDynamic, changeOpacity, changeBlur, changePosition, setVisible, startAutoRefresh, stopAutoRefresh } from "./services/bgRender"
 import { scanAll, pickRandom } from "./services/sourceManager"
-import { pluginTopIcon, pickDefaultBackground, DEFAULT_BACKGROUNDS, IMAGE_EXTS, VIDEO_EXTS } from "./constants"
+import { pluginTopIcon, pickDefaultBackground, DEFAULT_BACKGROUNDS, IMAGE_EXTS, VIDEO_EXTS, DYNAMIC_BG_FALLBACK_URL, isDynamicUrl } from "./constants"
 import { devDebug, devLog } from "./utils/logger"
 import { isCurrentThemeDisabled, watchTheme } from "./utils/theme"
 import SettingsPanel from "./ui/settings/SettingsPanel.svelte"
@@ -74,7 +74,8 @@ export default class BgCoverPlugin extends Plugin {
             if (!configStore.get("currentFile")) {
                 const assetDirs = configStore.get("assetDirs")
                 const localFolders = configStore.get("localFolders")
-                const pool = await scanAll(assetDirs, localFolders)
+                const dynamicBgUrls = configStore.get("dynamicBgUrls")
+                const pool = await scanAll(assetDirs, localFolders, dynamicBgUrls)
                 if (pool.length === 0) {
                     configStore.set("currentFile", pickDefaultBackground())
                     configStore.save()
@@ -137,7 +138,8 @@ export default class BgCoverPlugin extends Plugin {
     async randomSelect() {
         const assetDirs = configStore.get("assetDirs")
         const localFolders = configStore.get("localFolders")
-        const pool = await scanAll(assetDirs, localFolders)
+        const dynamicBgUrls = configStore.get("dynamicBgUrls")
+        const pool = await scanAll(assetDirs, localFolders, dynamicBgUrls)
         if (pool.length === 0) {
             devLog("[bgCover] randomSelect: pool is empty, nothing to pick")
             return
@@ -148,7 +150,10 @@ export default class BgCoverPlugin extends Plugin {
         devLog("[bgCover] randomSelect: picked", item.name, "from", pool.length, "items")
         configStore.set("currentFile", item.url)
         configStore.save()
-        if (item.type === 'image') {
+        if (item.sourceType === 'dynamic') {
+            const cb = item.url + (item.url.includes('?') ? '&' : '?') + '_t=' + Date.now()
+            renderDynamic(cb, DYNAMIC_BG_FALLBACK_URL)
+        } else if (item.type === 'image') {
             renderImage(item.url)
         } else {
             renderVideo(item.url)
@@ -168,17 +173,22 @@ export default class BgCoverPlugin extends Plugin {
                 return
             }
 
-            const ext = '.' + (currentFile.split('.').pop()?.toLowerCase() ?? '')
-            devDebug("[bgCover] applyBackground: ext =", ext)
-            if (VIDEO_EXTS.has(ext)) {
-                devDebug("[bgCover] applyBackground: -> renderVideo")
-                renderVideo(currentFile)
-            } else if (IMAGE_EXTS.has(ext)) {
-                devDebug("[bgCover] applyBackground: -> renderImage")
-                renderImage(currentFile)
+            if (isDynamicUrl(currentFile)) {
+                const cb = currentFile + (currentFile.includes('?') ? '&' : '?') + '_t=' + Date.now()
+                renderDynamic(cb, DYNAMIC_BG_FALLBACK_URL)
             } else {
-                console.warn(`[bgCover] applyBackground: unknown extension "${ext}" for ${currentFile}`)
-                return
+                const ext = '.' + (currentFile.split('.').pop()?.toLowerCase() ?? '')
+                devDebug("[bgCover] applyBackground: ext =", ext)
+                if (VIDEO_EXTS.has(ext)) {
+                    devDebug("[bgCover] applyBackground: -> renderVideo")
+                    renderVideo(currentFile)
+                } else if (IMAGE_EXTS.has(ext)) {
+                    devDebug("[bgCover] applyBackground: -> renderImage")
+                    renderImage(currentFile)
+                } else {
+                    console.warn(`[bgCover] applyBackground: unknown extension "${ext}" for ${currentFile}`)
+                    return
+                }
             }
         } finally {
             const opacity = configStore.get("opacity")
