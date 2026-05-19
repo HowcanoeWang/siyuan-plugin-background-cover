@@ -19,11 +19,37 @@ export const DEFAULT_BACKGROUNDS = [
     `plugins/${packageName}/default/FyBE0bUakAELfeF.jpg`,
 ]
 
+// testing manual add: https://img.xjh.me/random_img.php?return=302&type=bg&ctype=nature
+export const DYNAMIC_BG_PRESETS: { id: string; nameKey: string; name: string; url: string }[] = [
+    { id: 'bing_1920',       nameKey: 'presetBing1920',       name: '必应每日壁纸 (1920x1080)',         url: 'https://api.dujin.org/bing/1920.php' },
+    { id: 'unsplash_random', nameKey: 'presetUnsplashRandom', name: 'Unsplash 随机图片 (1600x900)',     url: 'https://unsplash.it/1600/900?random' },
+    { id: 'imgapi_scenic',   nameKey: 'presetImgapiScenic',   name: 'imgapi 随机风景',                 url: 'https://imgapi.cn/api.php?fl=fengjing&gs=images' },
+    { id: 'img_xjh',         nameKey: 'presetImgXjh',         name: '岁月小筑随机动漫图片 (1920x1080)',  url: 'https://img.xjh.me/random_img.php?return=302&type=bg' },
+]
+
+export const DYNAMIC_BG_FALLBACK_URL = `plugins/${packageName}/default/404.jpg`
+
 export function pickDefaultBackground(): string {
     return DEFAULT_BACKGROUNDS[Math.floor(Math.random() * DEFAULT_BACKGROUNDS.length)]
 }
 
-export const diyIcon = {
+export function classifyFileType(filename: string): 'image' | 'video' | null {
+    const ext = filename.includes('.')
+        ? '.' + filename.split('.').pop()!.toLowerCase()
+        : ''
+
+    if (IMAGE_EXTS.has(ext)) return 'image'
+    if (VIDEO_EXTS.has(ext)) return 'video'
+    return null
+}
+
+export function isDynamicUrl(url: string): boolean {
+    const clean = url.split('?')[0]
+    const ext = '.' + (clean.split('.').pop()?.toLowerCase() ?? '')
+    return !IMAGE_EXTS.has(ext) && !VIDEO_EXTS.has(ext) && url.startsWith('http')
+}
+
+export const pluginTopIcon = {
     iconLogo: `<symbol id="iconLogo" viewBox="0 0 32 32">
     <path d="M26 28h-20v-4l6-10 8.219 10 5.781-4v8z"></path>
     <path d="M26 15c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3c1.657 0 3 1.343 3 3z"></path>

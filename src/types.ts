@@ -16,6 +16,8 @@ export interface AppConfig {
     positionY: number
     localFolders: string[]
     assetDirs: string[]
+    dynamicBgUrls: string[]
+    customDynamicUrls: string[]
     changeBgOnStart: boolean
     autoRefreshTime: number
     disabledThemes: DisabledThemes
@@ -29,25 +31,14 @@ export interface ImageItem {
     url: string
     apiPath: string
     type: 'image' | 'video'
-    sourceType: 'local' | 'upload' | 'assets'
+    sourceType: 'local' | 'upload' | 'assets' | 'dynamic'
     sourceLabel: string
 }
 
 export interface SourceConfig {
-    type: 'local' | 'upload' | 'assets'
+    type: 'local' | 'upload' | 'assets' | 'dynamic'
     path: string
     label: string
 }
 
-import { IMAGE_EXTS, VIDEO_EXTS } from "./constants"
-export { IMAGE_EXTS, VIDEO_EXTS }
-
-export function classifyFileType(filename: string): 'image' | 'video' | null {
-    const ext = filename.includes('.')
-        ? '.' + filename.split('.').pop()!.toLowerCase()
-        : ''
-
-    if (IMAGE_EXTS.has(ext)) return 'image'
-    if (VIDEO_EXTS.has(ext)) return 'video'
-    return null
-}
+export { IMAGE_EXTS, VIDEO_EXTS, classifyFileType } from "./constants"

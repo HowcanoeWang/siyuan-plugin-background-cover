@@ -1,9 +1,9 @@
 <script lang="ts">
-    import ConfigTab from "./config-tab.svelte"
-    import SourcesTab from "./sources-tab.svelte"
-    import ThemeTab from "./theme-tab.svelte"
-    import AdvancedTab from "./advanced-tab.svelte"
-    import AboutTab from "./about-tab.svelte"
+    import ConfigTab from "./ConfigTab.svelte"
+    import SourcesTab from "./SourcesTab.svelte"
+    import ThemeTab from "./ThemeTab.svelte"
+    import AdvancedTab from "./AdvancedTab.svelte"
+    import AboutTab from "./AboutTab.svelte"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
 
@@ -16,11 +16,11 @@
     let currentTab = $state(activeTab)
 
     const tabs = [
-        { name: "config",   icon: "#iconEdit",     label: i18n.tabGlobal ?? "全局设置" },
-        { name: "sources",  icon: "#iconImage",    label: i18n.tabSources ?? "数据管理" },
-        { name: "theme",    icon: "#iconTheme",    label: i18n.tabThemes ?? "屏蔽主题" },
-        { name: "advanced", icon: "#iconRiffCard", label: i18n.tabAdvanced ?? "高级设置" },
-        { name: "about",    icon: "#iconInfo",     label: i18n.tabAbout ?? "关于" },
+        { name: "config",   icon: "#iconEdit",     label: i18n.tabGlobal },
+        { name: "sources",  icon: "#iconImage",    label: i18n.tabSources },
+        { name: "theme",    icon: "#iconTheme",    label: i18n.tabThemes },
+        { name: "advanced", icon: "#iconRiffCard", label: i18n.tabAdvanced },
+        { name: "about",    icon: "#iconInfo",     label: i18n.tabAbout },
     ]
 </script>
 

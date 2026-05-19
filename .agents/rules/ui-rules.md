@@ -1,6 +1,51 @@
 # UI 层开发规则
 
 > 整理自 Phase 1-6 实施期间 Svelte 5 组件开发中建立的约束
+>
+> 更新于 2026-05-19: 添加命名规范、dialogs/ 模块、上传统一化
+
+---
+
+## 〇、命名与文件组织
+
+### 文件命名
+
+| 文件类型 | 命名风格 | 示例 |
+|---------|---------|------|
+| Svelte 组件（`.svelte`） | **PascalCase** | `SettingsPanel.svelte`, `ConfigTab.svelte`, `AssetPicker.svelte` |
+| TypeScript 模块（`.ts`） | **camelCase** | `topbarMenu.ts`, `sourceManager.ts`, `bgRender.ts` |
+
+### 共享 Dialog 模块 (`src/ui/dialogs/`)
+
+对话框组件和动作工厂统一放在 `src/ui/dialogs/`，供 `topbarMenu.ts` 和 `SettingsPanel` 共用，禁止重复实现：
+
+```
+src/ui/dialogs/
+├── index.ts                   # showLocalDirDialog, showAssetsDirDialog, showUrlDialog, pickMultipleFiles, pickFolderFiles
+├── AssetPicker.svelte
+├── LocalDirDialog.svelte
+└── UrlDialog.svelte
+```
+
+```typescript
+// ✅ 正确：从 dialogs 导入共享函数
+import { showLocalDirDialog, showAssetsDirDialog } from "./dialogs"
+
+// ❌ 错误：在 topbarMenu / sources-tab 各自实现 pickMultipleFiles 等
+```
+
+### 上传操作统一使用 `utils/api.ts`
+
+所有文件上传必须通过 `utils/api.ts` 的 `putFile()` 函数，禁止直接用 `fetchPost` 构造 FormData：
+
+```typescript
+// ✅ 正确
+import { putFile } from "../utils/api"
+const ok = await putFile(apiPath, file)
+
+// ❌ 错误：各处重复构造 FormData
+const fd = new FormData(); fd.append(...); fetchPost("/api/file/putFile", fd, cb)
+```
 
 ---
 

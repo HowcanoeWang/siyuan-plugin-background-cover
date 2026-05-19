@@ -8,7 +8,7 @@
 </h1>
 
 <p align="center">
-Add a picture you like to cover the entire Siyuan Note
+Add a background you like to cover the entire Siyuan Note
 <br/>
 <a href="./README.md">中文</a>
 </p>
@@ -33,6 +33,7 @@ Default background cover artist ——
   - [X] Local folder direct reading (desktop only, zero upload)
   - [X] SiYuan assets sub-folder referencing (all platforms)
   - [X] Upload files to plugin cache (all platforms, supports network URL download)
+  - [X] Dynamic web wallpaper feeds (preset + custom URLs, different image each time)
 - [X] Background resource management
   - [X] Multi-file / entire directory upload
   - [X] File deletion, folder location, cache clearing
@@ -61,6 +62,17 @@ The range of transparency that can be set by the user is `[0.1, 1]`. However, to
 
 <details open>
 <summary><b>May 2026 — v1.0.0 Refactoring Edition</b></summary>
+
+**26.05.19**
+
+* <b>Dynamic Web Wallpaper Feeds</b>: Support preset random image APIs (Bing Daily Wallpaper, Unsplash, imgapi, etc.), returns different background each time.
+* <b>Custom Dynamic URLs</b>: Users can add their own random image APIs with enable/disable toggle.
+* <b>JS Preload Rendering</b>: Dynamic URLs preloaded via `new Image()` before canvas application, eliminating CSS double-layer fallback flash.
+* <b>Preset Name i18n</b>: Preset source names support Chinese/English i18n switching.
+* <b>Video Source Recommendations</b>: "Recommended Video Sites" section in source management panel with Pexels, Pixabay, Coverr, Videezy links.
+* <b>Video Preview</b>: Hovering video files in source list now auto-plays in preview area.
+* <b>About Tab Improvements</b>: Plugin icon + version centered, GitHub/author pinned to bottom, debug info moved to About tab.
+* <b>Code Quality</b>: Eliminated all hardcoded Chinese fallback strings, unified file upload to `utils/api.ts`, parallelized directory scanning, standardized naming conventions.
 
 **26.05.18**
 

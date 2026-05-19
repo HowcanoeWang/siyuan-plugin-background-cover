@@ -8,7 +8,7 @@
  */
 
 import { Plugin, Setting } from 'siyuan';
-import { debug } from '../utils/logger';
+import { devDebug } from '../utils/logger';
 
 
 /**
@@ -119,7 +119,7 @@ export class SettingUtils {
 
     async load() {
         let data = await this.plugin.loadData(this.file);
-        debug('[bgCover] Load config:', data);
+        devDebug('[bgCover] Load config:', data);
         if (data) {
             for (let [key, item] of this.settings) {
                 item.value = data?.[key] ?? item.value;
@@ -132,7 +132,7 @@ export class SettingUtils {
     async save(data?: any) {
         data = data ?? this.dump();
         await this.plugin.saveData(this.file, this.dump());
-        debug('[bgCover] Save config:', data);
+        devDebug('[bgCover] Save config:', data);
         return data;
     }
 

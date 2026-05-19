@@ -1,10 +1,11 @@
 import { IMAGE_EXTS, VIDEO_EXTS } from "../constants"
-import { log } from "../utils/logger"
+import { devLog } from "../utils/logger"
 
 let canvasEl: HTMLCanvasElement | null = null
 let videoEl: HTMLVideoElement | null = null
 let currentMode: 'image' | 'video' | null = null
 let autoRefreshTimer: ReturnType<typeof setInterval> | null = null
+let preloadSeq = 0
 
 export function getCurrentMode(): 'image' | 'video' | null {
     return currentMode
@@ -63,15 +64,15 @@ export function destroyBgLayer(): void {
     currentMode = null
 }
 
-export function render(url: string): void {
-    const type = detectType(url)
+export function render(url: string, forceType?: 'image' | 'video'): void {
+    const type = forceType ?? detectType(url)
     if (type === 'image') renderImage(url)
     else if (type === 'video') renderVideo(url)
 }
 
 export function renderImage(url: string): void {
     if (!canvasEl) return
-    log("[bgCover] renderImage:", url.split('/').pop())
+    devLog("[bgCover] renderImage:", url.split('/').pop())
     currentMode = 'image'
 
     if (videoEl) {
@@ -81,11 +82,37 @@ export function renderImage(url: string): void {
     }
     canvasEl.style.display = ''
     canvasEl.style.backgroundImage = `url('${url}')`
+    canvasEl.style.backgroundSize = 'cover'
+}
+
+export function renderDynamic(url: string, fallbackUrl: string): void {
+    if (!canvasEl) return
+    if (videoEl) {
+        videoEl.style.display = 'none'
+        try { videoEl.pause() } catch { /* ignored */ }
+        videoEl.removeAttribute('src')
+    }
+    currentMode = 'image'
+    canvasEl.style.display = ''
+
+    const seq = ++preloadSeq
+    const preload = new Image()
+    preload.onload = () => {
+        if (seq !== preloadSeq || currentMode !== 'image') return
+        canvasEl.style.backgroundImage = `url('${url}')`
+        canvasEl.style.backgroundSize = 'cover'
+    }
+    preload.onerror = () => {
+        if (seq !== preloadSeq) return
+        canvasEl.style.backgroundImage = `url('${fallbackUrl}')`
+        canvasEl.style.backgroundSize = 'cover'
+    }
+    preload.src = url
 }
 
 export function renderVideo(url: string): void {
     if (!videoEl) return
-    log("[bgCover] renderVideo:", url.split('/').pop())
+    devLog("[bgCover] renderVideo:", url.split('/').pop())
     currentMode = 'video'
 
     if (canvasEl) canvasEl.style.display = 'none'
@@ -102,7 +129,7 @@ export function renderVideo(url: string): void {
 }
 
 export function clearLayer(): void {
-    log("[bgCover] clearLayer")
+    devLog("[bgCover] clearLayer")
     if (canvasEl) {
         canvasEl.style.display = 'none'
         canvasEl.style.backgroundImage = ''
@@ -116,7 +143,7 @@ export function clearLayer(): void {
 }
 
 export function setVisible(visible: boolean): void {
-    log("[bgCover] setVisible:", visible)
+    devLog("[bgCover] setVisible:", visible)
     if (canvasEl) canvasEl.style.display = visible && currentMode === 'image' ? '' : 'none'
     if (videoEl) videoEl.style.display = visible && currentMode === 'video' ? '' : 'none'
     if (!visible) {
@@ -142,12 +169,14 @@ export function changeBlur(val: number): void {
 }
 
 export function changePosition(x: number, y: number): void {
-    if (!canvasEl || currentMode !== 'image') return
-    canvasEl.style.backgroundPosition = `${x}% ${y}%`
+    if (currentMode === 'image' && canvasEl) {
+        canvasEl.style.backgroundPosition = `${x}% ${y}%`
+    } else if (currentMode === 'video' && videoEl) {
+        videoEl.style.objectPosition = `${x}% ${y}%`
+    }
 }
 
 export function applyOverrides(x?: number, y?: number, defaultX?: number, defaultY?: number): void {
-    if (currentMode !== 'image') return
     const posX = x ?? defaultX ?? 50
     const posY = y ?? defaultY ?? 50
     changePosition(posX, posY)
@@ -156,13 +185,13 @@ export function applyOverrides(x?: number, y?: number, defaultX?: number, defaul
 export function startAutoRefresh(callback: () => void, intervalMs: number): void {
     stopAutoRefresh()
     if (intervalMs <= 0) return
-    log("[bgCover] startAutoRefresh: interval =", intervalMs, "ms")
+    devLog("[bgCover] startAutoRefresh: interval =", intervalMs, "ms")
     autoRefreshTimer = setInterval(callback, intervalMs)
 }
 
 export function stopAutoRefresh(): void {
     if (autoRefreshTimer !== null) {
-        log("[bgCover] stopAutoRefresh")
+        devLog("[bgCover] stopAutoRefresh")
         clearInterval(autoRefreshTimer)
         autoRefreshTimer = null
     }

@@ -1,47 +1,61 @@
-import { isDesktop, readLocalDir, getFileUrl } from '../utils/fs'
-import { readDir as readDirKernel } from '../utils/api'
-import { classifyFileType } from '../types'
+import { isDesktop, readLocalDir, getFileUrl, fileExistsLocal } from '../utils/fs'
+import { readSiyuanDir } from '../utils/api'
 import type { ImageItem } from '../types'
-import { pluginAssetsDir } from '../constants'
-import { debug } from '../utils/logger'
+import { pluginAssetsDir, classifyFileType, DYNAMIC_BG_PRESETS } from '../constants'
+import { devDebug } from '../utils/logger'
+import { toAssetRelPath } from '../utils/path'
 
 const ENGINE = '[bgCover] sourceManager'
 
 export async function scanAll(
     assetDirs: string[] = [],
     localFolders: string[] = [],
+    dynamicBgUrls: string[] = [],
 ): Promise<ImageItem[]> {
-    const results: ImageItem[] = []
+    const tasks: Promise<ImageItem[]>[] = [
+        scanSource('upload', pluginAssetsDir),
+        Promise.resolve(scanDynamicUrls(dynamicBgUrls)),
+    ]
 
-    const uploadItems = await scanSource('upload', pluginAssetsDir)
-    results.push(...uploadItems)
-    debug(`${ENGINE} scanAll upload: ${uploadItems.length} 个文件`)
-
-    for (const dir of assetDirs) {
-        if (dir.length === 0) continue
-        const items = await scanSource('assets', dir)
-        results.push(...items)
-        debug(`${ENGINE} scanAll assets[${dir}]: ${items.length} 个文件`)
-    }
+    const validAssetDirs = assetDirs.filter(d => d.length > 0)
+        .map(dir => {
+            const normalized = toAssetRelPath(dir)
+            return `/data/${normalized}`
+        })
+    tasks.push(...validAssetDirs.map(path => scanSource('assets', path + '/')))
 
     if (isDesktop()) {
-        for (const dir of localFolders) {
-            if (dir.length === 0) continue
+        const validLocalDirs = localFolders.filter(d => d.length > 0)
+        for (const dir of validLocalDirs) {
             const ok = await validatePath(dir)
             if (!ok) {
-                debug(`${ENGINE} scanAll local[${dir}]: 路径不可访问，跳过`)
-                continue
+                devDebug(`${ENGINE} scanAll local[${dir}]: 路径不可访问，跳过`)
+            } else {
+                tasks.push(scanSource('local', dir))
             }
-            const items = await scanSource('local', dir)
-            results.push(...items)
-            debug(`${ENGINE} scanAll local[${dir}]: ${items.length} 个文件`)
         }
     } else {
-        debug(`${ENGINE} scanAll local: 非桌面端，跳过 ${localFolders.length} 个本地文件夹`)
+        devDebug(`${ENGINE} scanAll local: 非桌面端，跳过 ${localFolders.length} 个本地文件夹`)
     }
 
-    debug(`${ENGINE} scanAll total: ${results.length} 个文件`)
+    const batch = await Promise.all(tasks)
+    const results = batch.flat()
+    devDebug(`${ENGINE} scanAll total: ${results.length} 个文件`)
     return results
+}
+
+export function scanDynamicUrls(urls: string[]): ImageItem[] {
+    return urls.map(url => {
+        const preset = DYNAMIC_BG_PRESETS.find(p => p.url === url)
+        return {
+            name: preset?.name ?? new URL(url).hostname,
+            url,
+            apiPath: url,
+            type: 'image' as const,
+            sourceType: 'dynamic' as const,
+            sourceLabel: 'dynamic',
+        }
+    })
 }
 
 export async function scanSource(
@@ -50,7 +64,7 @@ export async function scanSource(
 ): Promise<ImageItem[]> {
     const filenames = type === 'local'
         ? await readLocalDir(path)
-        : await readDirKernel(path)
+        : await readSiyuanDir(path)
 
     const items: ImageItem[] = []
     const skipped: string[] = []
@@ -78,7 +92,7 @@ export async function scanSource(
     }
 
     if (skipped.length > 0) {
-        debug(`${ENGINE} scanSource[${type}] 跳过不可识别的文件: [${skipped.join(', ')}]`)
+        devDebug(`${ENGINE} scanSource[${type}] 跳过不可识别的文件: [${skipped.join(', ')}]`)
     }
 
     return items
@@ -102,31 +116,26 @@ export async function validatePath(path: string): Promise<boolean> {
     if (path.length === 0) return false
 
     if (isDesktop()) {
-        try {
-            await (window as any).require('fs/promises').access(path)
-            return true
-        } catch {
-            return false
-        }
+        return fileExistsLocal(path)
     }
 
     try {
-        await readDirKernel(path)
+        await readSiyuanDir(path)
         return true
     } catch {
         return false
     }
 }
 
-function getSourceLabel(type: 'local' | 'upload' | 'assets', path: string): string {
+function getSourceLabel(type: 'local' | 'upload' | 'assets' | 'dynamic', path: string): string {
     switch (type) {
         case 'upload':
             return 'upload'
-        case 'assets': {
-            const prefix = 'data/assets/'
-            return path.startsWith(prefix) ? path.slice(prefix.length) : path
-        }
+        case 'assets':
+            return toAssetRelPath(path)
         case 'local':
             return path
+        case 'dynamic':
+            return 'dynamic'
     }
 }

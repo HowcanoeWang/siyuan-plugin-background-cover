@@ -1,5 +1,4 @@
-import { configStore } from "../stores/config"
-import { debug } from "./logger"
+import { devDebug } from "./logger"
 
 function getFsp(): any {
     try {
@@ -13,10 +12,6 @@ export function isDesktop(): boolean {
     return typeof (window as any).require === 'function' && getFsp() !== null
 }
 
-export function isLocalPath(path: string): boolean {
-    return configStore.get("localFolders").some(f => path.startsWith(f))
-}
-
 export async function readLocalDir(path: string): Promise<string[]> {
     const fsp = getFsp()
     if (!fsp) return []
@@ -27,7 +22,7 @@ export async function readLocalDir(path: string): Promise<string[]> {
             .filter((e: any) => e.isFile())
             .map((e: any) => e.name)
     } catch (err: any) {
-        debug('[bgCover] fs.ts readLocalDir 失败:', path, err.message)
+        devDebug('[bgCover] fs.ts readLocalDir 失败:', path, err.message)
         return []
     }
 }

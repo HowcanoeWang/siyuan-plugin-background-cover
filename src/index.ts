@@ -5,13 +5,13 @@ import {
 
 import { svelteDialog } from "./libs/dialog"
 import { configStore } from "./stores/config"
-import { destroyBgLayer, createBgLayer, renderImage, renderVideo, changeOpacity, changeBlur, changePosition, setVisible, startAutoRefresh, stopAutoRefresh } from "./services/bgRender"
+import { destroyBgLayer, createBgLayer, renderImage, renderVideo, renderDynamic, changeOpacity, changeBlur, changePosition, setVisible, startAutoRefresh, stopAutoRefresh } from "./services/bgRender"
 import { scanAll, pickRandom } from "./services/sourceManager"
-import { diyIcon, pickDefaultBackground, DEFAULT_BACKGROUNDS, IMAGE_EXTS, VIDEO_EXTS } from "./constants"
-import { debug, log } from "./utils/logger"
+import { pluginTopIcon, pickDefaultBackground, DEFAULT_BACKGROUNDS, IMAGE_EXTS, VIDEO_EXTS, DYNAMIC_BG_FALLBACK_URL, isDynamicUrl } from "./constants"
+import { devDebug, devLog } from "./utils/logger"
 import { isCurrentThemeDisabled, watchTheme } from "./utils/theme"
-import SettingsPanel from "./ui/settings/settings.svelte"
-import { buildTopBarMenu } from "./ui/topbar-menu"
+import SettingsPanel from "./ui/settings/SettingsPanel.svelte"
+import { buildTopBarMenu } from "./ui/topbarMenu"
 
 export { svelteDialog }
 
@@ -35,7 +35,7 @@ export default class BgCoverPlugin extends Plugin {
             configStore,
         }
 
-        this.addIcons(diyIcon.iconLogo)
+        this.addIcons(pluginTopIcon.iconLogo)
 
         this.addCommand({ langKey: "selectPictureManualLabel", hotkey: "⇧⌘F6", callback: () => this.openSetting("sources") })
         this.addCommand({ langKey: "selectPictureRandomLabel", hotkey: "⇧⌘F7", callback: () => this.randomSelect() })
@@ -74,7 +74,8 @@ export default class BgCoverPlugin extends Plugin {
             if (!configStore.get("currentFile")) {
                 const assetDirs = configStore.get("assetDirs")
                 const localFolders = configStore.get("localFolders")
-                const pool = await scanAll(assetDirs, localFolders)
+                const dynamicBgUrls = configStore.get("dynamicBgUrls")
+                const pool = await scanAll(assetDirs, localFolders, dynamicBgUrls)
                 if (pool.length === 0) {
                     configStore.set("currentFile", pickDefaultBackground())
                     configStore.save()
@@ -84,11 +85,11 @@ export default class BgCoverPlugin extends Plugin {
         }
 
         this._unwatchTheme = watchTheme((mode, name) => {
-            log("[bgCover] theme changed:", mode, name)
+            devLog("[bgCover] theme changed:", mode, name)
             this.applyThemeShield()
         })
 
-        log("[bgCover]", this.i18n.helloPlugin)
+        devLog("[bgCover]", this.i18n.helloPlugin)
     }
 
     onLayoutReady() {
@@ -119,12 +120,12 @@ export default class BgCoverPlugin extends Plugin {
     onunload() {
         this._unwatchTheme?.()
         destroyBgLayer()
-        log("[bgCover]", this.i18n.byePlugin)
+        devLog("[bgCover]", this.i18n.byePlugin)
     }
 
     async toggleBackground() {
         const active = !configStore.get("activate")
-        log("[bgCover] toggleBackground:", active ? "activated" : "deactivated")
+        devLog("[bgCover] toggleBackground:", active ? "activated" : "deactivated")
         configStore.setAndSave("activate", active)
         if (active) {
             createBgLayer()
@@ -137,18 +138,22 @@ export default class BgCoverPlugin extends Plugin {
     async randomSelect() {
         const assetDirs = configStore.get("assetDirs")
         const localFolders = configStore.get("localFolders")
-        const pool = await scanAll(assetDirs, localFolders)
+        const dynamicBgUrls = configStore.get("dynamicBgUrls")
+        const pool = await scanAll(assetDirs, localFolders, dynamicBgUrls)
         if (pool.length === 0) {
-            log("[bgCover] randomSelect: pool is empty, nothing to pick")
+            devLog("[bgCover] randomSelect: pool is empty, nothing to pick")
             return
         }
         const exclude = pool.length > 1 ? configStore.get("currentFile") : null
         const item = pickRandom(pool, exclude)
         if (!item) return
-        log("[bgCover] randomSelect: picked", item.name, "from", pool.length, "items")
+        devLog("[bgCover] randomSelect: picked", item.name, "from", pool.length, "items")
         configStore.set("currentFile", item.url)
         configStore.save()
-        if (item.type === 'image') {
+        if (item.sourceType === 'dynamic') {
+            const cb = item.url + (item.url.includes('?') ? '&' : '?') + '_t=' + Date.now()
+            renderDynamic(cb, DYNAMIC_BG_FALLBACK_URL)
+        } else if (item.type === 'image') {
             renderImage(item.url)
         } else {
             renderVideo(item.url)
@@ -159,33 +164,38 @@ export default class BgCoverPlugin extends Plugin {
     }
 
     private applyBackground() {
-        log("[bgCover] applyBackground: start")
+        devLog("[bgCover] applyBackground: start")
         try {
             const currentFile = configStore.get("currentFile")
-            debug("[bgCover] applyBackground: currentFile =", currentFile)
+            devDebug("[bgCover] applyBackground: currentFile =", currentFile)
             if (!currentFile) {
-                debug("[bgCover] applyBackground: currentFile is null, skip render")
+                devDebug("[bgCover] applyBackground: currentFile is null, skip render")
                 return
             }
 
-            const ext = '.' + (currentFile.split('.').pop()?.toLowerCase() ?? '')
-            debug("[bgCover] applyBackground: ext =", ext)
-            if (VIDEO_EXTS.has(ext)) {
-                debug("[bgCover] applyBackground: -> renderVideo")
-                renderVideo(currentFile)
-            } else if (IMAGE_EXTS.has(ext)) {
-                debug("[bgCover] applyBackground: -> renderImage")
-                renderImage(currentFile)
+            if (isDynamicUrl(currentFile)) {
+                const cb = currentFile + (currentFile.includes('?') ? '&' : '?') + '_t=' + Date.now()
+                renderDynamic(cb, DYNAMIC_BG_FALLBACK_URL)
             } else {
-                console.warn(`[bgCover] applyBackground: unknown extension "${ext}" for ${currentFile}`)
-                return
+                const ext = '.' + (currentFile.split('.').pop()?.toLowerCase() ?? '')
+                devDebug("[bgCover] applyBackground: ext =", ext)
+                if (VIDEO_EXTS.has(ext)) {
+                    devDebug("[bgCover] applyBackground: -> renderVideo")
+                    renderVideo(currentFile)
+                } else if (IMAGE_EXTS.has(ext)) {
+                    devDebug("[bgCover] applyBackground: -> renderImage")
+                    renderImage(currentFile)
+                } else {
+                    console.warn(`[bgCover] applyBackground: unknown extension "${ext}" for ${currentFile}`)
+                    return
+                }
             }
         } finally {
             const opacity = configStore.get("opacity")
             const blur = configStore.get("blur")
             const px = configStore.get("positionX")
             const py = configStore.get("positionY")
-            debug("[bgCover] applyBackground: changeOpacity =", opacity, "blur =", blur, "pos =", px, py)
+            devDebug("[bgCover] applyBackground: changeOpacity =", opacity, "blur =", blur, "pos =", px, py)
             changeOpacity(opacity)
             changeBlur(blur)
             changePosition(px, py)
@@ -201,10 +211,10 @@ export default class BgCoverPlugin extends Plugin {
     applyThemeShield() {
         if (!configStore.get("activate")) return
         if (isCurrentThemeDisabled(configStore.get("disabledThemes"))) {
-            log("[bgCover] applyThemeShield: theme disabled, hiding")
+            devLog("[bgCover] applyThemeShield: theme disabled, hiding")
             setVisible(false)
         } else {
-            log("[bgCover] applyThemeShield: theme enabled, showing")
+            devLog("[bgCover] applyThemeShield: theme enabled, showing")
             createBgLayer()
             this.applyBackground()
         }

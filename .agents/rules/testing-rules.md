@@ -10,7 +10,7 @@ tests/
 ├── stores/config.test.ts
 ├── services/{sourceManager,bgRender}.test.ts
 ├── utils/{api,fs,theme}.test.ts
-└── ui/{topbar,settings}.test.ts + sources/source-list.test.ts
+└── ui/{topbar,settings}.test.ts + ui/dialogs
 ```
 
 **框架**: `vitest` (运行器) + `@testing-library/svelte` (组件) + `jsdom` (DOM 环境)

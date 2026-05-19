@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { classifyFileType } from "../types"
+    import { classifyFileType } from "../../constants"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
 
@@ -33,7 +33,7 @@
 
         const fsp = (window as any).require?.('fs/promises')
         if (!fsp) {
-            errorMsg = i18n.notDesktop ?? "当前非桌面端，不支持本地目录"
+            errorMsg = i18n.notDesktop
             checking = false
             return
         }
@@ -41,7 +41,7 @@
         try {
             await fsp.access(p)
         } catch {
-            errorMsg = i18n.pathNotExist ?? "路径不存在或无法访问"
+            errorMsg = i18n.pathNotExist
             checking = false
             return
         }
@@ -55,12 +55,12 @@
                 else if (t === 'video') vidCount++
             }
             if (imgCount + vidCount === 0) {
-                errorMsg = i18n.noValidFiles ?? "该目录下未发现支持的图片/视频文件"
+                errorMsg = i18n.noValidFiles
             } else {
                 validDir = true
             }
         } catch (e: any) {
-            errorMsg = `${i18n.readDirFailed ?? "读取目录失败"}: ${e.message}`
+            errorMsg = `${i18n.readDirFailed}: ${e.message}`
         }
         checking = false
     }
@@ -87,18 +87,18 @@
     <div style="min-height: 60px; display: flex; align-items: center; padding: 8px;
         border-radius: 4px; background: var(--b3-theme-surface);">
         {#if checking}
-            <span style="color: var(--b3-theme-on-surface);">{i18n.detecting ?? "正在检测…"}</span>
+            <span style="color: var(--b3-theme-on-surface);">{i18n.detecting}</span>
         {:else if validDir}
             <span>
                 📁 <code class="fn__code">{pathInput.trim()}</code>
                 <span style="margin-left: 12px; color: var(--b3-theme-primary);">
-                    发现 {imgCount} 张图片, {vidCount} 个视频 — ✅
+                    {i18n.dirScanResult.replace('{imgCount}', `${imgCount}`).replace('{vidCount}', `${vidCount}`)}
                 </span>
             </span>
         {:else if errorMsg}
             <span style="color: var(--b3-theme-error);">{errorMsg}</span>
         {:else}
-            <span style="color: var(--b3-theme-on-surface);">{i18n.autoDetectHint ?? "输入路径后自动检测"}</span>
+            <span style="color: var(--b3-theme-on-surface);">{i18n.autoDetectHint}</span>
         {/if}
     </div>
 
@@ -106,7 +106,7 @@
         <button class="b3-button b3-button--text"
             disabled={!validDir}
             onclick={confirm}>
-            {i18n.add ?? "添加"}
+            {i18n.add}
         </button>
     </div>
 </div>

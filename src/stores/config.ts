@@ -1,6 +1,6 @@
 import { fetchPost } from "siyuan"
 import { packageName } from "../constants"
-import { debug, log } from "../utils/logger"
+import { devDebug, devLog } from "../utils/logger"
 import type { AppConfig } from "../types"
 
 const STORAGE_KEY = packageName
@@ -13,6 +13,8 @@ const APP_CONFIG_DEFAULTS: AppConfig = {
     positionY: 50,
     localFolders: [],
     assetDirs: [],
+    dynamicBgUrls: [],
+    customDynamicUrls: [],
     changeBgOnStart: true,
     autoRefreshTime: 30,
     disabledThemes: { dark: [], light: [] },
@@ -21,7 +23,7 @@ const APP_CONFIG_DEFAULTS: AppConfig = {
     inDev: false,
 }
 
-function post<T = any>(url: string, data?: any): Promise<T> {
+function siyuanApiPost<T = any>(url: string, data?: any): Promise<T> {
     return new Promise((resolve, reject) => {
         fetchPost(url, data ?? {}, (response: any) => {
             if (response.code === 0) {
@@ -45,7 +47,7 @@ class ConfigStore {
 
         if (stored === undefined || stored === null) {
             try {
-                const all = await post<Record<string, any>>("/api/storage/getLocalStorage")
+                const all = await siyuanApiPost<Record<string, any>>("/api/storage/getLocalStorage")
                 stored = all?.[STORAGE_KEY] ?? {}
             } catch {
                 stored = {}
@@ -53,14 +55,14 @@ class ConfigStore {
         }
 
         this.cfg = { ...APP_CONFIG_DEFAULTS, ...stored }
-        log("[bgCover] config loaded, keys:", Object.keys(this.cfg))
+        devLog("[bgCover] config loaded, keys:", Object.keys(this.cfg))
         this.ready = true
     }
 
     async save(): Promise<void> {
         if (!this.dirty || !this.ready) return
-        log("[bgCover] config save")
-        await post("/api/storage/setLocalStorageVal", {
+        devLog("[bgCover] config save")
+        await siyuanApiPost("/api/storage/setLocalStorageVal", {
             key: STORAGE_KEY,
             val: this.cfg,
         })
@@ -85,6 +87,10 @@ class ConfigStore {
         return { ...this.cfg }
     }
 
+    isLocalPath(path: string): boolean {
+        return this.cfg.localFolders.some(f => path.startsWith(f))
+    }
+
     async reset(): Promise<void> {
         console.log("[bgCover] config reset to defaults")
         this.cfg = { ...APP_CONFIG_DEFAULTS }
@@ -92,52 +98,52 @@ class ConfigStore {
         await this.save()
 
         try {
-            await post("/api/storage/removeLocalStorageVals", {
+            await siyuanApiPost("/api/storage/removeLocalStorageVals", {
                 keys: [STORAGE_KEY],
             })
         } catch { /* ignore */ }
 
         try {
-            await post("/api/file/removeFile", {
+            await siyuanApiPost("/api/file/removeFile", {
                 path: `/data/storage/petal/${STORAGE_KEY}/configs.json`,
             })
         } catch { /* ignore */ }
 
-        await this._cleanPublicDir()
+        await this.cleanPublicDir()
     }
 
     async cleanOldConfigIfNeeded(): Promise<void> {
         const stored = (window as any).siyuan?.storage?.[STORAGE_KEY]
         if (stored?.crtBgObj !== undefined || stored?.bgObjCfg !== undefined) {
             console.log("[bgCover] 检测到旧版配置 (siyuan.storage)，自动重置为默认")
-            await post("/api/storage/removeLocalStorageVals", { keys: [STORAGE_KEY] })
+            await siyuanApiPost("/api/storage/removeLocalStorageVals", { keys: [STORAGE_KEY] })
             this.cfg = { ...APP_CONFIG_DEFAULTS }
             return
         }
 
         try {
-            const files = await post<any[]>("/api/file/readDir", {
+            const files = await siyuanApiPost<any[]>("/api/file/readDir", {
                 path: `/data/storage/petal/${STORAGE_KEY}/`
             })
             if (Array.isArray(files) && files.length > 0) {
                 console.log("[bgCover] 检测到旧版 petal 数据，自动清理")
-                await post("/api/file/removeFile", { path: `/data/storage/petal/${STORAGE_KEY}/` })
+                await siyuanApiPost("/api/file/removeFile", { path: `/data/storage/petal/${STORAGE_KEY}/` })
             }
         } catch {
-            debug("[bgCover] cleanOldConfigIfNeeded: petal dir not found")
+            devDebug("[bgCover] cleanOldConfigIfNeeded: petal dir not found")
         }
     }
 
-    private async _cleanPublicDir(): Promise<void> {
+    private async cleanPublicDir(): Promise<void> {
         try {
-            const files = await post<any[]>("/api/file/readDir", {
+            const files = await siyuanApiPost<any[]>("/api/file/readDir", {
                 path: `/data/public/${STORAGE_KEY}/`,
             })
             if (!Array.isArray(files)) return
             for (const file of files) {
                 if (file.isDir) continue
                 try {
-                    await post("/api/file/removeFile", {
+                    await siyuanApiPost("/api/file/removeFile", {
                         path: `/data/public/${STORAGE_KEY}/${file.name}`,
                     })
                 } catch { /* ignore */ }
