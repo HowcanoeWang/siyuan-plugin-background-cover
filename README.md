@@ -58,6 +58,15 @@
 ## 更新日志
 
 <details open>
+<summary><b>June 2026</b></summary>
+
+**26.06.07**
+
+* 修复设置面板「开启背景」开关无法关闭背景的问题
+
+</details>
+
+<details>
 <summary><b>May 2026</b></summary>
 
 **26.05.19**
