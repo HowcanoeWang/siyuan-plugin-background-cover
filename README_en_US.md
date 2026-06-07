@@ -60,6 +60,15 @@ The range of transparency that can be set by the user is `[0.1, 1]`. However, to
 ## ChangeLogs
 
 <details open>
+<summary><b>June 2026</b></summary>
+
+**26.06.07**
+
+* Fixed the Settings panel "Enable background" switch not being able to turn the background off.
+
+</details>
+
+<details>
 <summary><b>May 2026</b></summary>
 
 **26.05.19**
