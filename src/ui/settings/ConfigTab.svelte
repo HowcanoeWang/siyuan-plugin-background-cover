@@ -1,6 +1,6 @@
 <script lang="ts">
     import { configStore } from "../../stores/config"
-    import { createBgLayer, render, changeOpacity, changeBlur, applyOverrides, startAutoRefresh, stopAutoRefresh } from "../../services/bgRender"
+    import { createBgLayer, destroyBgLayer, render, changeOpacity, changeBlur, applyOverrides, startAutoRefresh, stopAutoRefresh } from "../../services/bgRender"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
 
@@ -11,18 +11,20 @@
     let autoRefreshTime = $state(configStore.get("autoRefreshTime"))
 
     function handleActivateChange() {
-        activate = !activate
         configStore.setAndSave("activate", activate)
-        if (activate) {
-            createBgLayer()
-            const currentFile = configStore.get("currentFile")
-            if (currentFile) {
-                render(currentFile)
-                changeOpacity(opacity)
-                changeBlur(blur)
-                const ov = configStore.get("imageOverrides")[currentFile]
-                applyOverrides(ov?.positionX, ov?.positionY, 50, 50)
-            }
+        if (!activate) {
+            destroyBgLayer()
+            return
+        }
+
+        createBgLayer()
+        const currentFile = configStore.get("currentFile")
+        if (currentFile) {
+            render(currentFile)
+            changeOpacity(opacity)
+            changeBlur(blur)
+            const ov = configStore.get("imageOverrides")[currentFile]
+            applyOverrides(ov?.positionX, ov?.positionY, 50, 50)
         }
     }
 
