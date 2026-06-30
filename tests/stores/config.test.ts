@@ -96,6 +96,19 @@ describe("ConfigStore", () => {
             expect(configStore.get("foregroundOpacity")).toBe(0.3)
         })
 
+        it("subscribe 应该在配置变更时通知监听器", async () => {
+            await configStore.load()
+            const listener = vi.fn()
+
+            const unsubscribe = configStore.subscribe(listener)
+            configStore.set("foregroundOpacity", 0.3)
+            unsubscribe()
+            configStore.set("foregroundOpacity", 0.4)
+
+            expect(listener).toHaveBeenCalledTimes(1)
+            expect(listener).toHaveBeenCalledWith(expect.objectContaining({ foregroundOpacity: 0.3 }))
+        })
+
         it("snapshot 应该返回独立副本", async () => {
             await configStore.load()
             const snap = configStore.snapshot()
