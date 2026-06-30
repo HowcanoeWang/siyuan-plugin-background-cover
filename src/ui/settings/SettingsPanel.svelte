@@ -25,22 +25,24 @@
 </script>
 
 <div class="fn__flex-1 fn__flex config__panel" style="overflow: hidden; position: relative;">
-    <ul class="b3-tab-bar b3-list b3-list--background">
-        {#each tabs as tab}
-            <li
-                data-name={tab.name}
-                class="b3-list-item"
-                class:b3-list-item--focus={currentTab === tab.name}
-                onclick={() => currentTab = tab.name}
-                onkeydown={undefined}
-            >
-                <svg class="b3-list-item__graphic">
-                    <use xlink:href={tab.icon}></use>
-                </svg>
-                <span class="b3-list-item__text">{tab.label}</span>
-            </li>
-        {/each}
-    </ul>
+    <div class="config__side b3-list b3-list--background">
+        <ul class="config__tab-scroll">
+            {#each tabs as tab}
+                <li
+                    data-name={tab.name}
+                    class="b3-list-item"
+                    class:b3-list-item--focus={currentTab === tab.name}
+                    onclick={() => currentTab = tab.name}
+                    onkeydown={undefined}
+                >
+                    <svg class="b3-list-item__graphic">
+                        <use xlink:href={tab.icon}></use>
+                    </svg>
+                    <span class="b3-list-item__text">{tab.label}</span>
+                </li>
+            {/each}
+        </ul>
+    </div>
 
     <div class="config__tab-wrap" style="flex: 1; overflow-y: auto; padding: 8px 12px;">
         {#if currentTab === "config"}
