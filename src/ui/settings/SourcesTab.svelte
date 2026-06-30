@@ -17,7 +17,7 @@
         setupMultipleFilePicker,
         setupFolderFilePicker,
     } from "../dialogs"
-    import type { ImageItem } from "../../types"
+    import type { AppConfig, ImageItem } from "../../types"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
 
@@ -88,13 +88,19 @@
         if (yDisabled) posY = 50
     }
 
-    function syncCurrentBg() {
-        currentBg = configStore.get("currentFile")
-        const override = configStore.get("imageOverrides")[currentBg ?? '']
+    function syncCurrentBg(cfg: Readonly<AppConfig> = configStore.snapshot()) {
+        currentBg = cfg.currentFile
+        const override = cfg.imageOverrides[currentBg ?? '']
         posX = override?.positionX ?? 50
         posY = override?.positionY ?? 50
         hasOverride = !!override
         detectRelevantAxis()
+    }
+
+    function syncFromStore(cfg: Readonly<AppConfig>) {
+        dynamicUrls = [...cfg.dynamicBgUrls]
+        customDynamicUrls = [...cfg.customDynamicUrls]
+        syncCurrentBg(cfg)
     }
 
     async function savePositionOverride() {
@@ -133,6 +139,7 @@
         customDynamicUrls = [...configStore.get("customDynamicUrls")]
         syncCurrentBg()
         refreshAll()
+        return configStore.subscribe(syncFromStore)
     })
 
     async function refreshAll() {
@@ -558,7 +565,7 @@
                         <div class="b3-list__panel">
                             {#each DYNAMIC_BG_PRESETS as preset}
                                 <label class="b3-list-item b3-list-item--narrow b3-list-item--hide-action"
-                                    class:b3-list-item--focus={configStore.get("currentFile") === preset.url}
+                                    class:b3-list-item--focus={currentBg === preset.url}
                                     onclick={() => setDynamicAsBackground(preset.url)}
                                 >
                                     <span class="fn__flex-1">
@@ -578,7 +585,7 @@
                             {/each}
                             {#each customDynamicUrls as url}
                                 <label class="b3-list-item b3-list-item--narrow b3-list-item--hide-action"
-                                    class:b3-list-item--focus={configStore.get("currentFile") === url}
+                                    class:b3-list-item--focus={currentBg === url}
                                     onclick={() => setDynamicAsBackground(url)}
                                 >
                                     <span class="fn__flex-1">
@@ -690,7 +697,7 @@
                                     {@const override = configStore.get("imageOverrides")[file.url]}
                                     <label
                                         class="b3-list-item b3-list-item--narrow b3-list-item--hide-action"
-                                        class:b3-list-item--focus={selectedItem?.url === file.url}
+                                        class:b3-list-item--focus={currentBg === file.url || selectedItem?.url === file.url}
                                         onclick={() => setAsBackground(file)}
                                     >
                                         <span class="b3-list-item__text fn__flex-1"
