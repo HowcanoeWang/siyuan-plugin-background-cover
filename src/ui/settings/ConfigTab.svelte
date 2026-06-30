@@ -1,14 +1,50 @@
 <script lang="ts">
+    import { onMount, tick } from "svelte"
     import { configStore } from "../../stores/config"
-    import { createBgLayer, destroyBgLayer, render, changeOpacity, changeBlur, applyOverrides, startAutoRefresh, stopAutoRefresh } from "../../services/bgRender"
+    import { createBgLayer, destroyBgLayer, render, changeForegroundOpacity, changeBackgroundOpacity, changeBlur, applyOverrides, startAutoRefresh, stopAutoRefresh } from "../../services/bgRender"
+    import type { AppConfig } from "../../types"
 
     const i18n = (window as any).bgCoverPlugin?.i18n ?? {}
 
     let activate = $state(configStore.get("activate"))
-    let opacity = $state(configStore.get("opacity"))
+    let foregroundOpacity = $state(configStore.get("foregroundOpacity"))
+    let backgroundOpacity = $state(configStore.get("backgroundOpacity"))
     let blur = $state(configStore.get("blur"))
     let changeBgOnStart = $state(configStore.get("changeBgOnStart"))
     let autoRefreshTime = $state(configStore.get("autoRefreshTime"))
+    let foregroundOpacityInput: HTMLInputElement
+    let backgroundOpacityInput: HTMLInputElement
+    let blurInput: HTMLInputElement
+
+    onMount(() => configStore.subscribe(syncFromStore))
+
+    function syncFromStore(cfg: Readonly<AppConfig>) {
+        const changedSliders = [
+            foregroundOpacity !== cfg.foregroundOpacity ? [foregroundOpacityInput, cfg.foregroundOpacity] as const : null,
+            backgroundOpacity !== cfg.backgroundOpacity ? [backgroundOpacityInput, cfg.backgroundOpacity] as const : null,
+            blur !== cfg.blur ? [blurInput, cfg.blur] as const : null,
+        ]
+
+        activate = cfg.activate
+        foregroundOpacity = cfg.foregroundOpacity
+        backgroundOpacity = cfg.backgroundOpacity
+        blur = cfg.blur
+        changeBgOnStart = cfg.changeBgOnStart
+        autoRefreshTime = cfg.autoRefreshTime
+
+        tick().then(() => {
+            changedSliders.forEach(item => {
+                if (!item) return
+                refreshSlider(item[0], item[1])
+            })
+        })
+    }
+
+    function refreshSlider(input: HTMLInputElement | undefined, value: number) {
+        if (!input) return
+        input.parentElement?.setAttribute('aria-label', String(value))
+        input.dispatchEvent(new Event('input', { bubbles: true }))
+    }
 
     function handleActivateChange() {
         configStore.setAndSave("activate", activate)
@@ -21,7 +57,8 @@
         const currentFile = configStore.get("currentFile")
         if (currentFile) {
             render(currentFile)
-            changeOpacity(opacity)
+            changeForegroundOpacity(foregroundOpacity)
+            changeBackgroundOpacity(backgroundOpacity)
             changeBlur(blur)
             const ov = configStore.get("imageOverrides")[currentFile]
             applyOverrides(ov?.positionX, ov?.positionY, 50, 50)
@@ -81,16 +118,37 @@
             {i18n.foregroundOpacity}
             <div class="b3-label__text">{i18n.foregroundOpacityDesc}</div>
         </div>
-        <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label={String(opacity)}>
+        <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label={String(foregroundOpacity)}>
             <input class="b3-slider fn__size200" type="range"
-                min="0.1" max="1" step="0.05"
-                bind:value={opacity}
+                min="0" max="1" step="0.05"
+                bind:this={foregroundOpacityInput}
+                bind:value={foregroundOpacity}
                 oninput={() => {
-                    changeOpacity(opacity)
+                    changeForegroundOpacity(foregroundOpacity)
                     const el = document.activeElement?.parentElement
-                    if (el) el.setAttribute('aria-label', String(opacity))
+                    if (el) el.setAttribute('aria-label', String(foregroundOpacity))
                 }}
-                onchange={() => configStore.setAndSave("opacity", opacity)}
+                onchange={() => configStore.setAndSave("foregroundOpacity", foregroundOpacity)}
+            />
+        </div>
+    </label>
+
+    <label class="fn__flex b3-label config__item">
+        <div class="fn__flex-1">
+            {i18n.backgroundOpacity}
+            <div class="b3-label__text">{i18n.backgroundOpacityDesc}</div>
+        </div>
+        <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label={String(backgroundOpacity)}>
+            <input class="b3-slider fn__size200" type="range"
+                min="0" max="1" step="0.05"
+                bind:this={backgroundOpacityInput}
+                bind:value={backgroundOpacity}
+                oninput={() => {
+                    changeBackgroundOpacity(backgroundOpacity)
+                    const el = document.activeElement?.parentElement
+                    if (el) el.setAttribute('aria-label', String(backgroundOpacity))
+                }}
+                onchange={() => configStore.setAndSave("backgroundOpacity", backgroundOpacity)}
             />
         </div>
     </label>
@@ -103,6 +161,7 @@
         <div class="b3-tooltips b3-tooltips__n fn__flex-center" aria-label={String(blur)}>
             <input class="b3-slider fn__size200" type="range"
                 min="0" max="10" step="1"
+                bind:this={blurInput}
                 bind:value={blur}
                 oninput={() => {
                     changeBlur(blur)

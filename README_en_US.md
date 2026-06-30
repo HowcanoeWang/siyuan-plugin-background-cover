@@ -43,7 +43,7 @@ Default background cover artist ——
   - [X] Manual random selection
   - [X] Scheduled auto-random switching
   - [X] Random selection on startup
-- [X] Manually adjust transparency and blur
+- [X] Separately adjust UI opacity, background opacity, and background blur
 - [X] Per-image/video X/Y position override
 - [X] Theme blocking (disable plugin on specific themes)
 - [X] Shortcut key support
@@ -51,16 +51,23 @@ Default background cover artist ——
 
 ## Implementation
 
-Add `<canvas>` and `<video>` elements within the `<HTML>` element, at the same level as `<head>` and `<body>`. These elements are tiled and centered, placed at the bottom layer to serve as the background. Based on file extension, the engine automatically selects canvas (for images) or video (for videos) for rendering. Add `style='opacity: xxx'` to the `<body>` element to achieve transparency for the notebook panel.
+Add `<canvas>` and `<video>` elements within the `<HTML>` element, at the same level as `<head>` and `<body>`. These elements are tiled and centered, placed at the bottom layer to serve as the background. Based on file extension, the engine automatically selects canvas (for images) or video (for videos) for rendering. Add `style='opacity: xxx'` to the `<body>` element to control UI opacity, and separately adjust the opacity of `<canvas>` / `<video>` to control background opacity.
 
 Background resources are managed through three source types: `local` (desktop-only local folders, using `window.require('fs/promises')` for direct reading and `file:///` for rendering, zero upload), `upload` (plugin cache directory, supports file upload and URL download), and `assets` (SiYuan note resource sub-folder referencing, zero additional storage).
 
-The range of transparency that can be set by the user is `[0.1, 1]`. However, to ensure readability of the notebook content, a weighted logic `f(x) = 0.99 - 0.25x` is used. The weighted transparency range is `[0.74, 0.99]`. Since different themes have completely different color settings, the same transparency setting may not appear consistent across different themes.
+Both UI opacity and background opacity can be set within `[0, 1]`. To keep notebook content readable, UI opacity uses the weighted logic `f(x) = 1 - 0.25x`, resulting in `[0.75, 1]`; background opacity independently uses `0.35x` and applies directly to the background canvas/video. Since different themes have completely different color settings, the same transparency setting may not appear consistent across different themes.
 
 ## ChangeLogs
 
 <details open>
 <summary><b>June 2026</b></summary>
+
+**26.06.30**
+
+* Adapted the UI structure and display behavior for SiYuan Note 3.7.
+* Split opacity control into UI opacity and background opacity, allowing the notebook UI and background layer intensity to be adjusted separately.
+* Fixed the Settings panel sliders not updating after opacity or blur values were changed through shortcuts.
+* Optimized the Settings page left tab layout.
 
 **26.06.07**
 

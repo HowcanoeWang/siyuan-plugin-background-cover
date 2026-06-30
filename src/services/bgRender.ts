@@ -151,10 +151,17 @@ export function setVisible(visible: boolean): void {
     }
 }
 
-export function changeOpacity(raw: number): void {
-    const clamped = Math.max(0.1, Math.min(1, raw))
-    const opacity = 0.99 - 0.25 * clamped
+export function changeForegroundOpacity(raw: number): void {
+    const clamped = Math.max(0, Math.min(1, raw))
+    const opacity = 1 - 0.25 * clamped
     document.body.style.opacity = String(opacity)
+}
+
+export function changeBackgroundOpacity(raw: number): void {
+    const clamped = Math.max(0, Math.min(1, raw))
+    const opacity = String(0.35 * clamped)
+    if (canvasEl) canvasEl.style.opacity = opacity
+    if (videoEl) videoEl.style.opacity = opacity
 }
 
 export function changeBlur(val: number): void {

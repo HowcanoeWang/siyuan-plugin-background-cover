@@ -4,10 +4,12 @@ import { getLocalStorage, setLocalStorageVal, removeLocalStorageVals, readDirIte
 import type { AppConfig } from "../types"
 
 const STORAGE_KEY = packageName
+type ConfigListener = (cfg: Readonly<AppConfig>) => void
 
 const APP_CONFIG_DEFAULTS: AppConfig = {
     activate: true,
-    opacity: 0.5,
+    foregroundOpacity: 0.5,
+    backgroundOpacity: 1,
     blur: 5,
     localFolders: [],
     assetDirs: [],
@@ -25,6 +27,7 @@ class ConfigStore {
     private cfg: AppConfig = { ...APP_CONFIG_DEFAULTS }
     private dirty = false
     private ready = false
+    private listeners = new Set<ConfigListener>()
 
     async load(): Promise<void> {
         if (this.ready) return
@@ -39,6 +42,12 @@ class ConfigStore {
         this.cfg = { ...APP_CONFIG_DEFAULTS, ...stored }
 
         const raw = this.cfg as any
+        if (raw.opacity !== undefined) {
+            raw.foregroundOpacity = raw.opacity
+            delete raw.opacity
+            this.dirty = true
+        }
+
         if (raw.positionX !== undefined || raw.positionY !== undefined) {
             const currentFile = raw.currentFile
             if (currentFile && !raw.imageOverrides[currentFile]) {
@@ -70,6 +79,7 @@ class ConfigStore {
     set<K extends keyof AppConfig>(key: K, value: AppConfig[K]): void {
         this.cfg[key] = value
         this.dirty = true
+        this.notify()
     }
 
     async setAndSave<K extends keyof AppConfig>(key: K, value: AppConfig[K]): Promise<void> {
@@ -81,6 +91,11 @@ class ConfigStore {
         return { ...this.cfg }
     }
 
+    subscribe(listener: ConfigListener): () => void {
+        this.listeners.add(listener)
+        return () => this.listeners.delete(listener)
+    }
+
     isLocalPath(path: string): boolean {
         return this.cfg.localFolders.some(f => path.startsWith(f))
     }
@@ -89,6 +104,7 @@ class ConfigStore {
         console.log("[bgCover] config reset to defaults")
         this.cfg = { ...APP_CONFIG_DEFAULTS }
         this.dirty = true
+        this.notify()
         await this.save()
 
         try {
@@ -133,10 +149,16 @@ class ConfigStore {
         } catch { /* ignore */ }
     }
 
+    private notify(): void {
+        const snap = this.snapshot()
+        this.listeners.forEach(listener => listener(snap))
+    }
+
     _resetForTest(): void {
         this.cfg = { ...APP_CONFIG_DEFAULTS }
         this.dirty = false
         this.ready = false
+        this.listeners.clear()
     }
 }
 
