@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import {
     createBgLayer, destroyBgLayer,
     render, renderImage, renderVideo, clearLayer,
-    setVisible, changeOpacity, changeBlur,
+    setVisible, changeForegroundOpacity, changeBackgroundOpacity, changeBlur,
     changePosition, applyOverrides,
     startAutoRefresh, stopAutoRefresh,
     getCurrentMode,
@@ -119,24 +119,44 @@ describe("bgRender - 样式控制", () => {
         createBgLayer()
     })
 
-    it("changeOpacity 图片模式修改 body opacity (加权)", () => {
+    it("changeForegroundOpacity 图片模式修改 body opacity (加权)", () => {
         renderImage('/assets/test.jpg')
-        changeOpacity(0.5)
-        expect(document.body.style.opacity).toBe('0.865')
+        changeForegroundOpacity(0.5)
+        expect(document.body.style.opacity).toBe('0.875')
     })
 
-    it("changeOpacity 视频模式也修改 body opacity", () => {
+    it("changeForegroundOpacity 视频模式也修改 body opacity", () => {
         renderVideo('/assets/test.mp4')
-        changeOpacity(0.3)
-        expect(document.body.style.opacity).toBe('0.915')
+        changeForegroundOpacity(0.3)
+        expect(document.body.style.opacity).toBe('0.925')
     })
 
-    it("changeOpacity clamp 到 0.1-1", () => {
+    it("changeForegroundOpacity clamp 到 0-1", () => {
         renderImage('/assets/test.jpg')
-        changeOpacity(-0.5)
-        expect(document.body.style.opacity).toBe('0.965')
-        changeOpacity(2.0)
-        expect(document.body.style.opacity).toBe('0.74')
+        changeForegroundOpacity(-0.5)
+        expect(document.body.style.opacity).toBe('1')
+        changeForegroundOpacity(2.0)
+        expect(document.body.style.opacity).toBe('0.75')
+    })
+
+    it("changeBackgroundOpacity 同步修改 canvas 和 video opacity", () => {
+        changeBackgroundOpacity(1)
+        const canvas = document.getElementById('bglayer')!
+        const video = document.getElementById('bgvideo')!
+        expect(canvas.style.opacity).toBe('0.35')
+        expect(video.style.opacity).toBe('0.35')
+    })
+
+    it("changeBackgroundOpacity clamp 到 0-1 后映射到 0-0.35", () => {
+        changeBackgroundOpacity(-0.5)
+        const canvas = document.getElementById('bglayer')!
+        const video = document.getElementById('bgvideo')!
+        expect(canvas.style.opacity).toBe('0')
+        expect(video.style.opacity).toBe('0')
+
+        changeBackgroundOpacity(2)
+        expect(canvas.style.opacity).toBe('0.35')
+        expect(video.style.opacity).toBe('0.35')
     })
 
     it("changeBlur 图片模式设置 canvas filter", () => {

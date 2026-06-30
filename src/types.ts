@@ -10,7 +10,8 @@ export interface ImageOverride {
 
 export interface AppConfig {
     activate: boolean
-    opacity: number
+    foregroundOpacity: number
+    backgroundOpacity: number
     blur: number
     localFolders: string[]
     assetDirs: string[]

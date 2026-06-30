@@ -7,7 +7,8 @@ const STORAGE_KEY = packageName
 
 const APP_CONFIG_DEFAULTS: AppConfig = {
     activate: true,
-    opacity: 0.5,
+    foregroundOpacity: 0.5,
+    backgroundOpacity: 1,
     blur: 5,
     localFolders: [],
     assetDirs: [],
@@ -39,6 +40,12 @@ class ConfigStore {
         this.cfg = { ...APP_CONFIG_DEFAULTS, ...stored }
 
         const raw = this.cfg as any
+        if (raw.opacity !== undefined) {
+            raw.foregroundOpacity = raw.opacity
+            delete raw.opacity
+            this.dirty = true
+        }
+
         if (raw.positionX !== undefined || raw.positionY !== undefined) {
             const currentFile = raw.currentFile
             if (currentFile && !raw.imageOverrides[currentFile]) {

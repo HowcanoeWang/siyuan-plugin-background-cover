@@ -33,7 +33,8 @@ describe("ConfigStore", () => {
         it("应该从空存储中读取默认值", async () => {
             await configStore.load()
             expect(configStore.get("activate")).toBe(true)
-            expect(configStore.get("opacity")).toBe(0.5)
+            expect(configStore.get("foregroundOpacity")).toBe(0.5)
+            expect(configStore.get("backgroundOpacity")).toBe(1)
             expect(configStore.get("blur")).toBe(5)
             expect(configStore.get("localFolders")).toEqual([])
         })
@@ -41,18 +42,33 @@ describe("ConfigStore", () => {
         it("应该合并已有配置并补缺", async () => {
             ;(window as any).siyuan.storage["siyuan-plugin-background-cover"] = {
                 activate: false,
-                opacity: 0.8,
+                foregroundOpacity: 0.8,
             }
             await configStore.load()
             expect(configStore.get("activate")).toBe(false)
-            expect(configStore.get("opacity")).toBe(0.8)
+            expect(configStore.get("foregroundOpacity")).toBe(0.8)
+            expect(configStore.get("backgroundOpacity")).toBe(1)
             expect(configStore.get("blur")).toBe(5)
+        })
+
+        it("应该迁移旧 opacity 到 foregroundOpacity", async () => {
+            ;(window as any).siyuan.storage["siyuan-plugin-background-cover"] = {
+                activate: true,
+                opacity: 0.35,
+            }
+
+            await configStore.load()
+
+            const snap = configStore.snapshot() as any
+            expect(snap.foregroundOpacity).toBe(0.35)
+            expect(snap.opacity).toBeUndefined()
+            expect(snap.backgroundOpacity).toBe(1)
         })
 
         it("load 不应对已有配置触发额外 save", async () => {
             ;(window as any).siyuan.storage["siyuan-plugin-background-cover"] = {
                 activate: true,
-                opacity: 0.3,
+                foregroundOpacity: 0.3,
                 localFolders: [],
                 assetDirs: [],
             }
@@ -76,8 +92,8 @@ describe("ConfigStore", () => {
     describe("get() / set() / snapshot()", () => {
         it("set 应该改变内存值但不自动保存", async () => {
             await configStore.load()
-            configStore.set("opacity", 0.3)
-            expect(configStore.get("opacity")).toBe(0.3)
+            configStore.set("foregroundOpacity", 0.3)
+            expect(configStore.get("foregroundOpacity")).toBe(0.3)
         })
 
         it("snapshot 应该返回独立副本", async () => {
@@ -92,13 +108,13 @@ describe("ConfigStore", () => {
             await configStore.load()
             mockFetchSyncPost.mockClear()
 
-            await configStore.setAndSave("opacity", 0.3)
+            await configStore.setAndSave("foregroundOpacity", 0.3)
 
             expect(mockFetchSyncPost).toHaveBeenCalledWith(
                 "/api/storage/setLocalStorageVal",
                 expect.objectContaining({
                     key: "siyuan-plugin-background-cover",
-                    val: expect.objectContaining({ opacity: 0.3 }),
+                    val: expect.objectContaining({ foregroundOpacity: 0.3 }),
                 }),
             )
         })
@@ -121,4 +137,3 @@ describe("ConfigStore", () => {
     })
 
 })
-
