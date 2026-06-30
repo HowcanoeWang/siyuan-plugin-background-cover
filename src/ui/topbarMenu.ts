@@ -36,13 +36,14 @@ export function buildTopBarMenu(
     async function applyLastUploaded(url: string) {
         configStore.set("currentFile", url)
         configStore.save()
-        const { renderImage, renderVideo, changeOpacity, changeBlur } = await import("../services/bgRender")
+        const { renderImage, renderVideo, changeForegroundOpacity, changeBackgroundOpacity, changeBlur } = await import("../services/bgRender")
         if (url.match(/\.(mp4|webm|ogg|mov|avi|mkv)$/i)) {
             renderVideo(url)
         } else {
             renderImage(url)
         }
-        changeOpacity(configStore.get("opacity"))
+        changeForegroundOpacity(configStore.get("foregroundOpacity"))
+        changeBackgroundOpacity(configStore.get("backgroundOpacity"))
         changeBlur(configStore.get("blur"))
     }
 

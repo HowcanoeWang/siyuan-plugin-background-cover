@@ -3,7 +3,7 @@
     import { configStore } from "../../stores/config"
     import { isDesktop } from "../../utils/fs"
     import { scanSource } from "../../services/sourceManager"
-    import { renderImage, renderVideo, renderDynamic, changeOpacity, changeBlur, changePosition } from "../../services/bgRender"
+    import { renderImage, renderVideo, renderDynamic, changeForegroundOpacity, changeBackgroundOpacity, changeBlur, changePosition } from "../../services/bgRender"
     import { confirmDialog } from "../../libs/dialog"
     import { pluginAssetsDir, pickDefaultBackground, DYNAMIC_BG_PRESETS, DYNAMIC_BG_FALLBACK_URL, isDynamicUrl, VIDEO_EXTS } from "../../constants"
     import { removeFile } from "../../utils/api"
@@ -245,7 +245,8 @@
         configStore.set("currentFile", url)
         configStore.save()
         renderDynamic(cb, DYNAMIC_BG_FALLBACK_URL)
-        changeOpacity(configStore.get("opacity"))
+        changeForegroundOpacity(configStore.get("foregroundOpacity"))
+        changeBackgroundOpacity(configStore.get("backgroundOpacity"))
         changeBlur(configStore.get("blur"))
     }
 
@@ -447,7 +448,8 @@
                 } else {
                     renderImage(uploadUrl)
                 }
-                changeOpacity(configStore.get("opacity"))
+                changeForegroundOpacity(configStore.get("foregroundOpacity"))
+                changeBackgroundOpacity(configStore.get("backgroundOpacity"))
                 changeBlur(configStore.get("blur"))
             }
             refreshAll()

@@ -5,7 +5,7 @@ import {
 
 import { svelteDialog } from "./libs/dialog"
 import { configStore } from "./stores/config"
-import { destroyBgLayer, createBgLayer, renderImage, renderVideo, renderDynamic, changeOpacity, changeBlur, changePosition, applyOverrides, setVisible, startAutoRefresh, stopAutoRefresh } from "./services/bgRender"
+import { destroyBgLayer, createBgLayer, renderImage, renderVideo, renderDynamic, changeForegroundOpacity, changeBackgroundOpacity, changeBlur, changePosition, applyOverrides, setVisible, startAutoRefresh, stopAutoRefresh } from "./services/bgRender"
 import { scanAll, pickRandom } from "./services/sourceManager"
 import { pluginTopIcon, pickDefaultBackground, DEFAULT_BACKGROUNDS, IMAGE_EXTS, VIDEO_EXTS, DYNAMIC_BG_FALLBACK_URL, isDynamicUrl } from "./constants"
 import { devDebug, devLog } from "./utils/logger"
@@ -40,15 +40,25 @@ export default class BgCoverPlugin extends Plugin {
         this.addCommand({ langKey: "selectPictureManualLabel", hotkey: "⇧⌘F6", callback: () => this.openSetting("sources") })
         this.addCommand({ langKey: "selectPictureRandomLabel", hotkey: "⇧⌘F7", callback: () => this.randomSelect() })
         this.addCommand({ langKey: "openBackgroundLabel", hotkey: "⇧⌘F4", callback: () => this.toggleBackground() })
+        this.addCommand({ langKey: "reduceForegroundOpacityLabel", hotkey: "⇧⌘5", callback: () => {
+            const v = Math.max(0, configStore.get("foregroundOpacity") - 0.05)
+            configStore.setAndSave("foregroundOpacity", v)
+            changeForegroundOpacity(v)
+        }})
+        this.addCommand({ langKey: "addForegroundOpacityLabel", hotkey: "⇧⌘6", callback: () => {
+            const v = Math.min(1, configStore.get("foregroundOpacity") + 0.05)
+            configStore.setAndSave("foregroundOpacity", v)
+            changeForegroundOpacity(v)
+        }})
         this.addCommand({ langKey: "reduceBackgroundOpacityLabel", hotkey: "⇧⌘7", callback: () => {
-            const v = Math.max(0, configStore.get("opacity") - 0.05)
-            configStore.setAndSave("opacity", v)
-            changeOpacity(v)
+            const v = Math.max(0, configStore.get("backgroundOpacity") - 0.05)
+            configStore.setAndSave("backgroundOpacity", v)
+            changeBackgroundOpacity(v)
         }})
         this.addCommand({ langKey: "addBackgroundOpacityLabel", hotkey: "⇧⌘8", callback: () => {
-            const v = Math.min(1, configStore.get("opacity") + 0.05)
-            configStore.setAndSave("opacity", v)
-            changeOpacity(v)
+            const v = Math.min(1, configStore.get("backgroundOpacity") + 0.05)
+            configStore.setAndSave("backgroundOpacity", v)
+            changeBackgroundOpacity(v)
         }})
         this.addCommand({ langKey: "reduceBackgroundBlurLabel", hotkey: "⇧⌘9", callback: () => {
             const v = Math.max(0, configStore.get("blur") - 1)
@@ -158,7 +168,8 @@ export default class BgCoverPlugin extends Plugin {
         } else {
             renderVideo(item.url)
         }
-        changeOpacity(configStore.get("opacity"))
+        changeForegroundOpacity(configStore.get("foregroundOpacity"))
+        changeBackgroundOpacity(configStore.get("backgroundOpacity"))
         changeBlur(configStore.get("blur"))
         const ov = configStore.get("imageOverrides")[item.url]
         applyOverrides(ov?.positionX, ov?.positionY, 50, 50)
@@ -192,9 +203,11 @@ export default class BgCoverPlugin extends Plugin {
                 }
             }
         } finally {
-            const opacity = configStore.get("opacity")
+            const foregroundOpacity = configStore.get("foregroundOpacity")
+            const backgroundOpacity = configStore.get("backgroundOpacity")
             const blur = configStore.get("blur")
-            changeOpacity(opacity)
+            changeForegroundOpacity(foregroundOpacity)
+            changeBackgroundOpacity(backgroundOpacity)
             changeBlur(blur)
             const ov = configStore.get("imageOverrides")[currentFile]
             applyOverrides(ov?.positionX, ov?.positionY, 50, 50)
